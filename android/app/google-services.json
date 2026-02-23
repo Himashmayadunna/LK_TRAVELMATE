@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "700359894258",
+    "project_id": "lktravelmate",
+    "storage_bucket": "lktravelmate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700359894258:android:c39ded849394af9d6e5c6b",
+        "android_client_info": {
+          "package_name": "com.example.lk_travelmate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXew8solJQ4vPhXWNOvaWDaUYdKDN5phQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

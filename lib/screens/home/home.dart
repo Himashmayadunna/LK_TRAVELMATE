@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
 import '../../widgets/ai_recommendation_card.dart';
@@ -7,6 +9,8 @@ import '../../widgets/category_chip.dart';
 import '../../widgets/place_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
+import '../profile/profile_screen.dart';
+import '../explore/explore_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -100,60 +104,69 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
+  // Screen bodies for each nav tab
+  Widget _buildBody() {
+    switch (_currentNavIndex) {
+      case 1:
+        return const ExploreScreen();
+      case 4:
+        return const ProfileScreen();
+      default:
+        return SafeArea(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader()),
+              SliverToBoxAdapter(child: _buildSearchBar()),
+              SliverToBoxAdapter(child: _buildAIRecommendation()),
+              SliverToBoxAdapter(child: _buildTravelPlan()),
+              SliverToBoxAdapter(child: _buildQuickActions()),
+              SliverToBoxAdapter(child: _buildCategories()),
+              SliverToBoxAdapter(child: _buildPopularPlaces()),
+              SliverToBoxAdapter(child: _buildTrendingExperiences()),
+              SliverToBoxAdapter(child: _buildAIChatCTA()),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Header
-            SliverToBoxAdapter(child: _buildHeader()),
-            // Search Bar
-            SliverToBoxAdapter(child: _buildSearchBar()),
-            // AI Recommendation Hero Card
-            SliverToBoxAdapter(child: _buildAIRecommendation()),
-            // Travel Plan Section
-            SliverToBoxAdapter(child: _buildTravelPlan()),
-            // Quick Actions
-            SliverToBoxAdapter(child: _buildQuickActions()),
-            // Categories
-            SliverToBoxAdapter(child: _buildCategories()),
-            // Popular Places
-            SliverToBoxAdapter(child: _buildPopularPlaces()),
-            // Trending Experiences
-            SliverToBoxAdapter(child: _buildTrendingExperiences()),
-            // AI Chat CTA
-            SliverToBoxAdapter(child: _buildAIChatCTA()),
-            // Bottom spacing
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ),
-      ),
+      body: _buildBody(),
       bottomNavigationBar: _buildBottomNav(),
-      floatingActionButton: _buildFAB(),
+      floatingActionButton: _currentNavIndex == 0 ? _buildFAB() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   // ─── HEADER ───────────────────────────────────────────────────────
   Widget _buildHeader() {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userName = authProvider.displayName;
+    final userInitials = authProvider.initials;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$_greeting $_greetingEmoji',
-                style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
-              ),
-              const SizedBox(height: 2),
-              const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$_greeting, $userName $_greetingEmoji',
+                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
+              ],
+            ),
           ),
           Row(
             children: [
@@ -202,10 +215,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'AK',
-                    style: TextStyle(
+                    userInitials,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -566,9 +579,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _navItem(Icons.home_rounded, 'Home', 0),
               _navItem(Icons.explore_rounded, 'Explore', 1),
-              const SizedBox(width: 56), // Space for FAB
-              _navItem(Icons.favorite_rounded, 'Saved', 2),
-              _navItem(Icons.person_rounded, 'Profile', 3),
+              _navItem(Icons.map_rounded, 'Map', 2),
+              _navItem(Icons.smart_toy_rounded, 'Assistant', 3),
+              _navItem(Icons.person_rounded, 'Profile', 4),
             ],
           ),
         ),

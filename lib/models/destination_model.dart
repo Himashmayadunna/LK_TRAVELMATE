@@ -18,6 +18,55 @@ class Destination {
   });
 }
 
+// ─── EXPLORE PAGE MODEL ─────────────────────────────────────────────
+class DestinationModel {
+  final String id;
+  final String name;
+  final String category;
+  final String description;
+  final String imageUrl;
+  final String budgetLevel; // 'low', 'mid', 'premium'
+  final double rating;
+  final String location;
+
+  const DestinationModel({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.description,
+    required this.imageUrl,
+    required this.budgetLevel,
+    this.rating = 0.0,
+    this.location = '',
+  });
+
+  /// Create from Firestore document snapshot
+  factory DestinationModel.fromMap(Map<String, dynamic> map, String docId) {
+    return DestinationModel(
+      id: docId,
+      name: map['name'] ?? '',
+      category: map['category'] ?? '',
+      description: map['description'] ?? '',
+      imageUrl: map['imageUrl'] ?? '',
+      budgetLevel: map['budgetLevel'] ?? 'mid',
+      rating: (map['rating'] ?? 0).toDouble(),
+      location: map['location'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'category': category,
+      'description': description,
+      'imageUrl': imageUrl,
+      'budgetLevel': budgetLevel,
+      'rating': rating,
+      'location': location,
+    };
+  }
+}
+
 class TravelPlan {
   final String interest;
   final String budget;

@@ -7,6 +7,7 @@ import 'utils/app_theme.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'providers/destination_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/ai_suggestion_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +39,7 @@ class LKTravelMateApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DestinationProvider()),
+        ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
       ],
       child: MaterialApp(
         title: 'LK TravelMate',

@@ -11,6 +11,9 @@ import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../profile/profile_screen.dart';
 import '../explore/explore_screen.dart';
+import '../ai/ai_chat_screen.dart';
+import '../ai/ai_suggestions_screen.dart';
+import '../map/map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +25,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
   int _currentNavIndex = 0;
+
+  // ─── User input controllers for AI suggestions ──────────────────
+  final TextEditingController _placesController = TextEditingController();
+  final TextEditingController _foodController = TextEditingController();
+  String _selectedDuration = '7 Days';
+  String _selectedBudget = '\$800';
+
+  @override
+  void dispose() {
+    _placesController.dispose();
+    _foodController.dispose();
+    super.dispose();
+  }
 
   // Greeting based on time of day
   String get _greeting {
@@ -105,10 +121,22 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   // Screen bodies for each nav tab
+  void _openAIChat({String? initialPrompt}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AIChatScreen(initialPrompt: initialPrompt),
+      ),
+    );
+  }
+
   Widget _buildBody() {
     switch (_currentNavIndex) {
       case 1:
         return const ExploreScreen();
+      case 2:
+        return const MapScreen();
+      case 3:
+        return const AIChatScreen();
       case 4:
         return const ProfileScreen();
       default:
@@ -250,38 +278,326 @@ class _HomeScreenState extends State<HomeScreen> {
         subtitle: 'Personalized just for you',
         imageUrl:
             'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+        onTap: () => _openAIChat(
+          initialPrompt: 'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
+        ),
       ),
     );
   }
 
-  // ─── TRAVEL PLAN ──────────────────────────────────────────────────
+  // ─── TRAVEL PLAN (Interactive AI Input) ────────────────────────────
   Widget _buildTravelPlan() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(
-            title: 'Your Travel Plan',
-            actionText: 'Edit',
-            onAction: () {},
+          const SectionHeader(
+            title: 'Plan Your Trip',
+            icon: Icons.auto_awesome,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Tell us what you want and AI will suggest the perfect places!',
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ─── Places Input ──────────────────────────────────────
+          _buildInputField(
+            controller: _placesController,
+            label: 'Places you want to visit',
+            hint: 'e.g. Beaches, Mountains, Historical sites...',
+            icon: Icons.place_rounded,
+            emoji: '📍',
+          ),
+          const SizedBox(height: 12),
+
+          // ─── Food Input ────────────────────────────────────────
+          _buildInputField(
+            controller: _foodController,
+            label: 'Food you like to eat',
+            hint: 'e.g. Seafood, Spicy curry, Street food...',
+            icon: Icons.restaurant_rounded,
+            emoji: '🍛',
           ),
           const SizedBox(height: 14),
+
+          // ─── Duration & Budget Row ─────────────────────────────
           Row(
             children: [
               Expanded(
-                child: TravelPlanCard(label: 'Interest', value: 'Beach', emoji: '🏖️'),
+                child: GestureDetector(
+                  onTap: _showDurationPicker,
+                  child: TravelPlanCard(
+                    label: 'Duration',
+                    value: _selectedDuration,
+                    emoji: '📅',
+                    onTap: _showDurationPicker,
+                  ),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: TravelPlanCard(label: 'Budget', value: '\$800', emoji: '💰'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TravelPlanCard(label: 'Duration', value: '7 Days', emoji: '📅'),
+                child: GestureDetector(
+                  onTap: _showBudgetPicker,
+                  child: TravelPlanCard(
+                    label: 'Budget',
+                    value: _selectedBudget,
+                    emoji: '💰',
+                    onTap: _showBudgetPicker,
+                  ),
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+
+          // ─── Get AI Suggestions Button ─────────────────────────
+          GestureDetector(
+            onTap: _navigateToSuggestions,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.35),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('✨', style: TextStyle(fontSize: 20)),
+                  SizedBox(width: 10),
+                  Text(
+                    'Get AI Suggestions',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_rounded,
+                      color: Colors.white, size: 20),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  // ─── REUSABLE INPUT FIELD ─────────────────────────────────────────
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required String emoji,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        boxShadow: AppTheme.softShadow,
+        border: Border.all(color: AppTheme.divider, width: 1),
+      ),
+      child: TextField(
+        controller: controller,
+        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 12, right: 8),
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+          ),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
+          labelText: label,
+          labelStyle:
+              AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
+          hintText: hint,
+          hintStyle: AppTheme.bodyMedium
+              .copyWith(color: AppTheme.textHint, fontSize: 12),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  // ─── DURATION PICKER ──────────────────────────────────────────────
+  void _showDurationPicker() {
+    final durations = [
+      '3 Days', '5 Days', '7 Days', '10 Days', '14 Days', '21 Days'
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('📅 Select Duration', style: AppTheme.headingSmall),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: durations.map((d) {
+                final isSelected = _selectedDuration == d;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedDuration = d);
+                    Navigator.pop(ctx);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient:
+                          isSelected ? AppTheme.primaryGradient : null,
+                      color: isSelected ? null : AppTheme.primarySurface,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusRound),
+                      border: isSelected
+                          ? null
+                          : Border.all(color: AppTheme.divider),
+                    ),
+                    child: Text(
+                      d,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : AppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── BUDGET PICKER ────────────────────────────────────────────────
+  void _showBudgetPicker() {
+    final budgets = [
+      '\$300',
+      '\$500',
+      '\$800',
+      '\$1200',
+      '\$2000',
+      '\$3000+',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('💰 Select Budget', style: AppTheme.headingSmall),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: budgets.map((b) {
+                final isSelected = _selectedBudget == b;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedBudget = b);
+                    Navigator.pop(ctx);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient:
+                          isSelected ? AppTheme.primaryGradient : null,
+                      color: isSelected ? null : AppTheme.primarySurface,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusRound),
+                      border: isSelected
+                          ? null
+                          : Border.all(color: AppTheme.divider),
+                    ),
+                    child: Text(
+                      b,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : AppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── NAVIGATE TO AI SUGGESTIONS ───────────────────────────────────
+  void _navigateToSuggestions() {
+    final places = _placesController.text.trim();
+    final food = _foodController.text.trim();
+
+    if (places.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter places you want to visit'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AISuggestionsScreen(
+          places: places,
+          duration: _selectedDuration,
+          food: food.isEmpty ? 'Any local food' : food,
+          budget: _selectedBudget,
+        ),
       ),
     );
   }
@@ -301,12 +617,14 @@ class _HomeScreenState extends State<HomeScreen> {
               QuickActionButton(
                 icon: Icons.auto_awesome,
                 label: 'AI Plan',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt: 'Create a 7-day Sri Lanka travel itinerary for a first-time visitor with a mid-range budget',
+                ),
               ),
               QuickActionButton(
                 icon: Icons.map_rounded,
                 label: 'Map',
-                onTap: () {},
+                onTap: () => setState(() => _currentNavIndex = 2),
               ),
               QuickActionButton(
                 icon: Icons.hotel_rounded,
@@ -493,7 +811,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAIChatCTA() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: Container(
+      child: GestureDetector(
+        onTap: () => _openAIChat(),
+        child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: AppTheme.primaryGradient,
@@ -554,6 +874,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -640,9 +961,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: FloatingActionButton(
-        onPressed: () {
-          // Open AI Chat
-        },
+        onPressed: () => _openAIChat(),
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),

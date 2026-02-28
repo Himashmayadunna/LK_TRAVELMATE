@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../providers/destination_provider.dart';
+import '../../providers/ai_suggestion_provider.dart';
 import '../../widgets/destination_card.dart';
 import '../../widgets/section_header.dart';
+import '../ai/ai_suggestions_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -118,6 +120,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             SliverToBoxAdapter(child: _buildHeader()),
             SliverToBoxAdapter(child: _buildSearchBar()),
             SliverToBoxAdapter(child: _buildCategoryFilter()),
+            SliverToBoxAdapter(child: _buildAISuggestionsSection()),
             SliverToBoxAdapter(child: _buildFeaturedDestinations()),
             SliverToBoxAdapter(child: _buildBudgetSection()),
             SliverToBoxAdapter(child: _buildAllDestinations()),
@@ -477,6 +480,298 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── AI SUGGESTIONS SECTION ───────────────────────────────────────
+  Widget _buildAISuggestionsSection() {
+    return Consumer<AISuggestionProvider>(
+      builder: (context, provider, _) {
+        if (!provider.hasSuggestions) {
+          // Show a CTA to get AI suggestions
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                    child: const Center(
+                      child: Text('✨', style: TextStyle(fontSize: 28)),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'AI Personalized Picks',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Go to Home tab, enter your preferences and get AI suggestions here!',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Show AI suggestions
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+          child: Column(
+            children: [
+              SectionHeader(
+                title: 'AI Suggestions',
+                icon: Icons.auto_awesome_rounded,
+                actionText: '${provider.suggestions.length} places',
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: 280,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: provider.suggestions.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 14),
+                  itemBuilder: (context, index) {
+                    final suggestion = provider.suggestions[index];
+                    return SizedBox(
+                      width: 250,
+                      child: _buildAISuggestionCard(suggestion, index),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAISuggestionCard(dynamic suggestion, int index) {
+    return GestureDetector(
+      onTap: () {
+        final provider = context.read<AISuggestionProvider>();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AISuggestionsScreen(
+              places: provider.places,
+              duration: provider.duration,
+              food: provider.food,
+              budget: provider.budget,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          boxShadow: AppTheme.softShadow,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusLarge),
+                  ),
+                  child: Image.network(
+                    suggestion.imageUrl,
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, st) => Container(
+                      height: 150,
+                      decoration: const BoxDecoration(
+                        gradient: AppTheme.cardGradient,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(AppTheme.radiusLarge),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.landscape_rounded,
+                            color: Colors.white54, size: 40),
+                      ),
+                    ),
+                    loadingBuilder: (ctx, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        height: 150,
+                        color: AppTheme.primarySurface,
+                        child: const Center(
+                          child:
+                              CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // AI badge
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.gold.withValues(alpha: 0.9),
+                          AppTheme.goldLight.withValues(alpha: 0.9),
+                        ],
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusRound),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('✨',
+                            style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 3),
+                        Text(
+                          'AI #${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Category chip
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusRound),
+                    ),
+                    child: Text(
+                      suggestion.category,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Info
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    suggestion.name,
+                    style: AppTheme.labelBold.copyWith(fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on,
+                          size: 12, color: AppTheme.primaryLight),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          suggestion.location,
+                          style: AppTheme.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppTheme.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(
+                              AppTheme.radiusRound),
+                        ),
+                        child: Text(
+                          '\$${suggestion.estimatedCostPerDay.toInt()}/day',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.success,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          suggestion.description,
+                          style: AppTheme.caption.copyWith(
+                            color: AppTheme.textSecondary,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

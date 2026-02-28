@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
   static const String _apiKey =
-      "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";
+      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";
@@ -33,7 +34,7 @@ class GeminiService {
           "max_tokens": maxTokens,
           "temperature": 0.7,
         }),
-      );
+      ).timeout(const Duration(seconds: 60));
 
       debugPrint('AIService: Status ${response.statusCode}');
 

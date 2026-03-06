@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../main.dart';
+import 'signin.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -158,15 +159,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           // Sign In Button
           GestureDetector(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Sign In coming soon!'),
-                  backgroundColor: AppTheme.primary,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SignInScreen()),
               );
             },
             child: Container(

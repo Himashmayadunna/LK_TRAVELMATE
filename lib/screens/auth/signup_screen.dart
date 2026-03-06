@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/auth_service.dart';
 import '../../main.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -145,6 +146,28 @@ class _SignUpScreenState extends State<SignUpScreen>
     } catch (e) {
       if (!mounted) return;
       _showSnackBar('Something went wrong. Please try again.', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final result = await AuthService.signInWithGoogle();
+      if (result == null) {
+        // User cancelled
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('Google sign in failed. Please try again.', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -485,9 +508,7 @@ class _SignUpScreenState extends State<SignUpScreen>
             _buildSocialButton(
               label: 'Sign up with Google',
               iconPath: 'G',
-              onTap: () {
-                _showSnackBar('Google sign up coming soon!');
-              },
+              onTap: () => _handleGoogleSignIn(),
             ),
             const SizedBox(height: 24),
 

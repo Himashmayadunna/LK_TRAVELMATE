@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/map/map_screen.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'LK TravelMate',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }

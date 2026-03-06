@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/auth_service.dart';
 import '../../widgets/search_bar_widget.dart';
 import '../../widgets/ai_recommendation_card.dart';
 import '../../widgets/travel_plan_card.dart';
@@ -149,8 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── HEADER ───────────────────────────────────────────────────────
   Widget _buildHeader() {
-    const userName = 'Traveler';
-    const userInitials = 'T';
+    final userName = AuthService.isLoggedIn ? AuthService.displayName : 'Traveler';
+    final userInitials = AuthService.isLoggedIn ? AuthService.initials : 'T';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),

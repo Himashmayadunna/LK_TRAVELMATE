@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
@@ -7,7 +10,11 @@ import 'screens/ai/ai_chat_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'utils/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -20,7 +27,9 @@ class MyApp extends StatelessWidget {
       title: 'LK TravelMate',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const WelcomeScreen(),
+      home: FirebaseAuth.instance.currentUser != null
+          ? const MainScreen()
+          : const WelcomeScreen(),
     );
   }
 }

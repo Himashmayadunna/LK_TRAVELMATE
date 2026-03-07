@@ -19,13 +19,13 @@ If you already have Google Maps API keys from Google Cloud Console:
 
 **For Android:**
 1. Open: `android/app/src/main/AndroidManifest.xml`
-2. Find the line: `android:value="YOUR_ANDROID_API_KEY_HERE"`
-3. Replace `YOUR_ANDROID_API_KEY_HERE` with your actual Android API key
+2. Find the line: `android:value="AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg"`
+3. Replace `AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg` with your actual Android API key
 
 **For iOS:**
 1. Open: `ios/Runner/Info.plist`
-2. Find the line: `<string>YOUR_IOS_API_KEY_HERE</string>`
-3. Replace `YOUR_IOS_API_KEY_HERE` with your actual iOS API key
+2. Find the line: `<string>AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg</string>`
+3. Replace `AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg` with your actual iOS API key
 
 ### Option 2: Create New API Keys
 Follow the detailed guide in `GOOGLE_MAPS_SETUP.md` to:

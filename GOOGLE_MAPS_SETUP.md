@@ -49,10 +49,10 @@ Update `android/app/src/main/AndroidManifest.xml`:
 ```xml
 <meta-data
     android:name="com.google.android.geo.API_KEY"
-    android:value="YOUR_ANDROID_API_KEY_HERE"/>
+    android:value="AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg"/>
 ```
 
-Replace `YOUR_ANDROID_API_KEY_HERE` with your Android API key.
+Replace `YAQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg` with your Android API key.
 
 ### iOS Configuration:
 
@@ -60,10 +60,10 @@ Update `ios/Runner/Info.plist`:
 
 ```xml
 <key>GoogleMapsAPIKey</key>
-<string>YOUR_IOS_API_KEY_HERE</string>
+<string>AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg</string>
 ```
 
-Replace `YOUR_IOS_API_KEY_HERE` with your iOS API key.
+Replace `AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg` with your iOS API key.
 
 ## Step 4: Test the App
 

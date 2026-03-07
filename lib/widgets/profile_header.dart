@@ -7,7 +7,6 @@ class ProfileHeader extends StatelessWidget {
   final String initials;
   final String badge;
   final int tripCount;
-  final VoidCallback? onSettingsTap;
 
   const ProfileHeader({
     super.key,
@@ -16,7 +15,6 @@ class ProfileHeader extends StatelessWidget {
     required this.initials,
     this.badge = 'Explorer',
     this.tripCount = 0,
-    this.onSettingsTap,
   });
 
   @override
@@ -32,34 +30,16 @@ class ProfileHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Top row with settings
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
+          // Top row title
+          const Center(
+            child: Text(
+              'Profile',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
               ),
-              GestureDetector(
-                onTap: onSettingsTap,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                  child: const Icon(
-                    Icons.settings_outlined,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 24),
           // Avatar

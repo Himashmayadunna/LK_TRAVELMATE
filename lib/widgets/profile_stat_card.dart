@@ -7,6 +7,7 @@ class ProfileStatCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final Color iconBgColor;
+  final VoidCallback? onTap;
 
   const ProfileStatCard({
     super.key,
@@ -15,19 +16,22 @@ class ProfileStatCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.iconBgColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          boxShadow: AppTheme.softShadow,
-        ),
-        child: Column(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            boxShadow: AppTheme.softShadow,
+          ),
+          child: Column(
           children: [
             Container(
               width: 40,
@@ -52,6 +56,7 @@ class ProfileStatCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
         ),
       ),
     );

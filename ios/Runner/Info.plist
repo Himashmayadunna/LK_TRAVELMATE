@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Google Maps API Key -->
+	<key>GoogleMapsAPIKey</key>
+	<string>AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg</string>
+	<!-- Location Privacy -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location to show nearby travel destinations on the map.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs your location to show nearby travel destinations on the map.</string>
 </dict>
 </plist>

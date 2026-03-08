@@ -16,6 +16,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+final TextEditingController _searchController = TextEditingController();
+
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
 
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _placesController.dispose();
     _foodController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -238,10 +241,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── SEARCH BAR ───────────────────────────────────────────────────
   Widget _buildSearchBar() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: SearchBarWidget(),
-    );
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+    child: SearchBarWidget(
+      controller: _searchController,
+      onChanged: (value) {
+        // handle search if needed, or leave empty
+      },
+    ),
+   );
   }
 
   // ─── AI RECOMMENDATION HERO ───────────────────────────────────────

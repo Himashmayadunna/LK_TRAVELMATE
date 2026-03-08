@@ -250,30 +250,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
       ),
 
-      // Bottom navigation bar
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: const Color(0xFF008B8B),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle:
-            const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.explore_rounded), label: 'Explore'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.map_rounded), label: 'Map'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.smart_toy_rounded), label: 'Assistant'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
-        onTap: (_) {},
-      ),
+      
     );
   }
 

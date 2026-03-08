@@ -15,7 +15,7 @@ class _MapScreenState extends State<MapScreen> {
   
   // Sri Lanka center coordinates
   static const LatLng _sriLankaCenter = LatLng(7.8731, 80.7718);
-  static const double _initialZoom = 8.5;
+  static const double _initialZoom = 6.5;
 
   // Travel locations in Sri Lanka
   final List<TravelLocation> travelLocations = [

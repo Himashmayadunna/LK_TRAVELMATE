@@ -68,7 +68,7 @@
 	</array>
 	<!-- Google Maps API Key -->
 	<key>GoogleMapsAPIKey</key>
-	<string>AIzaSyDi5dcWP-ZQYSoO8S0j3Nq0rM0YK6i-KkU</string>
+	<string>AIzaSyBRuJVI517ADJ-meXLUCGpNjVEOHAWyTjE</string>
 	<!-- Location Privacy -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby travel destinations on the map.</string>

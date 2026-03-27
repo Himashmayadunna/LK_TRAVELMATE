@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../main.dart';
 
@@ -53,6 +55,11 @@ class _SignInScreenState extends State<SignInScreen>
     await Future.delayed(const Duration(milliseconds: 800));
 
     if (!mounted) return;
+
+    // Save user details to AuthProvider
+    final email = _emailController.text.trim();
+    final name = email.split('@').first.replaceAll('.', ' ').split(' ').map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '').join(' ');
+    context.read<AuthProvider>().setUser(name: name, email: email);
 
     setState(() => _isLoading = false);
 

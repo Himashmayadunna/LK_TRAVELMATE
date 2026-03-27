@@ -180,8 +180,9 @@ class _SignInScreenState extends State<SignInScreen>
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (val) {
-                if (val == null || val.isEmpty)
+                if (val == null || val.isEmpty) {
                   return 'Please enter your email';
+                }
                 if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
                   return 'Enter a valid email';
                 }
@@ -210,10 +211,12 @@ class _SignInScreenState extends State<SignInScreen>
                     setState(() => _obscurePassword = !_obscurePassword),
               ),
               validator: (val) {
-                if (val == null || val.isEmpty)
+                if (val == null || val.isEmpty) {
                   return 'Please enter your password';
-                if (val.length < 6)
+                }
+                if (val.length < 6) {
                   return 'Password must be at least 6 characters';
+                }
                 return null;
               },
             ),

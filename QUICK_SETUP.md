@@ -44,6 +44,23 @@ flutter pub get
 flutter run
 ```
 
+## AI Suggestions Setup (Places + Budget)
+
+Your AI chat screen now calls Gemini API through `lib/service/api_service.dart`.
+
+1. Get a Gemini API key from Google AI Studio.
+2. Run the app with a `dart-define` value:
+
+```powershell
+flutter run --dart-define=GEMINI_API_KEY=YOUR_API_KEY_HERE
+```
+
+3. Ask in AI chat for prompts like:
+- "Suggest places in Sri Lanka for a 3-day trip"
+- "Give me a budget plan under LKR 50,000"
+
+If the API key is missing/invalid, the app uses a local fallback response so chat still works.
+
 **For iOS:**
 ```bash
 flutter clean

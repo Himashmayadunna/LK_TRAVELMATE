@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../service/api_service.dart';
 
 class AIChatScreen extends StatefulWidget {
   final String? initialPrompt;
@@ -13,6 +14,7 @@ class AIChatScreen extends StatefulWidget {
 class _AIChatScreenState extends State<AIChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final AiTravelApiService _apiService = AiTravelApiService();
   final List<_ChatMessage> _messages = [];
   bool _isLoading = false;
 
@@ -49,24 +51,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   @override
   void dispose() {
+    _apiService.dispose();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<String> _mockResponse(String prompt) async {
-    await Future.delayed(const Duration(milliseconds: 1200));
-    return 'Great question about Sri Lanka! 🌴\n\n'
-        'Sri Lanka offers incredible experiences for every traveler. '
-        'From the ancient rock fortress of Sigiriya to the pristine beaches of Mirissa, '
-        'and the misty tea plantations of Ella — there\'s something for everyone.\n\n'
-        'Popular highlights include:\n'
-        '• 🏛️ Sigiriya Rock Fortress\n'
-        '• 🏖️ Mirissa & Unawatuna Beaches\n'
-        '• 🚂 Kandy to Ella Train Ride\n'
-        '• 🦁 Yala National Park Safari\n'
-        '• 🛕 Temple of the Tooth, Kandy\n\n'
-        'Would you like more details on any of these?';
   }
 
   Future<void> _sendMessage(String text) async {
@@ -79,7 +67,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
     _controller.clear();
     _scrollToBottom();
 
-    final response = await _mockResponse(text.trim());
+    final response = await _apiService.getTravelSuggestion(userPrompt: text.trim());
 
     setState(() {
       _messages.add(_ChatMessage(text: response, isUser: false));

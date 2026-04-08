@@ -1,29 +1,115 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 
-class AIChatScreen extends StatefulWidget {
-  final String? initialPrompt;
+// ─────────────────────────────────────────────
+// Shared loading notifier (file-level, not private to any class)
+// ─────────────────────────────────────────────
+final ValueNotifier<bool> _chatLoadingNotifier = ValueNotifier(false);
 
+// ─────────────────────────────────────────────
+// Data model
+// ─────────────────────────────────────────────
+class _ChatMessage {
+  final String text;
+  final bool isUser;
+  _ChatMessage({required this.text, required this.isUser});
+}
+
+// ─────────────────────────────────────────────
+// Full-screen version (with Scaffold + AppBar)
+// ─────────────────────────────────────────────
+class AIChatScreen extends StatelessWidget {
+  final String? initialPrompt;
   const AIChatScreen({super.key, this.initialPrompt});
 
   @override
-  State<AIChatScreen> createState() => _AIChatScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: ValueListenableBuilder<bool>(
+          valueListenable: _chatLoadingNotifier,
+          builder: (context, isLoading, _) {
+            return Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  ),
+                  child: const Center(
+                    child: Text('🤖', style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AI Travel Assistant',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      isLoading ? 'Thinking...' : 'Online',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isLoading ? AppTheme.gold : AppTheme.success,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppTheme.divider),
+        ),
+      ),
+      body: AIChatScreenBody(initialPrompt: initialPrompt),
+    );
+  }
 }
 
-class _AIChatScreenState extends State<AIChatScreen> {
+// ─────────────────────────────────────────────
+// Body-only version (can be embedded in tabs)
+// ─────────────────────────────────────────────
+class AIChatScreenBody extends StatefulWidget {
+  final String? initialPrompt;
+  const AIChatScreenBody({super.key, this.initialPrompt});
+
+  @override
+  State<AIChatScreenBody> createState() => _AIChatScreenBodyState();
+}
+
+class _AIChatScreenBodyState extends State<AIChatScreenBody> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<_ChatMessage> _messages = [];
   bool _isLoading = false;
 
-  // Quick suggestion chips
   static const List<Map<String, String>> _suggestions = [
     {'label': '🏖️ Best beaches', 'prompt': 'What are the best beaches to visit in Sri Lanka?'},
     {'label': '🥾 Hiking trails', 'prompt': 'Recommend top hiking trails in Sri Lanka'},
-    {'label': '🍛 Local food', 'prompt': 'What are must-try Sri Lankan foods and where to find them?'},
-    {'label': '💰 Budget tips', 'prompt': 'How can I travel Sri Lanka on a tight budget?'},
-    {'label': '📅 7-day plan', 'prompt': 'Create a 7-day Sri Lanka itinerary for a first-time visitor'},
-    {'label': '🐘 Wildlife', 'prompt': 'Best places for wildlife safari in Sri Lanka?'},
+    {'label': '🍛 Local food',    'prompt': 'What are must-try Sri Lankan foods and where to find them?'},
+    {'label': '💰 Budget tips',   'prompt': 'How can I travel Sri Lanka on a tight budget?'},
+    {'label': '📅 7-day plan',    'prompt': 'Create a 7-day Sri Lanka itinerary for a first-time visitor'},
+    {'label': '🐘 Wildlife',      'prompt': 'Best places for wildlife safari in Sri Lanka?'},
   ];
 
   @override
@@ -51,6 +137,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _chatLoadingNotifier.value = false;
     super.dispose();
   }
 
@@ -59,7 +146,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
     return 'Great question about Sri Lanka! 🌴\n\n'
         'Sri Lanka offers incredible experiences for every traveler. '
         'From the ancient rock fortress of Sigiriya to the pristine beaches of Mirissa, '
-        'and the misty tea plantations of Ella — there\'s something for everyone.\n\n'
+        "and the misty tea plantations of Ella — there's something for everyone.\n\n"
         'Popular highlights include:\n'
         '• 🏛️ Sigiriya Rock Fortress\n'
         '• 🏖️ Mirissa & Unawatuna Beaches\n'
@@ -75,15 +162,18 @@ class _AIChatScreenState extends State<AIChatScreen> {
     setState(() {
       _messages.add(_ChatMessage(text: text.trim(), isUser: true));
       _isLoading = true;
+      _chatLoadingNotifier.value = true;
     });
     _controller.clear();
     _scrollToBottom();
 
     final response = await _mockResponse(text.trim());
 
+    if (!mounted) return;
     setState(() {
       _messages.add(_ChatMessage(text: response, isUser: false));
       _isLoading = false;
+      _chatLoadingNotifier.value = false;
     });
     _scrollToBottom();
   }
@@ -98,83 +188,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
         );
       }
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.surface,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              ),
-              child: const Center(
-                child: Text('🤖', style: TextStyle(fontSize: 18)),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'AI Travel Assistant',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                Text(
-                  _isLoading ? 'Thinking...' : 'Online',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: _isLoading ? AppTheme.gold : AppTheme.success,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppTheme.divider),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length && _isLoading) {
-                  return _buildTypingIndicator();
-                }
-                return _buildMessageBubble(_messages[index]);
-              },
-            ),
-          ),
-          if (_messages.length <= 2) _buildSuggestions(),
-          _buildInputBar(),
-        ],
-      ),
-    );
   }
 
   Widget _buildMessageBubble(_ChatMessage message) {
@@ -243,34 +256,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           boxShadow: AppTheme.softShadow,
         ),
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildDot(0),
-            const SizedBox(width: 4),
-            _buildDot(1),
-            const SizedBox(width: 4),
-            _buildDot(2),
+            _BouncingDot(delay: Duration.zero),
+            SizedBox(width: 4),
+            _BouncingDot(delay: Duration(milliseconds: 200)),
+            SizedBox(width: 4),
+            _BouncingDot(delay: Duration(milliseconds: 400)),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDot(int index) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 600 + (index * 200)),
-      builder: (context, value, child) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryLight.withValues(alpha: 0.4 + (value * 0.4)),
-            shape: BoxShape.circle,
-          ),
-        );
-      },
     );
   }
 
@@ -376,11 +372,85 @@ class _AIChatScreenState extends State<AIChatScreen> {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            itemCount: _messages.length + (_isLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _messages.length && _isLoading) {
+                return _buildTypingIndicator();
+              }
+              return _buildMessageBubble(_messages[index]);
+            },
+          ),
+        ),
+        if (_messages.length <= 2) _buildSuggestions(),
+        _buildInputBar(),
+      ],
+    );
+  }
 }
 
-class _ChatMessage {
-  final String text;
-  final bool isUser;
+// ─────────────────────────────────────────────
+// Looping bouncing dot for typing indicator
+// ─────────────────────────────────────────────
+class _BouncingDot extends StatefulWidget {
+  final Duration delay;
+  const _BouncingDot({required this.delay});
 
-  _ChatMessage({required this.text, required this.isUser});
+  @override
+  State<_BouncingDot> createState() => _BouncingDotState();
+}
+
+class _BouncingDotState extends State<_BouncingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _anim = Tween<double>(begin: 0, end: -6).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    Future.delayed(widget.delay, () {
+      if (mounted) _ctrl.repeat(reverse: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, _anim.value),
+        child: child,
+      ),
+      child: Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: AppTheme.primaryLight,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
 }

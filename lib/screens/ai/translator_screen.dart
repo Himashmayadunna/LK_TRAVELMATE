@@ -13,6 +13,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   final TextEditingController _inputController = TextEditingController();
   String _translatedText = '';
   bool _isLoading = false;
+  bool _isRecording = false;
   String _fromLang = 'English';
   String _toLang = 'Sinhala';
   int _charCount = 0;
@@ -95,6 +96,17 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     );
   }
 
+  Future<void> _startVoiceRecording() async {
+  setState(() => _isRecording = true);
+  // TODO: teammate — start microphone recording here
+}
+
+  Future<void> _stopAndTranslate() async {
+  setState(() => _isRecording = false);
+  // TODO: teammate — stop recording, get transcript text,
+  // set _inputController.text = transcript, then call _translate()
+}
+
   void _clearAll() {
     setState(() {
       _inputController.clear();
@@ -121,17 +133,17 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: AppTheme.success,
-                  shape: BoxShape.circle,
+                decoration:  BoxDecoration(
+                 color: _isRecording ? AppTheme.error : AppTheme.success,
+                 shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
-                'AI Translator ready',
-                style: TextStyle(
+                _isRecording ? 'Listening...' : 'AI Translator ready',
+                  style: TextStyle(
                   fontSize: 12,
-                  color: AppTheme.success,
+                  color: _isRecording ? AppTheme.error : AppTheme.success,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -151,6 +163,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                 const SizedBox(height: 14),
 
                 // Input box
+                if (_isRecording) _buildRecordingBanner(),
                 _buildInputBox(),
                 const SizedBox(height: 12),
 
@@ -167,6 +180,39 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       ],
     );
   }
+  
+  Widget _buildRecordingBanner() {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: AppTheme.primarySurface,
+      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+      border: Border.all(color: AppTheme.primarySoft, width: 1),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppTheme.error,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        const Text(
+          'Listening... tap Stop when done',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.primaryDark,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildLanguageSelector() {
     return Container(
@@ -245,7 +291,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: AppTheme.divider, width: 1),
+        border: Border.all(
+          color: _isRecording ? AppTheme.primary : AppTheme.divider,
+          width: _isRecording ? 1.5 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -291,8 +340,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               height: 1.5,
               color: AppTheme.textPrimary,
             ),
-            decoration: const InputDecoration(
-              hintText: 'Enter text to translate...',
+            decoration:  InputDecoration(
+              hintText: _isRecording ? 'Speak now...' : 'Enter text or use mic to speak...',
               hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 15),
               border: InputBorder.none,
               contentPadding: EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -307,7 +356,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
             ),
             child: Row(
               children: [
-                // Clear button (only when there's text)
                 if (_charCount > 0)
                   _buildActionChip(
                     icon: Icons.close_rounded,
@@ -315,7 +363,15 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                     onTap: _clearAll,
                     isPrimary: false,
                   ),
+                if (_charCount == 0)
+                  _buildActionChip(
+                    icon: _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                    label: _isRecording ? 'Stop' : 'Voice',
+                    onTap: _isRecording ? _stopAndTranslate : _startVoiceRecording,
+                    isPrimary: _isRecording,
+                  ),
                 const Spacer(),
+            
                 _buildActionChip(
                   icon: Icons.translate_rounded,
                   label: 'Translate',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../service/ai_service.dart';
 
 class AIChatScreen extends StatefulWidget {
   final String? initialPrompt;
@@ -54,19 +55,39 @@ class _AIChatScreenState extends State<AIChatScreen> {
     super.dispose();
   }
 
-  Future<String> _mockResponse(String prompt) async {
-    await Future.delayed(const Duration(milliseconds: 1200));
-    return 'Great question about Sri Lanka! 🌴\n\n'
-        'Sri Lanka offers incredible experiences for every traveler. '
-        'From the ancient rock fortress of Sigiriya to the pristine beaches of Mirissa, '
-        'and the misty tea plantations of Ella — there\'s something for everyone.\n\n'
-        'Popular highlights include:\n'
-        '• 🏛️ Sigiriya Rock Fortress\n'
-        '• 🏖️ Mirissa & Unawatuna Beaches\n'
-        '• 🚂 Kandy to Ella Train Ride\n'
-        '• 🦁 Yala National Park Safari\n'
-        '• 🛕 Temple of the Tooth, Kandy\n\n'
-        'Would you like more details on any of these?';
+  Future<String> _getAIResponse(String prompt) async {
+    // If the message contains trip preference details from Home screen, use
+    // the structured tourist suggestions method for better place+food output.
+    final hasPlannerFields = prompt.contains('Places I want to visit:') &&
+        prompt.contains('Food preferences:') &&
+        prompt.contains('Budget:');
+
+    if (hasPlannerFields) {
+      final places = _extractValue(prompt, 'Places I want to visit:');
+      final food = _extractValue(prompt, 'Food preferences:');
+      final budget = _extractValue(prompt, 'Budget:');
+      final durationMatch = RegExp(r'Plan a (.+?) trip to Sri Lanka', caseSensitive: false)
+          .firstMatch(prompt);
+      final duration = durationMatch?.group(1)?.trim() ?? '7 Days';
+
+      return GeminiService.getTouristSuggestions(
+        places: places.isEmpty ? 'Popular attractions' : places,
+        duration: duration,
+        food: food.isEmpty ? 'Any local food' : food,
+        budget: budget.isEmpty ? r'$800' : budget,
+      );
+    }
+
+    return GeminiService.chat(prompt);
+  }
+
+  String _extractValue(String text, String key) {
+    final idx = text.indexOf(key);
+    if (idx == -1) return '';
+    final start = idx + key.length;
+    final rest = text.substring(start).trim();
+    final stop = rest.indexOf('.');
+    return (stop == -1 ? rest : rest.substring(0, stop)).trim();
   }
 
   Future<void> _sendMessage(String text) async {
@@ -79,7 +100,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
     _controller.clear();
     _scrollToBottom();
 
-    final response = await _mockResponse(text.trim());
+    final response = await _getAIResponse(text.trim());
 
     setState(() {
       _messages.add(_ChatMessage(text: response, isUser: false));

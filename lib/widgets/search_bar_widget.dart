@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/app_theme.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -20,13 +21,13 @@ class SearchBarWidget extends StatelessWidget {
           child: Container(
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.surface,
               borderRadius: BorderRadius.circular(14),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: AppTheme.cardShadow,
                   blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
@@ -35,14 +36,16 @@ class SearchBarWidget extends StatelessWidget {
               onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: 'Search destinations...',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
+                hintStyle: const TextStyle(
+                  color: AppTheme.textHint,
                   fontSize: 14,
                 ),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.textHint),
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 16,
+                ),
               ),
             ),
           ),
@@ -54,10 +57,10 @@ class SearchBarWidget extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFF008B8B),
+              color: AppTheme.primary,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.tune, color: Colors.white, size: 22),
+            child: const Icon(Icons.tune, color: AppTheme.surface, size: 22),
           ),
         ),
       ],

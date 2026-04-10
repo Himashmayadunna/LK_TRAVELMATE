@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../service/ai_service.dart';
 
 // ─────────────────────────────────────────────
 // Shared loading notifier (file-level, not private to any class)
@@ -146,7 +147,7 @@ class _AIChatScreenBodyState extends State<AIChatScreenBody> {
     return 'Great question about Sri Lanka! 🌴\n\n'
         'Sri Lanka offers incredible experiences for every traveler. '
         'From the ancient rock fortress of Sigiriya to the pristine beaches of Mirissa, '
-        "and the misty tea plantations of Ella — there's something for everyone.\n\n"
+        'and the misty tea plantations of Ella — there\'s something for everyone.\n\n'
         'Popular highlights include:\n'
         '• 🏛️ Sigiriya Rock Fortress\n'
         '• 🏖️ Mirissa & Unawatuna Beaches\n'
@@ -154,6 +155,21 @@ class _AIChatScreenBodyState extends State<AIChatScreenBody> {
         '• 🦁 Yala National Park Safari\n'
         '• 🛕 Temple of the Tooth, Kandy\n\n'
         'Would you like more details on any of these?';
+  }
+
+  Future<String> _getAIResponse(String prompt) async {
+    try {
+      final response = await GeminiService.chat(prompt);
+      if (response.trim().isEmpty ||
+          response.startsWith('API Error:') ||
+          response.startsWith('Error (') ||
+          response.startsWith('Connection error:')) {
+        return _mockResponse(prompt);
+      }
+      return response;
+    } catch (_) {
+      return _mockResponse(prompt);
+    }
   }
 
   Future<void> _sendMessage(String text) async {
@@ -167,7 +183,7 @@ class _AIChatScreenBodyState extends State<AIChatScreenBody> {
     _controller.clear();
     _scrollToBottom();
 
-    final response = await _mockResponse(text.trim());
+    final response = await _getAIResponse(text.trim());
 
     if (!mounted) return;
     setState(() {

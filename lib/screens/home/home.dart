@@ -8,6 +8,7 @@ import '../../widgets/place_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
+import '../ai/ai_suggestions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -573,12 +574,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final foodPref = food.isEmpty ? 'Any local food' : food;
-    _openAIChat(
-      initialPrompt:
-          'Plan a $_selectedDuration trip to Sri Lanka. '
-          'Places I want to visit: $places. '
-          'Food preferences: $foodPref. '
-          'Budget: $_selectedBudget.',
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AISuggestionsScreen(
+          places: places,
+          duration: _selectedDuration,
+          food: foodPref,
+          budget: _selectedBudget,
+        ),
+      ),
     );
   }
 

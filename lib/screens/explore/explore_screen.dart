@@ -200,7 +200,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: _categories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (_, i) {
                   final cat = _categories[i];
                   final selected = _selectedCategory == cat;
@@ -217,7 +217,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.cardShadow,
+                            color: Colors.black.withOpacity(0.06),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -301,8 +301,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     (b) => FilterChip(
                       label: Text(b),
                       onSelected: (_) => Navigator.pop(context),
-                      selectedColor: AppTheme.primarySoft,
-                      checkmarkColor: AppTheme.primary,
+                      selectedColor: const Color(0xFF008B8B).withOpacity(0.2),
+                      checkmarkColor: const Color(0xFF008B8B),
                     ),
                   )
                   .toList(),
@@ -360,7 +360,7 @@ class _DestinationCard extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
-                    errorBuilder: (_, _, _) => Container(
+                    errorBuilder: (_, __, ___) => Container(
                       color: Colors.grey.shade300,
                       child: const Icon(
                         Icons.image_not_supported,
@@ -404,8 +404,11 @@ class _DestinationCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppTheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(color: AppTheme.cardShadow, blurRadius: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                        ),
                       ],
                     ),
                     child: Row(

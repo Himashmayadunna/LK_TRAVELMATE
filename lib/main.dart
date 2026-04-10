@@ -6,7 +6,7 @@ import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/map/map_screen.dart';
-import 'screens/ai/ai_chat_screen.dart';
+import 'screens/ai/ai_assistant_shell.dart';
 import 'screens/profile/profile_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -48,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     ExploreScreen(),
     MapScreen(),
-    AIChatScreen(),
+    AIAssistantShell(),
     ProfileScreen(),
   ];
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../service/ai_service.dart';
+import '../../models/ai_suggestion_model.dart';
+import '../../providers/ai_suggestion_provider.dart';
 import '../../utils/app_theme.dart';
 
 class AISuggestionsScreen extends StatefulWidget {
@@ -24,7 +26,7 @@ class AISuggestionsScreen extends StatefulWidget {
 class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
   bool _isLoading = true;
   String? _error;
-  List<_SuggestionItem> _items = const [];
+  List<AISuggestion> _items = const [];
 
   @override
   void initState() {
@@ -39,17 +41,16 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
     });
 
     try {
-      final raw = await GeminiService.getPersonalizedSuggestions(
-        places: widget.places,
-        duration: widget.duration,
-        food: widget.food,
-        budget: widget.budget,
-      );
+      final provider = context.read<AISuggestionProvider>();
+      provider.setPlaces(widget.places);
+      provider.setDuration(widget.duration);
+      provider.setFood(widget.food);
+      provider.setBudget(widget.budget);
+      await provider.fetchSuggestions();
 
       if (!mounted) return;
 
-      final parsed = raw.map(_SuggestionItem.fromMap).toList();
-      if (parsed.isEmpty) {
+      if (provider.suggestions.isEmpty) {
         setState(() {
           _error = 'No suggestions found. Please try different preferences.';
           _isLoading = false;
@@ -58,7 +59,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
       }
 
       setState(() {
-        _items = parsed;
+        _items = provider.suggestions;
         _isLoading = false;
       });
     } catch (e) {
@@ -236,7 +237,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
 
 class _SuggestionCard extends StatefulWidget {
   final int rank;
-  final _SuggestionItem item;
+  final AISuggestion item;
 
   const _SuggestionCard({required this.rank, required this.item});
 
@@ -498,99 +499,5 @@ class _SuggestionCardState extends State<_SuggestionCard> {
         ),
       ),
     );
-  }
-}
-
-class _SuggestionItem {
-  final String name;
-  final String location;
-  final String description;
-  final String category;
-  final int estimatedCostPerDay;
-  final String bestTimeToVisit;
-  final List<String> highlights;
-  final String insiderTip;
-  final List<String> foodRecommendations;
-  final String howToGetThere;
-  final String imageUrl;
-
-  const _SuggestionItem({
-    required this.name,
-    required this.location,
-    required this.description,
-    required this.category,
-    required this.estimatedCostPerDay,
-    required this.bestTimeToVisit,
-    required this.highlights,
-    required this.insiderTip,
-    required this.foodRecommendations,
-    required this.howToGetThere,
-    required this.imageUrl,
-  });
-
-  factory _SuggestionItem.fromMap(Map<String, dynamic> map) {
-    final name = (map['name'] ?? 'Sri Lanka Destination').toString();
-    return _SuggestionItem(
-      name: name,
-      location: (map['location'] ?? 'Sri Lanka').toString(),
-      description: (map['description'] ?? 'Beautiful location worth visiting.').toString(),
-      category: (map['category'] ?? 'Travel').toString(),
-      estimatedCostPerDay: _toInt(map['estimatedCostPerDay'], 50),
-      bestTimeToVisit: (map['bestTimeToVisit'] ?? 'All year').toString(),
-      highlights: _toStringList(map['highlights'], const ['Scenic views', 'Local culture']),
-      insiderTip: (map['insiderTip'] ?? 'Visit early morning for fewer crowds.').toString(),
-      foodRecommendations: _toStringList(map['foodRecommendations'], const ['Rice and curry']),
-      howToGetThere: (map['howToGetThere'] ?? 'Travel by bus, train, or taxi from Colombo.').toString(),
-      imageUrl: _resolveImageUrl(
-        raw: map['imageUrl']?.toString(),
-        placeName: name,
-      ),
-    );
-  }
-
-  static int _toInt(dynamic value, int fallback) {
-    if (value is int) return value;
-    if (value is double) return value.round();
-    if (value is String) return int.tryParse(value) ?? fallback;
-    return fallback;
-  }
-
-  static List<String> _toStringList(dynamic value, List<String> fallback) {
-    if (value is List) {
-      final data = value.map((e) => e.toString()).where((e) => e.trim().isNotEmpty).toList();
-      if (data.isNotEmpty) return data;
-    }
-    return fallback;
-  }
-
-  static String _resolveImageUrl({required String? raw, required String placeName}) {
-    if (raw != null && raw.startsWith('http')) return raw;
-
-    final n = placeName.toLowerCase();
-    if (n.contains('unawatuna')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/5/5a/Unawatuna_beach.jpg';
-    }
-    if (n.contains('mirissa')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg';
-    }
-    if (n.contains('sigiriya')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg';
-    }
-    if (n.contains('ella')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg';
-    }
-    if (n.contains('kandy')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/c/c4/Sri_Dalada_Maligawa.jpg';
-    }
-    if (n.contains('galle')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Galle_Fort.jpg';
-    }
-    if (n.contains('nuwara')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/7/7a/Tea_plantations_in_Nuwara_Eliya.jpg';
-    }
-    if (n.contains('yala')) {
-      return 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Yala_National_Park%2C_Sri_Lanka.jpg';
-    }
-    return 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg';
   }
 }

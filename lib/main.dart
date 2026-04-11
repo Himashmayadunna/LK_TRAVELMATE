@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
         ChangeNotifierProvider(create: (_) => SavedPlacesProvider()),
       ],
       child: MaterialApp(

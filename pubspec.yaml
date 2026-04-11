@@ -39,6 +39,8 @@ dependencies:
   provider: ^6.1.5+1
   google_maps_flutter: ^2.15.0
   http: ^1.2.2
+  speech_to_text: ^7.0.0
+  connectivity_plus: ^6.1.5
 
 
 dev_dependencies:

@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../../service/translator_api.dart';
 import '../../utils/app_theme.dart';
 
 class TranslatorScreen extends StatefulWidget {
@@ -11,6 +16,12 @@ class TranslatorScreen extends StatefulWidget {
 
 class _TranslatorScreenState extends State<TranslatorScreen> {
   final TextEditingController _inputController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  final Connectivity _connectivity = Connectivity();
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  bool _speechReady = false;
+  bool? _isOnline;
   String _translatedText = '';
   bool _isLoading = false;
   bool _isRecording = false;
@@ -20,10 +31,66 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   static const int _maxChars = 500;
 
+  static const Map<String, String> _speechLocaleMap = {
+    'English': 'en_US',
+    'Sinhala': 'si_LK',
+    'Tamil': 'ta_LK',
+    'Russian': 'ru_RU',
+    'French': 'fr_FR',
+    'German': 'de_DE',
+    'Spanish': 'es_ES',
+    'Italian': 'it_IT',
+    'Portuguese': 'pt_PT',
+    'Dutch': 'nl_NL',
+    'Arabic': 'ar_SA',
+    'Hindi': 'hi_IN',
+    'Urdu': 'ur_PK',
+    'Chinese': 'zh_CN',
+    'Japanese': 'ja_JP',
+    'Korean': 'ko_KR',
+    'Thai': 'th_TH',
+    'Malay': 'ms_MY',
+    'Indonesian': 'id_ID',
+    'Turkish': 'tr_TR',
+    'Polish': 'pl_PL',
+    'Ukrainian': 'uk_UA',
+    'Greek': 'el_GR',
+    'Hebrew': 'he_IL',
+    'Swedish': 'sv_SE',
+    'Norwegian': 'nb_NO',
+    'Danish': 'da_DK',
+    'Finnish': 'fi_FI',
+  };
+
   static const List<String> _languages = [
     'English',
     'Sinhala',
     'Tamil',
+    'Russian',
+    'French',
+    'German',
+    'Spanish',
+    'Italian',
+    'Portuguese',
+    'Dutch',
+    'Arabic',
+    'Hindi',
+    'Urdu',
+    'Chinese',
+    'Japanese',
+    'Korean',
+    'Thai',
+    'Malay',
+    'Indonesian',
+    'Turkish',
+    'Polish',
+    'Ukrainian',
+    'Greek',
+    'Hebrew',
+    'Swedish',
+    'Norwegian',
+    'Danish',
+    'Finnish',
   ];
 
   static const List<Map<String, String>> _quickPhrases = [
@@ -38,7 +105,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   @override
   void initState() {
     super.initState();
+    _initSpeech();
+    _initConnectivityStatus();
     _inputController.addListener(() {
+      if (!mounted) return;
       setState(() {
         _charCount = _inputController.text.length;
       });
@@ -47,8 +117,73 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   void dispose() {
+    _speechToText.stop();
+    _connectivitySubscription?.cancel();
     _inputController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initConnectivityStatus() async {
+    final List<ConnectivityResult> initialResult = await _connectivity
+        .checkConnectivity();
+    _isOnline = _hasInternet(initialResult);
+
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> result,
+    ) {
+      final bool nowOnline = _hasInternet(result);
+
+      if (!mounted) return;
+
+      if (_isOnline == true && !nowOnline) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You are currently offline'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (_isOnline == false && nowOnline) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Your internet connection has been restored'),
+            backgroundColor: AppTheme.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      _isOnline = nowOnline;
+    });
+  }
+
+  bool _hasInternet(List<ConnectivityResult> result) {
+    return !result.contains(ConnectivityResult.none);
+  }
+
+  Future<void> _initSpeech() async {
+    final bool available = await _speechToText.initialize(
+      onStatus: (status) {
+        if (!mounted) return;
+        if (status == 'notListening' || status == 'done') {
+          setState(() => _isRecording = false);
+        }
+      },
+      onError: (error) {
+        if (!mounted) return;
+        setState(() => _isRecording = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Voice input error: ${error.errorMsg}'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+    setState(() => _speechReady = available);
   }
 
   void _swapLanguages() {
@@ -70,14 +205,43 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
 
+    if (_fromLang == _toLang) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please choose different source and target languages.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // TODO:  replaces this mock with the real API call
-    await Future.delayed(const Duration(milliseconds: 1000));
-    setState(() {
-      _translatedText = '[ Translation of "$text" from $_fromLang to $_toLang ]';
-      _isLoading = false;
-    });
+    try {
+      final String translated = await TranslationService.translate(
+        text,
+        _fromLang,
+        _toLang,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _translatedText = translated;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _copyToClipboard() {
@@ -97,15 +261,76 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   }
 
   Future<void> _startVoiceRecording() async {
-  setState(() => _isRecording = true);
-  // TODO: teammate — start microphone recording here
-}
+    if (_isRecording) return;
+
+    if (!_speechReady) {
+      await _initSpeech();
+    }
+
+    if (!_speechReady) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Speech service unavailable. Check mic permission and Google voice service.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final String preferredLocale = _speechLocaleMap[_fromLang] ?? 'en_US';
+    final List<stt.LocaleName> locales = await _speechToText.locales();
+    final bool hasPreferred = locales.any((l) => l.localeId == preferredLocale);
+    final String? localeId = hasPreferred ? preferredLocale : null;
+
+    if (!hasPreferred && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$_fromLang voice locale is unavailable on this device. Using default locale.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    setState(() => _isRecording = true);
+
+    await _speechToText.listen(
+      localeId: localeId,
+      partialResults: true,
+      listenMode: stt.ListenMode.dictation,
+      cancelOnError: true,
+      pauseFor: const Duration(seconds: 3),
+      listenFor: const Duration(minutes: 1),
+      onResult: (result) {
+        if (!mounted) return;
+        final String spokenText = result.recognizedWords.trim();
+        if (spokenText.isEmpty) return;
+
+        setState(() {
+          _inputController.text = spokenText;
+          _inputController.selection = TextSelection.fromPosition(
+            TextPosition(offset: _inputController.text.length),
+          );
+          _charCount = _inputController.text.length;
+        });
+      },
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isRecording = _speechToText.isListening;
+    });
+  }
 
   Future<void> _stopAndTranslate() async {
-  setState(() => _isRecording = false);
-  // TODO: teammate — stop recording, get transcript text,
-  // set _inputController.text = transcript, then call _translate()
-}
+    await _speechToText.stop();
+    if (!mounted) return;
+    setState(() => _isRecording = false);
+  }
 
   void _clearAll() {
     setState(() {
@@ -133,15 +358,15 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               Container(
                 width: 8,
                 height: 8,
-                decoration:  BoxDecoration(
-                 color: _isRecording ? AppTheme.error : AppTheme.success,
-                 shape: BoxShape.circle,
+                decoration: BoxDecoration(
+                  color: _isRecording ? AppTheme.error : AppTheme.success,
+                  shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 _isRecording ? 'Listening...' : 'AI Translator ready',
-                  style: TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: _isRecording ? AppTheme.error : AppTheme.success,
                   fontWeight: FontWeight.w500,
@@ -180,39 +405,39 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       ],
     );
   }
-  
+
   Widget _buildRecordingBanner() {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-    decoration: BoxDecoration(
-      color: AppTheme.primarySurface,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-      border: Border.all(color: AppTheme.primarySoft, width: 1),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(
-            color: AppTheme.error,
-            shape: BoxShape.circle,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.primarySurface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        border: Border.all(color: AppTheme.primarySoft, width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: AppTheme.error,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        const Text(
-          'Listening... tap Stop when done',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.primaryDark,
+          const SizedBox(width: 8),
+          const Text(
+            'Listening... tap Stop when done',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.primaryDark,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildLanguageSelector() {
     return Container(
@@ -224,7 +449,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildLangDropdown(_fromLang, true)),
+          Expanded(child: _buildLangPickerButton(_fromLang, true)),
           GestureDetector(
             onTap: _swapLanguages,
             child: Container(
@@ -245,45 +470,208 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               ),
             ),
           ),
-          Expanded(child: _buildLangDropdown(_toLang, false)),
+          Expanded(child: _buildLangPickerButton(_toLang, false)),
         ],
       ),
     );
   }
 
-  Widget _buildLangDropdown(String value, bool isFrom) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: value,
-        isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textPrimary,
+  Widget _buildLangPickerButton(String value, bool isFrom) {
+    return GestureDetector(
+      onTap: () async {
+        final String? selected = await _showLanguagePicker(
+          current: value,
+          blocked: isFrom ? _toLang : _fromLang,
+          title: isFrom ? 'Select source language' : 'Select target language',
+        );
+
+        if (!mounted || selected == null) return;
+
+        setState(() {
+          if (isFrom) {
+            _fromLang = selected;
+          } else {
+            _toLang = selected;
+          }
+          _translatedText = '';
+        });
+      },
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.background,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          border: Border.all(color: AppTheme.divider, width: 1),
         ),
-        dropdownColor: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        items: _languages
-            .where((l) => isFrom ? l != _toLang : l != _fromLang)
-            .map((lang) => DropdownMenuItem(
-                  value: lang,
-                  child: Text(lang),
-                ))
-            .toList(),
-        onChanged: (val) {
-          if (val == null) return;
-          setState(() {
-            if (isFrom) {
-              _fromLang = val;
-            } else {
-              _toLang = val;
-            }
-            _translatedText = '';
-          });
-        },
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: AppTheme.textSecondary,
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<String?> _showLanguagePicker({
+    required String current,
+    required String blocked,
+    required String title,
+  }) async {
+    _searchController.clear();
+
+    final String? result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        String searchQuery = '';
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final List<String> filtered = _languages
+                .where((lang) => lang != blocked)
+                .where(
+                  (lang) =>
+                      searchQuery.isEmpty ||
+                      lang.toLowerCase().contains(searchQuery.toLowerCase()),
+                )
+                .toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 14,
+              ),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.72,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setModalState(() {
+                          searchQuery = value.trim();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search language...',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        filled: true,
+                        fillColor: AppTheme.background,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
+                          ),
+                          borderSide: const BorderSide(color: AppTheme.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
+                          ),
+                          borderSide: const BorderSide(color: AppTheme.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusMedium,
+                          ),
+                          borderSide: const BorderSide(color: AppTheme.primary),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No languages found',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, __) => const Divider(
+                                height: 1,
+                                color: AppTheme.divider,
+                              ),
+                              itemBuilder: (context, index) {
+                                final String language = filtered[index];
+                                final bool isCurrent = language == current;
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  title: Text(
+                                    language,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isCurrent
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  trailing: isCurrent
+                                      ? const Icon(
+                                          Icons.check_rounded,
+                                          color: AppTheme.primary,
+                                          size: 18,
+                                        )
+                                      : null,
+                                  onTap: () =>
+                                      Navigator.of(context).pop(language),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    return result;
   }
 
   Widget _buildInputBox() {
@@ -333,15 +721,18 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
             maxLines: 5,
             minLines: 4,
             maxLength: _maxChars,
-            buildCounter: (_, {required currentLength, required isFocused, maxLength}) =>
-                null, // hide default counter
+            buildCounter:
+                (_, {required currentLength, required isFocused, maxLength}) =>
+                    null, // hide default counter
             style: const TextStyle(
               fontSize: 15,
               height: 1.5,
               color: AppTheme.textPrimary,
             ),
-            decoration:  InputDecoration(
-              hintText: _isRecording ? 'Speak now...' : 'Enter text or use mic to speak...',
+            decoration: InputDecoration(
+              hintText: _isRecording
+                  ? 'Speak now...'
+                  : 'Enter text or use mic to speak...',
               hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 15),
               border: InputBorder.none,
               contentPadding: EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -367,11 +758,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                   _buildActionChip(
                     icon: _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
                     label: _isRecording ? 'Stop' : 'Voice',
-                    onTap: _isRecording ? _stopAndTranslate : _startVoiceRecording,
+                    onTap: _isRecording
+                        ? _stopAndTranslate
+                        : _startVoiceRecording,
                     isPrimary: _isRecording,
                   ),
                 const Spacer(),
-            
+
                 _buildActionChip(
                   icon: Icons.translate_rounded,
                   label: 'Translate',
@@ -550,7 +943,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
           border: isPrimary
               ? null
               : Border.all(color: AppTheme.divider, width: 1),
-          gradient: isPrimary && onTap != null ? AppTheme.primaryGradient : null,
+          gradient: isPrimary && onTap != null
+              ? AppTheme.primaryGradient
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

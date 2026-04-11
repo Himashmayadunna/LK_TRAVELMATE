@@ -19,7 +19,7 @@ class _AIAssistantShellState extends State<AIAssistantShell>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -76,9 +76,9 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🤖', style: TextStyle(fontSize: 15)),
+                      Text('🌐', style: TextStyle(fontSize: 15)),
                       SizedBox(width: 6),
-                      Text('Assistant'),
+                      Text('Translator'),
                     ],
                   ),
                 ),
@@ -86,9 +86,9 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🌐', style: TextStyle(fontSize: 15)),
+                      Text('🤖', style: TextStyle(fontSize: 15)),
                       SizedBox(width: 6),
-                      Text('Translator'),
+                      Text('Assistant'),
                     ],
                   ),
                 ),
@@ -100,9 +100,9 @@ class _AIAssistantShellState extends State<AIAssistantShell>
       body: TabBarView(
         controller: _tabController,
         children: [
+          const TranslatorScreen(),
           // Pass initialPrompt only to chat tab
           AIChatScreenBody(initialPrompt: widget.initialPrompt),
-          const TranslatorScreen(),
         ],
       ),
     );

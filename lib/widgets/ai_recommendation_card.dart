@@ -17,6 +17,9 @@ class AIRecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isNetworkImage =
+        imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -32,28 +35,39 @@ class AIRecommendationCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Background Image
-              Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
-                  child: const Center(
-                    child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
-                  ),
-                ),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+              isNetworkImage
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
+                        child: const Center(
+                          child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
+                        ),
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
+                        child: const Center(
+                          child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
               // Gradient Overlay
               Container(
                 decoration: const BoxDecoration(gradient: AppTheme.heroOverlay),

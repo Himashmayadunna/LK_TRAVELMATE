@@ -132,8 +132,16 @@ class _SignInScreenState extends State<SignInScreen>
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
-                child: const Center(
-                  child: Text('🌴', style: TextStyle(fontSize: 30)),
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/logo/Travelmate.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

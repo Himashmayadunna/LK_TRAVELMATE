@@ -81,7 +81,7 @@ class _MainScreenState extends State<MainScreen> {
                 _buildNavItem(Icons.home_outlined, Icons.home_rounded, 'Home', 0),
                 _buildNavItem(Icons.explore_outlined, Icons.explore, 'Explore', 1),
                 _buildCenterMapButton(),
-                _buildNavItem(Icons.auto_awesome_outlined, Icons.auto_awesome, 'Assistant', 3),
+                _buildNavItem(Icons.auto_awesome_outlined, Icons.auto_awesome, 'Translator', 3),
                 _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
               ],
             ),

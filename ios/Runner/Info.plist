@@ -74,5 +74,9 @@
 	<string>This app needs your location to show nearby travel destinations on the map.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby travel destinations on the map.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone to convert your speech into text for translation.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app uses speech recognition to type what you speak in the selected language.</string>
 </dict>
 </plist>

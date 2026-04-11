@@ -112,8 +112,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     width: 1.5,
                   ),
                 ),
-                child: const Center(
-                  child: Text('🌴', style: TextStyle(fontSize: 38)),
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.asset(
+                      'assets/logo/Travelmate.png',
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

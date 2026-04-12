@@ -74,5 +74,7 @@
 	<string>This app needs your location to show nearby travel destinations on the map.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby travel destinations on the map.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Used to show your location on the map for navigation</string>
 </dict>
 </plist>

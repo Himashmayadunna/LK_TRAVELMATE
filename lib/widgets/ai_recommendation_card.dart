@@ -5,6 +5,7 @@ class AIRecommendationCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String imageUrl;
+  final bool isAsset;
   final VoidCallback? onTap;
 
   const AIRecommendationCard({
@@ -12,14 +13,12 @@ class AIRecommendationCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.imageUrl,
+    this.isAsset = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool isNetworkImage =
-        imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -35,20 +34,44 @@ class AIRecommendationCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Background Image
-              isNetworkImage
-                  ? Image.network(
+              isAsset
+                  ? Image.asset(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
+                        decoration: const BoxDecoration(
+                          gradient: AppTheme.cardGradient,
+                        ),
                         child: const Center(
-                          child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
+                          child: Icon(
+                            Icons.landscape_rounded,
+                            color: Colors.white54,
+                            size: 60,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: AppTheme.cardGradient,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.landscape_rounded,
+                            color: Colors.white54,
+                            size: 60,
+                          ),
                         ),
                       ),
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
+                          decoration: const BoxDecoration(
+                            gradient: AppTheme.cardGradient,
+                          ),
                           child: const Center(
                             child: CircularProgressIndicator(
                               color: Colors.white,
@@ -57,16 +80,6 @@ class AIRecommendationCard extends StatelessWidget {
                           ),
                         );
                       },
-                    )
-                  : Image.asset(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
-                        child: const Center(
-                          child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
-                        ),
-                      ),
                     ),
               // Gradient Overlay
               Container(

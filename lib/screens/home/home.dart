@@ -261,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: 'Discover the Pearl of\nthe Indian Ocean',
         subtitle: 'Personalized just for you',
         imageUrl: 'assets/Hero/hero.png',
+        isAsset: true,
         onTap: () => _openAIChat(
           initialPrompt: 'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
         ),

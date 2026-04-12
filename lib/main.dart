@@ -46,14 +46,14 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    ExploreScreen(),
-    MapScreen(),
-    AIAssistantShell(),
-    ProfileScreen(),
-  ];
 
+  late final List<Widget> _screens = [
+    const HomeScreen(),
+    const ExploreScreen(),
+    const MapScreen(),
+    AIAssistantShell(onBack: () => setState(() => _currentIndex = 0)),
+    const ProfileScreen(),
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(

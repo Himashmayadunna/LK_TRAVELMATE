@@ -218,6 +218,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     return !result.contains(ConnectivityResult.none);
   }
 
+  bool _isIgnorableSpeechError(String message) {
+    final String value = message.toLowerCase();
+    return value.contains('error_no_match') ||
+        value.contains('error_speech_timeout') ||
+        value.contains('no match') ||
+        value.contains('speech timeout');
+  }
+
   Future<void> _initSpeech() async {
     final bool available = await _speechToText.initialize(
       onStatus: (status) {
@@ -229,6 +237,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       onError: (error) {
         if (!mounted) return;
         setState(() => _isRecording = false);
+
+        if (_isIgnorableSpeechError(error.errorMsg)) {
+          return;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Voice input error: ${error.errorMsg}'),
@@ -384,7 +397,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
       partialResults: true,
       listenMode: stt.ListenMode.dictation,
       cancelOnError: true,
-      pauseFor: const Duration(seconds: 3),
+      pauseFor: const Duration(seconds: 5),
       listenFor: const Duration(minutes: 1),
       onResult: (result) {
         if (!mounted) return;

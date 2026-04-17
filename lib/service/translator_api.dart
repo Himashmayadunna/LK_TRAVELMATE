@@ -89,8 +89,6 @@ class TranslationService {
       throw Exception('Request timed out. Please try again.');
     } on FormatException {
       throw Exception('Unexpected response format from translation service.');
-    } catch (e) {
-      throw Exception('Translation failed: $e');
     }
   }
 }

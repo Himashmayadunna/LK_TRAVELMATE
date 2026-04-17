@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -20,11 +20,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   final TextEditingController _searchController = TextEditingController();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
-  final Connectivity _connectivity = Connectivity();
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  static const MethodChannel _mlKitSpeechChannel = MethodChannel(
+    'lk_travelmate/mlkit_speech',
+  );
+  Timer? _mlKitStateMonitorTimer;
+  bool _isStoppingMlKit = false;
   bool _speechReady = false;
   bool _isSpeaking = false;
-  bool? _isOnline;
   String _translatedText = '';
   bool _isLoading = false;
   bool _isRecording = false;
@@ -139,9 +141,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   @override
   void initState() {
     super.initState();
+    _mlKitSpeechChannel.setMethodCallHandler(_handleMlKitCallback);
     _initSpeech();
     _initTts();
-    _initConnectivityStatus();
     _inputController.addListener(() {
       if (!mounted) return;
       setState(() {
@@ -152,9 +154,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   void dispose() {
+    _mlKitStateMonitorTimer?.cancel();
+    _mlKitSpeechChannel.setMethodCallHandler(null);
+    unawaited(_mlKitSpeechChannel.invokeMethod<void>('stopListening'));
     _speechToText.stop();
     _flutterTts.stop();
-    _connectivitySubscription?.cancel();
     _inputController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -181,49 +185,97 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     });
   }
 
-  Future<void> _initConnectivityStatus() async {
-    final List<ConnectivityResult> initialResult = await _connectivity
-        .checkConnectivity();
-    _isOnline = _hasInternet(initialResult);
-
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
-      List<ConnectivityResult> result,
-    ) {
-      final bool nowOnline = _hasInternet(result);
-
-      if (!mounted) return;
-
-      if (_isOnline == true && !nowOnline) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You are currently offline'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else if (_isOnline == false && nowOnline) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Your internet connection has been restored'),
-            backgroundColor: AppTheme.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-
-      _isOnline = nowOnline;
-    });
-  }
-
-  bool _hasInternet(List<ConnectivityResult> result) {
-    return !result.contains(ConnectivityResult.none);
-  }
-
   bool _isIgnorableSpeechError(String message) {
     final String value = message.toLowerCase();
     return value.contains('error_no_match') ||
         value.contains('error_speech_timeout') ||
         value.contains('no match') ||
         value.contains('speech timeout');
+  }
+
+  bool _useMlKitForCurrentLanguage() {
+    return Platform.isAndroid &&
+        (_fromLang == 'Sinhala' || _fromLang == 'Tamil');
+  }
+
+  Future<void> _handleMlKitCallback(MethodCall call) async {
+    if (!mounted || !_useMlKitForCurrentLanguage()) {
+      return;
+    }
+
+    if (call.method != 'onPartialResult' && call.method != 'onFinalResult') {
+      return;
+    }
+
+    final dynamic args = call.arguments;
+    if (args is! Map) {
+      return;
+    }
+
+    final String text = (args['text'] as String? ?? '').trim();
+    if (text.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _inputController.text = text;
+      _inputController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _inputController.text.length),
+      );
+    });
+  }
+
+  Future<void> _runWithRetry(
+    Future<void> Function() action, {
+    int maxAttempts = 3,
+    Duration initialDelay = const Duration(milliseconds: 350),
+  }) async {
+    Duration backoff = initialDelay;
+    Object? lastError;
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await action();
+        return;
+      } catch (e) {
+        lastError = e;
+        if (attempt == maxAttempts) {
+          rethrow;
+        }
+        await Future.delayed(backoff);
+        backoff *= 2;
+      }
+    }
+
+    throw lastError ?? Exception('Speech start failed.');
+  }
+
+  void _startMlKitStateMonitor() {
+    _mlKitStateMonitorTimer?.cancel();
+    _mlKitStateMonitorTimer = Timer.periodic(const Duration(seconds: 1), (
+      _,
+    ) async {
+      if (!mounted || !_isRecording || !_useMlKitForCurrentLanguage()) {
+        return;
+      }
+      if (_isStoppingMlKit) {
+        return;
+      }
+
+      try {
+        final bool isListening =
+            await _mlKitSpeechChannel.invokeMethod<bool>('isListening') ??
+            false;
+
+        if (!isListening) {
+          await _stopMlKitRecording(showNoSpeechMessage: false);
+          if (!mounted) return;
+          setState(() => _isRecording = false);
+        }
+      } catch (_) {
+        // Keep monitor silent; transient platform issues should not spam UI.
+      }
+    });
   }
 
   Future<void> _initSpeech() async {
@@ -266,7 +318,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         final tempText = _inputController.text;
         _inputController.text = _translatedText;
         _translatedText = tempText;
-        _charCount = _inputController.text.length;
       }
     });
   }
@@ -357,6 +408,17 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   Future<void> _startVoiceRecording() async {
     if (_isRecording) return;
 
+    if (_useMlKitForCurrentLanguage()) {
+      await _startMlKitRecording();
+      return;
+    }
+
+    await _startSystemSpeechRecording();
+  }
+
+  Future<void> _startSystemSpeechRecording() async {
+    if (_isRecording) return;
+
     if (!_speechReady) {
       await _initSpeech();
     }
@@ -392,27 +454,28 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
     setState(() => _isRecording = true);
 
-    await _speechToText.listen(
-      localeId: localeId,
-      partialResults: true,
-      listenMode: stt.ListenMode.dictation,
-      cancelOnError: true,
-      pauseFor: const Duration(seconds: 5),
-      listenFor: const Duration(minutes: 1),
-      onResult: (result) {
-        if (!mounted) return;
-        final String spokenText = result.recognizedWords.trim();
-        if (spokenText.isEmpty) return;
+    await _runWithRetry(() async {
+      await _speechToText.listen(
+        localeId: localeId,
+        partialResults: true,
+        listenMode: stt.ListenMode.dictation,
+        cancelOnError: true,
+        pauseFor: const Duration(seconds: 5),
+        listenFor: const Duration(minutes: 1),
+        onResult: (result) {
+          if (!mounted) return;
+          final String spokenText = result.recognizedWords.trim();
+          if (spokenText.isEmpty) return;
 
-        setState(() {
-          _inputController.text = spokenText;
-          _inputController.selection = TextSelection.fromPosition(
-            TextPosition(offset: _inputController.text.length),
-          );
-          _charCount = _inputController.text.length;
-        });
-      },
-    );
+          setState(() {
+            _inputController.text = spokenText;
+            _inputController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _inputController.text.length),
+            );
+          });
+        },
+      );
+    });
 
     if (!mounted) return;
     setState(() {
@@ -420,17 +483,142 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     });
   }
 
+  Future<void> _startMlKitRecording() async {
+    if (_isRecording) return;
+
+    try {
+      final String localeTag = _fromLang == 'Sinhala' ? 'si-LK' : 'ta-LK';
+
+      if (!mounted) return;
+      setState(() => _isRecording = true);
+
+      await _runWithRetry(() async {
+        await _mlKitSpeechChannel.invokeMethod<void>('startListening', {
+          'locale': localeTag,
+          'language': _fromLang,
+        });
+      });
+
+      _startMlKitStateMonitor();
+    } on MissingPluginException {
+      if (!mounted) return;
+      setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'ML speech bridge is unavailable. Do a full app restart (not hot reload). Using default speech service now.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      await _startSystemSpeechRecording();
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ML Kit speech error: ${e.message ?? e.code}'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ML Kit speech failed: $e'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   Future<void> _stopAndTranslate() async {
-    await _speechToText.stop();
+    _mlKitStateMonitorTimer?.cancel();
+
+    if (_useMlKitForCurrentLanguage()) {
+      await _stopMlKitRecording();
+    } else {
+      await _speechToText.stop();
+    }
+
     if (!mounted) return;
     setState(() => _isRecording = false);
+
+    if (_inputController.text.trim().isNotEmpty) {
+      await _translate();
+    }
+  }
+
+  Future<void> _stopMlKitRecording({bool showNoSpeechMessage = true}) async {
+    if (_isStoppingMlKit) return;
+    _isStoppingMlKit = true;
+
+    try {
+      final String? recognizedText = await _mlKitSpeechChannel
+          .invokeMethod<String>('stopListening');
+
+      if (!mounted) return;
+
+      final String text = (recognizedText ?? '').trim();
+      if (text.isEmpty) {
+        if (showNoSpeechMessage) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No speech captured. Please try again.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        _inputController.text = text;
+        _inputController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _inputController.text.length),
+        );
+      });
+    } on MissingPluginException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'ML speech bridge is unavailable. Do a full app restart (not hot reload).',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ML Kit speech error: ${e.message ?? e.code}'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('ML Kit speech failed: $e'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      _isStoppingMlKit = false;
+    }
   }
 
   void _clearAll() {
     setState(() {
       _inputController.clear();
       _translatedText = '';
-      _charCount = 0;
     });
   }
 
@@ -1009,7 +1197,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
             return GestureDetector(
               onTap: () {
                 _inputController.text = phrase['text']!;
-                _charCount = phrase['text']!.length;
                 _translate();
               },
               child: Container(

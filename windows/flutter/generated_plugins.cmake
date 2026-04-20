@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
+  geolocator_windows
   speech_to_text_windows
 )
 

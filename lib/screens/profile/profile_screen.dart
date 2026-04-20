@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () async {
               Navigator.of(ctx).pop();
               await Provider.of<AuthProvider>(context, listen: false).signOut();
-              if (!context.mounted) return;
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                 (route) => false,

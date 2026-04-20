@@ -8,6 +8,7 @@ import '../../widgets/place_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
+import '../ai/ai_suggestions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -259,8 +260,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: AIRecommendationCard(
         title: 'Discover the Pearl of\nthe Indian Ocean',
         subtitle: 'Personalized just for you',
-        imageUrl:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+        imageUrl: 'assets/Hero/hero.png',
+        isAsset: true,
         onTap: () => _openAIChat(
           initialPrompt: 'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
         ),
@@ -573,12 +574,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final foodPref = food.isEmpty ? 'Any local food' : food;
-    _openAIChat(
-      initialPrompt:
-          'Plan a $_selectedDuration trip to Sri Lanka. '
-          'Places I want to visit: $places. '
-          'Food preferences: $foodPref. '
-          'Budget: $_selectedBudget.',
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AISuggestionsScreen(
+          places: places,
+          duration: _selectedDuration,
+          food: foodPref,
+          budget: _selectedBudget,
+        ),
+      ),
     );
   }
 

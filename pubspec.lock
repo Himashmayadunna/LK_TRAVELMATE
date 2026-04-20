@@ -150,6 +150,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.34"
+
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -160,6 +161,7 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+
   glob:
     dependency: transitive
     description:

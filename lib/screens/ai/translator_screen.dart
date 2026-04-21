@@ -20,13 +20,11 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   final TextEditingController _searchController = TextEditingController();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
-  static const MethodChannel _mlKitSpeechChannel = MethodChannel(
-    'lk_travelmate/mlkit_speech',
-  );
-  Timer? _mlKitStateMonitorTimer;
-  bool _isStoppingMlKit = false;
+  final Connectivity _connectivity = Connectivity();
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _speechReady = false;
   bool _isSpeaking = false;
+  bool? _isOnline;
   String _translatedText = '';
   bool _isLoading = false;
   bool _isRecording = false;
@@ -144,6 +142,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     _mlKitSpeechChannel.setMethodCallHandler(_handleMlKitCallback);
     _initSpeech();
     _initTts();
+    _initConnectivityStatus();
     _inputController.addListener(() {
       if (!mounted) return;
       setState(() {
@@ -159,6 +158,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     unawaited(_mlKitSpeechChannel.invokeMethod<void>('stopListening'));
     _speechToText.stop();
     _flutterTts.stop();
+    _connectivitySubscription?.cancel();
     _inputController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -168,6 +168,27 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     await _flutterTts.setSpeechRate(0.45);
     await _flutterTts.setPitch(1.0);
     await _flutterTts.setVolume(1.0);
+
+    _flutterTts.setStartHandler(() {
+      if (!mounted) return;
+      setState(() => _isSpeaking = true);
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      if (!mounted) return;
+      setState(() => _isSpeaking = false);
+    });
+
+    _flutterTts.setErrorHandler((_) {
+      if (!mounted) return;
+      setState(() => _isSpeaking = false);
+    });
+  }
+
+  Future<void> _initConnectivityStatus() async {
+    final List<ConnectivityResult> initialResult = await _connectivity
+        .checkConnectivity();
+    _isOnline = _hasInternet(initialResult);
 
     _flutterTts.setStartHandler(() {
       if (!mounted) return;
@@ -276,6 +297,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         // Keep monitor silent; transient platform issues should not spam UI.
       }
     });
+  }
+
+  bool _isIgnorableSpeechError(String message) {
+    final String value = message.toLowerCase();
+    return value.contains('error_no_match') ||
+        value.contains('error_speech_timeout') ||
+        value.contains('no match') ||
+        value.contains('speech timeout');
   }
 
   Future<void> _initSpeech() async {
@@ -454,18 +483,17 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
     setState(() => _isRecording = true);
 
-    await _runWithRetry(() async {
-      await _speechToText.listen(
-        localeId: localeId,
-        partialResults: true,
-        listenMode: stt.ListenMode.dictation,
-        cancelOnError: true,
-        pauseFor: const Duration(seconds: 5),
-        listenFor: const Duration(minutes: 1),
-        onResult: (result) {
-          if (!mounted) return;
-          final String spokenText = result.recognizedWords.trim();
-          if (spokenText.isEmpty) return;
+    await _speechToText.listen(
+      localeId: localeId,
+      partialResults: true,
+      listenMode: stt.ListenMode.dictation,
+      cancelOnError: true,
+      pauseFor: const Duration(seconds: 5),
+      listenFor: const Duration(minutes: 1),
+      onResult: (result) {
+        if (!mounted) return;
+        final String spokenText = result.recognizedWords.trim();
+        if (spokenText.isEmpty) return;
 
           setState(() {
             _inputController.text = spokenText;

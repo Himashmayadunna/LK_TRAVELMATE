@@ -4,7 +4,11 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
+<<<<<<< translator_api
+  flutter_tts
+=======
   geolocator_windows
+>>>>>>> dev
   speech_to_text_windows
 )
 

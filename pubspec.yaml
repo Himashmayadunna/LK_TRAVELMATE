@@ -41,9 +41,13 @@ dependencies:
   http: ^1.2.2
   speech_to_text: ^7.0.0
   connectivity_plus: ^6.1.5
+<<<<<<< translator_api
+  flutter_tts: ^4.2.2
+=======
   geolocator: ^11.0.0 
   flutter_polyline_points: ^2.0.0 
 
+>>>>>>> dev
 
 
 dev_dependencies:

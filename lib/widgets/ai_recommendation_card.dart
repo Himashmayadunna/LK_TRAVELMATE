@@ -5,6 +5,7 @@ class AIRecommendationCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String imageUrl;
+  final bool isAsset;
   final VoidCallback? onTap;
 
   const AIRecommendationCard({
@@ -12,6 +13,7 @@ class AIRecommendationCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.imageUrl,
+    this.isAsset = false,
     this.onTap,
   });
 
@@ -32,28 +34,53 @@ class AIRecommendationCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Background Image
-              Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
-                  child: const Center(
-                    child: Icon(Icons.landscape_rounded, color: Colors.white54, size: 60),
-                  ),
-                ),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    decoration: const BoxDecoration(gradient: AppTheme.cardGradient),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+              isAsset
+                  ? Image.asset(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: AppTheme.cardGradient,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.landscape_rounded,
+                            color: Colors.white54,
+                            size: 60,
+                          ),
+                        ),
                       ),
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: AppTheme.cardGradient,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.landscape_rounded,
+                            color: Colors.white54,
+                            size: 60,
+                          ),
+                        ),
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          decoration: const BoxDecoration(
+                            gradient: AppTheme.cardGradient,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
               // Gradient Overlay
               Container(
                 decoration: const BoxDecoration(gradient: AppTheme.heroOverlay),

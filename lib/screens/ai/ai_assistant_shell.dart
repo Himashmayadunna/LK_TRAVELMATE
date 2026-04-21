@@ -5,8 +5,9 @@ import 'translator_screen.dart';
 
 class AIAssistantShell extends StatefulWidget {
   final String? initialPrompt;
+  final VoidCallback? onBack;
 
-  const AIAssistantShell({super.key, this.initialPrompt});
+  const AIAssistantShell({super.key, this.initialPrompt, this.onBack});
 
   @override
   State<AIAssistantShell> createState() => _AIAssistantShellState();
@@ -19,7 +20,7 @@ class _AIAssistantShellState extends State<AIAssistantShell>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -38,7 +39,13 @@ class _AIAssistantShellState extends State<AIAssistantShell>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
         title: const Text(
           'AI Tools',
@@ -76,9 +83,9 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🤖', style: TextStyle(fontSize: 15)),
+                      Text('🌐', style: TextStyle(fontSize: 15)),
                       SizedBox(width: 6),
-                      Text('Assistant'),
+                      Text('Translator'),
                     ],
                   ),
                 ),
@@ -86,9 +93,9 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🌐', style: TextStyle(fontSize: 15)),
+                      Text('🤖', style: TextStyle(fontSize: 15)),
                       SizedBox(width: 6),
-                      Text('Translator'),
+                      Text('Assistant'),
                     ],
                   ),
                 ),
@@ -100,9 +107,10 @@ class _AIAssistantShellState extends State<AIAssistantShell>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Pass initialPrompt only to chat tab
-          AIChatScreenBody(initialPrompt: widget.initialPrompt),
+          // Tab 0: Translator (left)
           const TranslatorScreen(),
+          // Tab 1: Assistant (right)
+          AIChatScreenBody(initialPrompt: widget.initialPrompt),
         ],
       ),
     );

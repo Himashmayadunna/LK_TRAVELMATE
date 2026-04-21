@@ -64,6 +64,7 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: _navBarColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
               color: AppTheme.cardShadow,
@@ -73,16 +74,31 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+          top: false,
+          child: SizedBox(
+            height: 82,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
               children: [
-                _buildNavItem('assets/nav/home.png', 'Home', 0),
-                _buildNavItem('assets/nav/explore.png', 'Explore', 1),
-                _buildCenterMapButton(),
-                _buildNavItem('assets/nav/translator.png', 'Translator', 3),
-                _buildNavItem('assets/nav/profile.png', 'Profile', 4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 18, 8, 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem('assets/nav/home.png', 'Home', 0),
+                      _buildNavItem('assets/nav/explore.png', 'Explore', 1),
+                      const SizedBox(width: 62),
+                      _buildNavItem(
+                        'assets/nav/translator.png',
+                        'Translator',
+                        3,
+                      ),
+                      _buildNavItem('assets/nav/profile.png', 'Profile', 4),
+                    ],
+                  ),
+                ),
+                Positioned(top: -10, child: _buildCenterMapButton()),
               ],
             ),
           ),
@@ -103,13 +119,13 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             AnimatedScale(
               duration: const Duration(milliseconds: 220),
-              scale: isSelected ? 1.08 : 1.0,
+              scale: isSelected ? 1.14 : 1.0,
               child: Opacity(
                 opacity: isSelected ? 1 : 0.9,
                 child: Image.asset(
                   assetPath,
-                  width: isSelected ? 31 : 29,
-                  height: isSelected ? 31 : 29,
+                  width: isSelected ? 34 : 29,
+                  height: isSelected ? 34 : 29,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -136,42 +152,38 @@ class _MainScreenState extends State<MainScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Transform.translate(
-            offset: const Offset(0, -12),
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: isSelected ? _mapSelectedCircleColor : Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: _navBarColor.withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Image.asset(
-                  'assets/nav/map.png',
-                  width: 36,
-                  height: 36,
-                  fit: BoxFit.contain,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            width: isSelected ? 60 : 54,
+            height: isSelected ? 60 : 54,
+            decoration: BoxDecoration(
+              color: isSelected ? _mapSelectedCircleColor : Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: _navBarColor.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSelected ? 7 : 8),
+              child: Image.asset(
+                'assets/nav/map.png',
+                width: isSelected ? 44 : 38,
+                height: isSelected ? 44 : 38,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-          Transform.translate(
-            offset: const Offset(0, -8),
-            child: Text(
-              'Map',
-              style: TextStyle(
-                color: _navItemColor,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
+          const SizedBox(height: 4),
+          Text(
+            'Map',
+            style: TextStyle(
+              color: _navItemColor,
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ],

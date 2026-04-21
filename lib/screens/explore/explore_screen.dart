@@ -129,13 +129,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Color _badgeColor(String cat) {
     switch (cat) {
       case 'Nature':
-        return AppTheme.success;
+        return AppTheme.primaryDark;
       case 'Safari':
-        return AppTheme.warning;
-      case 'Heritage':
-        return AppTheme.primaryLight;
-      case 'Beach':
         return AppTheme.accent;
+      case 'Heritage':
+        return AppTheme.primary;
+      case 'Beach':
+        return AppTheme.primaryLight;
       default:
         return AppTheme.primary;
     }
@@ -217,7 +217,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
+                            color: AppTheme.cardShadow.withValues(alpha: 0.08),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -301,8 +301,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     (b) => FilterChip(
                       label: Text(b),
                       onSelected: (_) => Navigator.pop(context),
-                      selectedColor: const Color(0xFF008B8B).withOpacity(0.2),
-                      checkmarkColor: const Color(0xFF008B8B),
+                      selectedColor: AppTheme.primarySurface,
+                      checkmarkColor: AppTheme.primary,
                     ),
                   )
                   .toList(),
@@ -406,7 +406,7 @@ class _DestinationCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: AppTheme.cardShadow.withValues(alpha: 0.12),
                           blurRadius: 4,
                         ),
                       ],

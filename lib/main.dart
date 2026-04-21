@@ -44,8 +44,10 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  static const Color _navBarColor = Color(0xFF5E71B3);
+  static const Color _navItemColor = Colors.white;
 
+  int _currentIndex = 0;
 
   late final List<Widget> _screens = [
     const HomeScreen(),
@@ -57,13 +59,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: _navBarColor,
           boxShadow: [
             BoxShadow(
               color: AppTheme.cardShadow,
@@ -78,10 +77,25 @@ class _MainScreenState extends State<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(Icons.home_outlined, Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.explore_outlined, Icons.explore, 'Explore', 1),
+                _buildNavItem(
+                  Icons.home_outlined,
+                  Icons.home_rounded,
+                  'Home',
+                  0,
+                ),
+                _buildNavItem(
+                  Icons.explore_outlined,
+                  Icons.explore,
+                  'Explore',
+                  1,
+                ),
                 _buildCenterMapButton(),
-                _buildNavItem(Icons.auto_awesome_outlined, Icons.auto_awesome, 'Translator', 3),
+                _buildNavItem(
+                  Icons.auto_awesome_outlined,
+                  Icons.auto_awesome,
+                  'Translator',
+                  3,
+                ),
                 _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
               ],
             ),
@@ -91,7 +105,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, IconData activeIcon, String label, int index) {
+  Widget _buildNavItem(
+    IconData icon,
+    IconData activeIcon,
+    String label,
+    int index,
+  ) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
@@ -103,14 +122,14 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(
               isSelected ? activeIcon : icon,
-              color: isSelected ? AppTheme.primary : AppTheme.textHint,
+              color: _navItemColor,
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primary : AppTheme.textHint,
+                color: _navItemColor,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -134,17 +153,21 @@ class _MainScreenState extends State<MainScreen> {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
+                color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.35),
+                    color: _navBarColor.withValues(alpha: 0.35),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(Icons.map_rounded, color: Colors.white, size: 26),
+              child: const Icon(
+                Icons.map_rounded,
+                color: _navBarColor,
+                size: 26,
+              ),
             ),
           ),
           Transform.translate(
@@ -152,7 +175,7 @@ class _MainScreenState extends State<MainScreen> {
             child: Text(
               'Map',
               style: TextStyle(
-                color: isSelected ? AppTheme.primary : AppTheme.textHint,
+                color: _navItemColor,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),

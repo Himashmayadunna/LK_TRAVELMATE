@@ -67,8 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Saved Places',
             value: '$savedCount',
             icon: Icons.favorite_rounded,
-            iconColor: const Color(0xFFE65100),
-            iconBgColor: const Color(0xFFFBE9E7),
+            iconColor: AppTheme.accent,
+            iconBgColor: AppTheme.goldLight.withValues(alpha: 0.38),
           ),
           const SizedBox(width: 12),
           ProfileStatCard(
@@ -83,8 +83,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: 'Visited',
             value: '$_visited',
             icon: Icons.check_box_rounded,
-            iconColor: AppTheme.success,
-            iconBgColor: const Color(0xFFE8F5E9),
+            iconColor: AppTheme.primaryDark,
+            iconBgColor: AppTheme.primarySoft,
           ),
         ],
       ),
@@ -101,7 +101,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               SectionHeader(
                 title: 'Saved Destinations',
-                actionText: savedPlaces.isEmpty ? 'Explore' : '${savedPlaces.length} saved',
+                actionText: savedPlaces.isEmpty
+                    ? 'Explore'
+                    : '${savedPlaces.length} saved',
                 onAction: () {},
               ),
               const SizedBox(height: 16),
@@ -128,7 +130,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'No saved places yet',
-                        style: AppTheme.bodyLarge.copyWith(color: AppTheme.textHint),
+                        style: AppTheme.bodyLarge.copyWith(
+                          color: AppTheme.textHint,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -161,7 +165,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                           ),
                         );

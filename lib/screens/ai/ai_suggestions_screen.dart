@@ -87,10 +87,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
               ),
             )
           else if (_error != null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildErrorView(),
-            )
+            SliverFillRemaining(hasScrollBody: false, child: _buildErrorView())
           else ...[
             SliverToBoxAdapter(
               child: Padding(
@@ -108,12 +105,10 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
               sliver: SliverList.separated(
                 itemCount: _items.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  return _SuggestionCard(
-                    rank: index + 1,
-                    item: _items[index],
-                  );
+                  return _SuggestionCard(rank: index + 1, item: _items[index]);
                 },
               ),
             ),
@@ -129,7 +124,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0A4FA8), Color(0xFF1D82E6)],
+          colors: [AppTheme.primaryDark, AppTheme.primary],
         ),
       ),
       child: SafeArea(
@@ -188,7 +183,10 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.28), width: 1),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.28),
+          width: 1,
+        ),
       ),
       child: Text(
         text,
@@ -208,7 +206,11 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 44, color: AppTheme.textHint),
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 44,
+              color: AppTheme.textHint,
+            ),
             const SizedBox(height: 12),
             Text(
               _error ?? 'Something went wrong.',
@@ -258,7 +260,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1C5FC9).withValues(alpha: 0.12),
+            color: AppTheme.cardShadow.withValues(alpha: 0.12),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -280,7 +282,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                       return Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Color(0xFF6EA6E6), Color(0xFF3578D8)],
+                            colors: [AppTheme.primary, AppTheme.primaryDark],
                           ),
                         ),
                         child: const Center(
@@ -298,15 +300,18 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   left: 10,
                   top: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFC93C),
+                      color: AppTheme.accent,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       '✨ AI Pick #${widget.rank}',
                       style: const TextStyle(
-                        color: Color(0xFF5E4A00),
+                        color: AppTheme.textPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -317,9 +322,12 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   right: 10,
                   top: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF135CB4).withValues(alpha: 0.9),
+                      color: AppTheme.primaryDark.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
@@ -346,13 +354,17 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                     fontSize: 30,
                     fontWeight: FontWeight.w300,
                     height: 1.1,
-                    color: Color(0xFF1D2D4A),
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 16),
+                    const Icon(
+                      Icons.location_on_rounded,
+                      color: AppTheme.primary,
+                      size: 16,
+                    ),
                     const SizedBox(width: 4),
                     Text(item.location, style: AppTheme.bodyMedium),
                   ],
@@ -372,9 +384,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                       child: _metaPill('💰 \$${item.estimatedCostPerDay}/day'),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: _metaPill('📅 ${item.bestTimeToVisit}'),
-                    ),
+                    Expanded(child: _metaPill('📅 ${item.bestTimeToVisit}')),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -397,7 +407,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF2FF),
+                      color: AppTheme.primarySurface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -424,7 +434,10 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                 ),
                 if (_expanded) ...[
                   const SizedBox(height: 12),
-                  _detailRow('🍛 Food to try nearby', item.foodRecommendations.join(', ')),
+                  _detailRow(
+                    '🍛 Food to try nearby',
+                    item.foodRecommendations.join(', '),
+                  ),
                   const SizedBox(height: 8),
                   _detailRow('🚌 How to get there', item.howToGetThere),
                   const SizedBox(height: 8),
@@ -442,14 +455,14 @@ class _SuggestionCardState extends State<_SuggestionCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
+        color: AppTheme.primarySurface,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: Color(0xFF2C4D79),
+          color: AppTheme.primaryDark,
           fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
@@ -461,13 +474,13 @@ class _SuggestionCardState extends State<_SuggestionCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
+        color: AppTheme.primarySurface,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF35557F),
+          color: AppTheme.primaryDark,
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
@@ -480,7 +493,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6FAFF),
+        color: AppTheme.background,
         borderRadius: BorderRadius.circular(10),
       ),
       child: RichText(

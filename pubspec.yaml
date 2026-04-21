@@ -71,6 +71,9 @@ flutter:
   assets:
     - assets/Hero/hero.png
     - assets/logo/Travelmate.png
+    - assets/auth/welcome_i1.png
+    - assets/auth/signin_i2.png
+    - assets/auth/signin_12.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

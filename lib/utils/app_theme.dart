@@ -2,32 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Primary Blue Palette
-  static const Color primaryDark = Color(0xFF0D47A1);
-  static const Color primary = Color(0xFF1565C0);
-  static const Color primaryLight = Color(0xFF1E88E5);
-  static const Color primaryAccent = Color(0xFF42A5F5);
-  static const Color primarySoft = Color(0xFFBBDEFB);
-  static const Color primarySurface = Color(0xFFE3F2FD);
+  // Core palette
+  static const Color primaryDark = Color(0xFF465A95);
+  static const Color primary = Color(0xFF5E71B3);
+  static const Color primaryLight = Color(0xFF5E71B3);
+  static const Color primaryAccent = Color(0xFFFC9428);
+  static const Color primarySoft = Color(0xFFDCE3F4);
+  static const Color primarySurface = Color(0xFFEEF2FB);
 
-  // Secondary / Accent
-  static const Color accent = Color(0xFF00BCD4);
-  static const Color accentLight = Color(0xFF4DD0E1);
-  static const Color gold = Color(0xFFFFB300);
-  static const Color goldLight = Color(0xFFFFD54F);
+  // Accent palette
+  static const Color accent = Color(0xFFFC9428);
+  static const Color accentLight = Color(0xFFFDC27D);
+  static const Color gold = Color(0xFFFC9428);
+  static const Color goldLight = Color(0xFFFED8AD);
 
   // Neutrals
-  static const Color textPrimary = Color(0xFF1A1A2E);
-  static const Color textSecondary = Color(0xFF546E7A);
-  static const Color textHint = Color(0xFF90A4AE);
-  static const Color background = Color(0xFFF5F9FF);
+  static const Color textPrimary = Color(0xFF24314F);
+  static const Color textSecondary = Color(0xFF667497);
+  static const Color textHint = Color(0xFF9AA6C0);
+  static const Color background = Color(0xFFF6F8FD);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color divider = Color(0xFFE0E8F0);
-  static const Color cardShadow = Color(0x1A1565C0);
+  static const Color divider = Color(0xFFDCE3F0);
+  static const Color cardShadow = Color(0x1A465A95);
 
   // Status
   static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
+  static const Color warning = Color(0xFFFC9428);
   static const Color error = Color(0xFFE53935);
 
   // Gradients
@@ -40,7 +40,7 @@ class AppTheme {
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
+    colors: [primary, primaryDark],
   );
 
   static const LinearGradient heroOverlay = LinearGradient(
@@ -121,38 +121,36 @@ class AppTheme {
 
   // Box Shadows
   static List<BoxShadow> get softShadow => [
-        BoxShadow(
-          color: cardShadow,
-          blurRadius: 20,
-          offset: const Offset(0, 4),
-        ),
-      ];
+    BoxShadow(color: cardShadow, blurRadius: 20, offset: const Offset(0, 4)),
+  ];
 
   static List<BoxShadow> get mediumShadow => [
-        BoxShadow(
-          color: cardShadow.withValues(alpha: 0.15),
-          blurRadius: 30,
-          offset: const Offset(0, 8),
-        ),
-      ];
+    BoxShadow(
+      color: cardShadow.withValues(alpha: 0.15),
+      blurRadius: 30,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
   // ThemeData
   static ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: background,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        colorScheme: const ColorScheme.light(
-          primary: primary,
-          secondary: accent,
-          surface: surface,
-          error: error,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-        ),
-      );
+    useMaterial3: true,
+    brightness: Brightness.light,
+    primaryColor: primary,
+    scaffoldBackgroundColor: background,
+    textTheme: GoogleFonts.poppinsTextTheme(),
+    colorScheme: const ColorScheme.light(
+      primary: primary,
+      secondary: accent,
+      tertiary: accentLight,
+      primaryContainer: primarySurface,
+      surface: surface,
+      error: error,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+    ),
+  );
 }

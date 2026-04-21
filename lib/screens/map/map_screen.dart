@@ -58,7 +58,6 @@ class _MapScreenState extends State<MapScreen> {
   List<NavigationStep> _navigationSteps = [];
   bool _isLoadingRoute = false;
   bool _showNavigationPanel = false;
-  LatLng? _originLatLng;
   TravelLocation? _originLocation;
   String _travelMode = 'driving';
   String _routeSummary = '';
@@ -377,8 +376,10 @@ class _MapScreenState extends State<MapScreen> {
       origin = LatLng(_originLocation!.latitude, _originLocation!.longitude);
     }
 
-    setState(() => _originLatLng = origin);
-    await _fetchDirections(origin: origin!, destination: LatLng(destination.latitude, destination.longitude));
+    await _fetchDirections(
+      origin: origin,
+      destination: LatLng(destination.latitude, destination.longitude),
+    );
   }
 
   void _clearNavigation() {
@@ -386,7 +387,6 @@ class _MapScreenState extends State<MapScreen> {
       _polylines = {};
       _navigationSteps = [];
       _showNavigationPanel = false;
-      _originLatLng = null;
       _originLocation = null;
       _routeSummary = '';
       _currentStepIndex = 0;

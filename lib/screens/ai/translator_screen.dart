@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../service/translator_api.dart';
@@ -20,10 +21,15 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   final TextEditingController _searchController = TextEditingController();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
+  static const MethodChannel _mlKitSpeechChannel = MethodChannel(
+    'lk_travelmate/mlkit_speech',
+  );
   final Connectivity _connectivity = Connectivity();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  Timer? _mlKitStateMonitorTimer;
   bool _speechReady = false;
   bool _isSpeaking = false;
+  bool _isStoppingMlKit = false;
   bool? _isOnline;
   String _translatedText = '';
   bool _isLoading = false;
@@ -188,21 +194,25 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   Future<void> _initConnectivityStatus() async {
     final List<ConnectivityResult> initialResult = await _connectivity
         .checkConnectivity();
-    _isOnline = _hasInternet(initialResult);
+    if (!mounted) return;
 
-    _flutterTts.setStartHandler(() {
-      if (!mounted) return;
-      setState(() => _isSpeaking = true);
+    setState(() {
+      _isOnline = _hasInternet(initialResult);
     });
 
-    _flutterTts.setCompletionHandler(() {
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> result,
+    ) {
       if (!mounted) return;
-      setState(() => _isSpeaking = false);
+      setState(() {
+        _isOnline = _hasInternet(result);
+      });
     });
+  }
 
-    _flutterTts.setErrorHandler((_) {
-      if (!mounted) return;
-      setState(() => _isSpeaking = false);
+  bool _hasInternet(List<ConnectivityResult> result) {
+    return result.any((ConnectivityResult status) {
+      return status != ConnectivityResult.none;
     });
   }
 
@@ -297,14 +307,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         // Keep monitor silent; transient platform issues should not spam UI.
       }
     });
-  }
-
-  bool _isIgnorableSpeechError(String message) {
-    final String value = message.toLowerCase();
-    return value.contains('error_no_match') ||
-        value.contains('error_speech_timeout') ||
-        value.contains('no match') ||
-        value.contains('speech timeout');
   }
 
   Future<void> _initSpeech() async {
@@ -495,15 +497,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         final String spokenText = result.recognizedWords.trim();
         if (spokenText.isEmpty) return;
 
-          setState(() {
-            _inputController.text = spokenText;
-            _inputController.selection = TextSelection.fromPosition(
-              TextPosition(offset: _inputController.text.length),
-            );
-          });
-        },
-      );
-    });
+        setState(() {
+          _inputController.text = spokenText;
+          _inputController.selection = TextSelection.fromPosition(
+            TextPosition(offset: _inputController.text.length),
+          );
+        });
+      },
+    );
 
     if (!mounted) return;
     setState(() {
@@ -652,6 +653,15 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color statusColor = _isRecording
+        ? AppTheme.error
+        : (_isOnline == false ? Colors.orange : AppTheme.success);
+    final String statusText = _isRecording
+        ? 'Listening...'
+        : (_isOnline == false
+              ? 'Offline mode (translation may fail)'
+              : 'AI Translator ready');
+
     return Column(
       children: [
         // Status bar
@@ -669,16 +679,16 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: _isRecording ? AppTheme.error : AppTheme.success,
+                  color: statusColor,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
-                _isRecording ? 'Listening...' : 'AI Translator ready',
+                statusText,
                 style: TextStyle(
                   fontSize: 12,
-                  color: _isRecording ? AppTheme.error : AppTheme.success,
+                  color: statusColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),

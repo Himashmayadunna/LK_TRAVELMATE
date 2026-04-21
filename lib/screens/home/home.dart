@@ -65,8 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Sigiriya Rock',
       'location': 'Matale District',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+      'image': 'assets/places/sigiriya_rock.jpg',
       'rating': 4.8,
       'distance': '165 km',
       'favorite': false,
@@ -74,8 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Mirissa Beach',
       'location': 'Southern Province',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
+      'image': 'assets/places/mirissa_beach.jpg',
       'rating': 4.6,
       'distance': '150 km',
       'favorite': true,
@@ -83,8 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Temple of Tooth',
       'location': 'Kandy',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
+      'image': 'assets/places/temple_of_tooth.webp',
       'rating': 4.7,
       'distance': '115 km',
       'favorite': false,
@@ -92,8 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Ella Rock',
       'location': 'Badulla District',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg/1280px-Ella_Rock_from_Little_Adam%27s_Peak.jpg',
+      'image': 'assets/places/ella_rock.jpg',
       'rating': 4.5,
       'distance': '195 km',
       'favorite': false,

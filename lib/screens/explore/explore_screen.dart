@@ -26,8 +26,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '1',
     name: 'Sigiriya Rock Fortress',
-    imageUrl:
-        'https://images.unsplash.com/photo-1586613835341-d8e8b4e6c9b4?w=400',
+    imageUrl: 'assets/places/sigiriya_rock.jpg',
     category: 'Heritage',
     rating: 4.9,
     budget: '\$\$',
@@ -35,8 +34,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '2',
     name: 'Mirissa Beach',
-    imageUrl:
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400',
+    imageUrl: 'assets/places/mirissa_beach.jpg',
     category: 'Beach',
     rating: 4.8,
     budget: '\$',
@@ -44,7 +42,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '3',
     name: 'Temple of the Tooth',
-    imageUrl: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400',
+    imageUrl: 'assets/places/temple_of_tooth.webp',
     category: 'Cultural',
     rating: 4.7,
     budget: '\$',
@@ -52,7 +50,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '4',
     name: 'Ella Rock Train Bridge',
-    imageUrl: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400',
+    imageUrl: 'assets/places/ella_rock.jpg',
     category: 'Nature',
     rating: 4.8,
     budget: '\$',
@@ -60,7 +58,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '5',
     name: 'Yala National Park',
-    imageUrl: 'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=400',
+    imageUrl: 'assets/places/yala_national_park.webp',
     category: 'Safari',
     rating: 4.6,
     budget: '\$\$\$',
@@ -68,8 +66,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '6',
     name: 'Unawatuna Beach',
-    imageUrl:
-        'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400',
+    imageUrl: 'assets/places/unawatuna_beach.webp',
     category: 'Beach',
     rating: 4.5,
     budget: '\$',
@@ -77,7 +74,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '7',
     name: 'Dambulla Cave Temple',
-    imageUrl: 'https://images.unsplash.com/photo-1573408259-0a7bf48c5918?w=400',
+    imageUrl: 'assets/places/dambulla_cave_temple.webp',
     category: 'Heritage',
     rating: 4.7,
     budget: '\$\$',
@@ -85,8 +82,7 @@ final List<Destination> _sriLankaDestinations = [
   Destination(
     id: '8',
     name: 'Horton Plains',
-    imageUrl:
-        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400',
+    imageUrl: 'assets/places/horton_plains.webp',
     category: 'Nature',
     rating: 4.6,
     budget: '\$\$',
@@ -325,6 +321,8 @@ class _DestinationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAssetImage = destination.imageUrl.startsWith('assets/');
+
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -348,25 +346,41 @@ class _DestinationCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
-                  child: Image.network(
-                    destination.imageUrl,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) => progress == null
-                        ? child
-                        : Container(
-                            color: Colors.grey.shade200,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                  child: SizedBox.expand(
+                    child: isAssetImage
+                        ? Image.asset(
+                            destination.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            destination.imageUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_, child, progress) =>
+                                progress == null
+                                ? child
+                                : Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                              ),
                             ),
                           ),
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey,
-                      ),
-                    ),
                   ),
                 ),
                 // Category badge (top-left)

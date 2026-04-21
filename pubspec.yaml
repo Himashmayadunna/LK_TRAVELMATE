@@ -89,6 +89,14 @@ flutter:
     - assets/quick_actions/map.png
     - assets/social/google.png
     - assets/social/facebook.png
+    - assets/places/sigiriya_rock.jpg
+    - assets/places/mirissa_beach.jpg
+    - assets/places/temple_of_tooth.webp
+    - assets/places/ella_rock.jpg
+    - assets/places/yala_national_park.webp
+    - assets/places/unawatuna_beach.webp
+    - assets/places/dambulla_cave_temple.webp
+    - assets/places/horton_plains.webp
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -46,6 +46,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   static const Color _navBarColor = Color(0xFF5E71B3);
   static const Color _navItemColor = Colors.white;
+  static const Color _mapSelectedCircleColor = Colors.white;
+  static const Color _mapIconColor = Color(0xFF465A95);
 
   int _currentIndex = 0;
 
@@ -120,16 +122,31 @@ class _MainScreenState extends State<MainScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: _navItemColor,
-              size: 24,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: Colors.white.withValues(
+                    alpha: isSelected ? 0.95 : 0.24,
+                  ),
+                ),
+              ),
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                color: isSelected ? _navBarColor : _navItemColor,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: _navItemColor,
+                color: _navItemColor.withValues(alpha: isSelected ? 1 : 0.82),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -153,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isSelected ? _mapSelectedCircleColor : Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -165,8 +182,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
               child: const Icon(
                 Icons.map_rounded,
-                color: _navBarColor,
-                size: 26,
+                color: _mapIconColor,
+                size: 32,
               ),
             ),
           ),

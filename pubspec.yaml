@@ -74,6 +74,7 @@ flutter:
     - assets/auth/welcome_i1.png
     - assets/auth/signin_i2.png
     - assets/auth/signin_12.png
+    - assets/home/header_i3.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

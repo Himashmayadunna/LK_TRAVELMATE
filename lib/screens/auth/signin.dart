@@ -282,7 +282,7 @@ class _SignInScreenState extends State<SignInScreen>
                 Expanded(
                   child: _buildSocialButton(
                     label: 'Google',
-                    emoji: '\u{1F535}',
+                    iconAssetPath: 'assets/social/google.png',
                     onTap: () {},
                   ),
                 ),
@@ -290,7 +290,7 @@ class _SignInScreenState extends State<SignInScreen>
                 Expanded(
                   child: _buildSocialButton(
                     label: 'Facebook',
-                    emoji: '\u{1F7E6}',
+                    iconAssetPath: 'assets/social/facebook.png',
                     onTap: () {},
                   ),
                 ),
@@ -465,7 +465,7 @@ class _SignInScreenState extends State<SignInScreen>
 
   Widget _buildSocialButton({
     required String label,
-    required String emoji,
+    required String iconAssetPath,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -487,7 +487,12 @@ class _SignInScreenState extends State<SignInScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 18)),
+            Image.asset(
+              iconAssetPath,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 8),
             Text(label, style: AppTheme.labelBold.copyWith(fontSize: 13)),
           ],

@@ -75,6 +75,20 @@ flutter:
     - assets/auth/signin_i2.png
     - assets/auth/signin_12.png
     - assets/home/header_i3.png
+    - assets/nav/home.png
+    - assets/nav/explore.png
+    - assets/nav/map.png
+    - assets/nav/translator.png
+    - assets/nav/profile.png
+    - assets/profile/bookmark.png
+    - assets/profile/task.png
+    - assets/profile/tick_mark.png
+    - assets/quick_actions/ai_plan.png
+    - assets/quick_actions/food.png
+    - assets/quick_actions/hotels.png
+    - assets/quick_actions/map.png
+    - assets/social/google.png
+    - assets/social/facebook.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

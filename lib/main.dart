@@ -47,7 +47,6 @@ class _MainScreenState extends State<MainScreen> {
   static const Color _navBarColor = Color(0xFF5E71B3);
   static const Color _navItemColor = Colors.white;
   static const Color _mapSelectedCircleColor = Colors.white;
-  static const Color _mapIconColor = Color(0xFF465A95);
 
   int _currentIndex = 0;
 
@@ -79,26 +78,11 @@ class _MainScreenState extends State<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(
-                  Icons.home_outlined,
-                  Icons.home_rounded,
-                  'Home',
-                  0,
-                ),
-                _buildNavItem(
-                  Icons.explore_outlined,
-                  Icons.explore,
-                  'Explore',
-                  1,
-                ),
+                _buildNavItem('assets/nav/home.png', 'Home', 0),
+                _buildNavItem('assets/nav/explore.png', 'Explore', 1),
                 _buildCenterMapButton(),
-                _buildNavItem(
-                  Icons.auto_awesome_outlined,
-                  Icons.auto_awesome,
-                  'Translator',
-                  3,
-                ),
-                _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
+                _buildNavItem('assets/nav/translator.png', 'Translator', 3),
+                _buildNavItem('assets/nav/profile.png', 'Profile', 4),
               ],
             ),
           ),
@@ -107,39 +91,27 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(
-    IconData icon,
-    IconData activeIcon,
-    String label,
-    int index,
-  ) {
+  Widget _buildNavItem(String assetPath, String label, int index) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 60,
+        width: 62,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
+            AnimatedScale(
               duration: const Duration(milliseconds: 220),
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: Colors.white.withValues(
-                    alpha: isSelected ? 0.95 : 0.24,
-                  ),
+              scale: isSelected ? 1.08 : 1.0,
+              child: Opacity(
+                opacity: isSelected ? 1 : 0.9,
+                child: Image.asset(
+                  assetPath,
+                  width: isSelected ? 31 : 29,
+                  height: isSelected ? 31 : 29,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                color: isSelected ? _navBarColor : _navItemColor,
-                size: 22,
               ),
             ),
             const SizedBox(height: 4),
@@ -180,10 +152,14 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.map_rounded,
-                color: _mapIconColor,
-                size: 32,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Image.asset(
+                  'assets/nav/map.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),

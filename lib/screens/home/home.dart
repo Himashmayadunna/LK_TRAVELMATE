@@ -620,7 +620,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               QuickActionButton(
-                icon: Icons.auto_awesome,
+                iconAssetPath: 'assets/quick_actions/ai_plan.png',
                 label: 'AI Plan',
                 onTap: () => _openAIChat(
                   initialPrompt:
@@ -628,17 +628,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               QuickActionButton(
-                icon: Icons.map_rounded,
+                iconAssetPath: 'assets/quick_actions/map.png',
                 label: 'Map',
                 onTap: () {},
               ),
               QuickActionButton(
-                icon: Icons.hotel_rounded,
+                iconAssetPath: 'assets/quick_actions/hotels.png',
                 label: 'Hotels',
                 onTap: () {},
               ),
               QuickActionButton(
-                icon: Icons.restaurant_rounded,
+                iconAssetPath: 'assets/quick_actions/food.png',
                 label: 'Food',
                 onTap: () {},
               ),

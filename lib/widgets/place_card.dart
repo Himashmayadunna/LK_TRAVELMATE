@@ -25,6 +25,8 @@ class PlaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAssetImage = imageUrl.startsWith('assets/');
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -44,34 +46,63 @@ class PlaceCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(AppTheme.radiusLarge),
                   ),
-                  child: Image.network(
-                    imageUrl,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, st) => Container(
-                      height: 120,
-                      decoration: const BoxDecoration(
-                        gradient: AppTheme.cardGradient,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(AppTheme.radiusLarge),
+                  child: isAssetImage
+                      ? Image.asset(
+                          imageUrl,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => Container(
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              gradient: AppTheme.cardGradient,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppTheme.radiusLarge),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_rounded,
+                                color: Colors.white54,
+                                size: 36,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Image.network(
+                          imageUrl,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => Container(
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              gradient: AppTheme.cardGradient,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppTheme.radiusLarge),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_rounded,
+                                color: Colors.white54,
+                                size: 36,
+                              ),
+                            ),
+                          ),
+                          loadingBuilder: (ctx, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              height: 120,
+                              color: AppTheme.primarySurface,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.image_rounded, color: Colors.white54, size: 36),
-                      ),
-                    ),
-                    loadingBuilder: (ctx, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        height: 120,
-                        color: AppTheme.primarySurface,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      );
-                    },
-                  ),
                 ),
                 // Favorite button
                 Positioned(
@@ -110,7 +141,11 @@ class PlaceCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 12, color: AppTheme.primaryLight),
+                      Icon(
+                        Icons.location_on,
+                        size: 12,
+                        color: AppTheme.primaryLight,
+                      ),
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
@@ -128,7 +163,11 @@ class PlaceCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.star_rounded, size: 14, color: AppTheme.gold),
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color: AppTheme.gold,
+                          ),
                           const SizedBox(width: 2),
                           Text(
                             rating.toString(),
@@ -138,7 +177,11 @@ class PlaceCard extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Icon(Icons.near_me_rounded, size: 12, color: AppTheme.textHint),
+                          Icon(
+                            Icons.near_me_rounded,
+                            size: 12,
+                            color: AppTheme.textHint,
+                          ),
                           const SizedBox(width: 2),
                           Text(distance, style: AppTheme.caption),
                         ],

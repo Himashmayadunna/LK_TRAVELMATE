@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
-import '../../main.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -16,9 +17,11 @@ class _SignInScreenState extends State<SignInScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _rememberMe = false;
   bool _isLoading = false;
+
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
@@ -51,19 +54,26 @@ class _SignInScreenState extends State<SignInScreen>
 
     setState(() => _isLoading = true);
 
-    // Simulate a short sign-in delay
     await Future.delayed(const Duration(milliseconds: 800));
 
     if (!mounted) return;
 
-    // Save user details to AuthProvider
     final email = _emailController.text.trim();
-    final name = email.split('@').first.replaceAll('.', ' ').split(' ').map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '').join(' ');
+    final name = email
+        .split('@')
+        .first
+        .replaceAll('.', ' ')
+        .split(' ')
+        .map(
+          (word) =>
+              word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '',
+        )
+        .join(' ');
+
     context.read<AuthProvider>().setUser(name: name, email: email);
 
     setState(() => _isLoading = false);
 
-    // Navigate to the main app screen after successful sign-in
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
@@ -84,9 +94,7 @@ class _SignInScreenState extends State<SignInScreen>
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ─── HEADER ─────────────────────────────────────────────
           SliverToBoxAdapter(child: _buildHeader()),
-          // ─── FORM ───────────────────────────────────────────────
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnim,
@@ -98,7 +106,6 @@ class _SignInScreenState extends State<SignInScreen>
     );
   }
 
-  // ─── GRADIENT HEADER ──────────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -124,19 +131,15 @@ class _SignInScreenState extends State<SignInScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Logo area
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-                child: const Center(
-                  child: Text('🌴', style: TextStyle(fontSize: 30)),
+              Opacity(
+                opacity: 0.70,
+                child: Image.asset(
+                  'assets/auth/signin_i2.png',
+                  width: 220,
+                  fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Text(
                 'Welcome Back!',
                 style: TextStyle(
@@ -162,7 +165,6 @@ class _SignInScreenState extends State<SignInScreen>
     );
   }
 
-  // ─── FORM BODY ────────────────────────────────────────────────────
   Widget _buildForm() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
@@ -171,7 +173,6 @@ class _SignInScreenState extends State<SignInScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Email Field
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -190,13 +191,11 @@ class _SignInScreenState extends State<SignInScreen>
               },
             ),
             const SizedBox(height: 20),
-
-            // Password Field
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
               controller: _passwordController,
-              hint: '••••••••',
+              hint: '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',
               icon: Icons.lock_outline_rounded,
               obscure: _obscurePassword,
               suffixIcon: IconButton(
@@ -221,12 +220,9 @@ class _SignInScreenState extends State<SignInScreen>
               },
             ),
             const SizedBox(height: 14),
-
-            // Remember me + Forgot password row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Remember me
                 GestureDetector(
                   onTap: () => setState(() => _rememberMe = !_rememberMe),
                   child: Row(
@@ -263,11 +259,8 @@ class _SignInScreenState extends State<SignInScreen>
                     ],
                   ),
                 ),
-                // Forgot password
                 GestureDetector(
-                  onTap: () {
-                    // TODO: Forgot password flow
-                  },
+                  onTap: () {},
                   child: Text(
                     'Forgot Password?',
                     style: AppTheme.bodyMedium.copyWith(
@@ -280,22 +273,16 @@ class _SignInScreenState extends State<SignInScreen>
               ],
             ),
             const SizedBox(height: 28),
-
-            // Sign In Button
             _buildPrimaryButton(label: 'Sign In', onTap: _handleSignIn),
             const SizedBox(height: 16),
-
-            // Divider
             _buildDivider('or continue with'),
             const SizedBox(height: 16),
-
-            // Social buttons
             Row(
               children: [
                 Expanded(
                   child: _buildSocialButton(
                     label: 'Google',
-                    emoji: '🔵',
+                    iconAssetPath: 'assets/social/google.png',
                     onTap: () {},
                   ),
                 ),
@@ -303,19 +290,15 @@ class _SignInScreenState extends State<SignInScreen>
                 Expanded(
                   child: _buildSocialButton(
                     label: 'Facebook',
-                    emoji: '🟦',
+                    iconAssetPath: 'assets/social/facebook.png',
                     onTap: () {},
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-
-            // Guest mode
             _buildGuestButton(),
             const SizedBox(height: 24),
-
-            // Switch to sign up
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -331,7 +314,9 @@ class _SignInScreenState extends State<SignInScreen>
                         backgroundColor: AppTheme.primary,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                          borderRadius: BorderRadius.circular(
+                            AppTheme.radiusSmall,
+                          ),
                         ),
                       ),
                     );
@@ -353,8 +338,6 @@ class _SignInScreenState extends State<SignInScreen>
       ),
     );
   }
-
-  // ─── REUSABLE PARTS ───────────────────────────────────────────────
 
   Widget _buildLabel(String text) {
     return Text(
@@ -482,7 +465,7 @@ class _SignInScreenState extends State<SignInScreen>
 
   Widget _buildSocialButton({
     required String label,
-    required String emoji,
+    required String iconAssetPath,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -504,7 +487,12 @@ class _SignInScreenState extends State<SignInScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 18)),
+            Image.asset(
+              iconAssetPath,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 8),
             Text(label, style: AppTheme.labelBold.copyWith(fontSize: 13)),
           ],

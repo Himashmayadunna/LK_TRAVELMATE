@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 
 class QuickActionButton extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? iconAssetPath;
   final String label;
   final VoidCallback? onTap;
 
   const QuickActionButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.iconAssetPath,
     required this.label,
     this.onTap,
-  });
+  }) : assert(icon != null || iconAssetPath != null);
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +25,23 @@ class QuickActionButton extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              color: AppTheme.surface,
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              border: Border.all(color: AppTheme.divider),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: AppTheme.cardShadow.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: iconAssetPath != null
+                  ? Image.asset(iconAssetPath!, fit: BoxFit.contain)
+                  : Icon(icon, color: Colors.white, size: 24),
+            ),
           ),
           const SizedBox(height: 8),
           Text(

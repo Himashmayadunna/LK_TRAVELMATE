@@ -8,6 +8,7 @@ import '../../widgets/place_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
+import '../ai/ai_suggestions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Sigiriya Rock',
       'location': 'Matale District',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+      'image': 'assets/places/sigiriya_rock.jpg',
       'rating': 4.8,
       'distance': '165 km',
       'favorite': false,
@@ -72,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Mirissa Beach',
       'location': 'Southern Province',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
+      'image': 'assets/places/mirissa_beach.jpg',
       'rating': 4.6,
       'distance': '150 km',
       'favorite': true,
@@ -80,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Temple of Tooth',
       'location': 'Kandy',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
+      'image': 'assets/places/temple_of_tooth.webp',
       'rating': 4.7,
       'distance': '115 km',
       'favorite': false,
@@ -88,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Ella Rock',
       'location': 'Badulla District',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg/1280px-Ella_Rock_from_Little_Adam%27s_Peak.jpg',
+      'image': 'assets/places/ella_rock.jpg',
       'rating': 4.5,
       'distance': '195 km',
       'favorite': false,
@@ -157,81 +158,95 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$_greeting, $userName $_greetingEmoji',
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
-              ],
-            ),
-          ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Notification bell
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: AppTheme.softShadow,
-                ),
-                child: Stack(
-                  children: [
-                    const Center(
-                      child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 22),
+              Image.asset(
+                'assets/home/header_i3.png',
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      shape: BoxShape.circle,
+                      boxShadow: AppTheme.softShadow,
                     ),
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.error,
-                          shape: BoxShape.circle,
+                    child: Stack(
+                      children: [
+                        const Center(
+                          child: Icon(
+                            Icons.notifications_outlined,
+                            color: AppTheme.textPrimary,
+                            size: 22,
+                          ),
+                        ),
+                        Positioned(
+                          right: 10,
+                          top: 10,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        userInitials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Avatar
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    userInitials,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
                   ),
-                ),
+                ],
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$_greeting, $userName $_greetingEmoji',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
             ],
           ),
         ],
@@ -241,15 +256,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── SEARCH BAR ───────────────────────────────────────────────────
   Widget _buildSearchBar() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-    child: SearchBarWidget(
-      controller: _searchController,
-      onChanged: (value) {
-        // handle search if needed, or leave empty
-      },
-    ),
-   );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: SearchBarWidget(
+        controller: _searchController,
+        onChanged: (value) {
+          // handle search if needed, or leave empty
+        },
+      ),
+    );
   }
 
   // ─── AI RECOMMENDATION HERO ───────────────────────────────────────
@@ -259,10 +274,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: AIRecommendationCard(
         title: 'Discover the Pearl of\nthe Indian Ocean',
         subtitle: 'Personalized just for you',
-        imageUrl:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+        imageUrl: 'assets/Hero/hero.png',
+        isAsset: true,
         onTap: () => _openAIChat(
-          initialPrompt: 'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
+          initialPrompt:
+              'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
         ),
       ),
     );
@@ -370,8 +386,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white, size: 20),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
@@ -404,17 +423,22 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(left: 12, right: 8),
             child: Text(emoji, style: const TextStyle(fontSize: 20)),
           ),
-          prefixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
           labelText: label,
-          labelStyle:
-              AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
+          labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
           hintText: hint,
-          hintStyle: AppTheme.bodyMedium
-              .copyWith(color: AppTheme.textHint, fontSize: 12),
+          hintStyle: AppTheme.bodyMedium.copyWith(
+            color: AppTheme.textHint,
+            fontSize: 12,
+          ),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -423,7 +447,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─── DURATION PICKER ──────────────────────────────────────────────
   void _showDurationPicker() {
     final durations = [
-      '3 Days', '5 Days', '7 Days', '10 Days', '14 Days', '21 Days'
+      '3 Days',
+      '5 Days',
+      '7 Days',
+      '10 Days',
+      '14 Days',
+      '21 Days',
     ];
 
     showModalBottomSheet(
@@ -452,13 +481,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 12),
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      gradient:
-                          isSelected ? AppTheme.primaryGradient : null,
+                      gradient: isSelected ? AppTheme.primaryGradient : null,
                       color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusRound),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
                       border: isSelected
                           ? null
                           : Border.all(color: AppTheme.divider),
@@ -466,9 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       d,
                       style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : AppTheme.textPrimary,
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -486,14 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── BUDGET PICKER ────────────────────────────────────────────────
   void _showBudgetPicker() {
-    final budgets = [
-      '\$300',
-      '\$500',
-      '\$800',
-      '\$1200',
-      '\$2000',
-      '\$3000+',
-    ];
+    final budgets = ['\$300', '\$500', '\$800', '\$1200', '\$2000', '\$3000+'];
 
     showModalBottomSheet(
       context: context,
@@ -521,13 +541,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 12),
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      gradient:
-                          isSelected ? AppTheme.primaryGradient : null,
+                      gradient: isSelected ? AppTheme.primaryGradient : null,
                       color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusRound),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
                       border: isSelected
                           ? null
                           : Border.all(color: AppTheme.divider),
@@ -535,9 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       b,
                       style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : AppTheme.textPrimary,
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -573,12 +591,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final foodPref = food.isEmpty ? 'Any local food' : food;
-    _openAIChat(
-      initialPrompt:
-          'Plan a $_selectedDuration trip to Sri Lanka. '
-          'Places I want to visit: $places. '
-          'Food preferences: $foodPref. '
-          'Budget: $_selectedBudget.',
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AISuggestionsScreen(
+          places: places,
+          duration: _selectedDuration,
+          food: foodPref,
+          budget: _selectedBudget,
+        ),
+      ),
     );
   }
 
@@ -595,24 +616,25 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               QuickActionButton(
-                icon: Icons.auto_awesome,
+                iconAssetPath: 'assets/quick_actions/ai_plan.png',
                 label: 'AI Plan',
                 onTap: () => _openAIChat(
-                  initialPrompt: 'Create a 7-day Sri Lanka travel itinerary for a first-time visitor with a mid-range budget',
+                  initialPrompt:
+                      'Create a 7-day Sri Lanka travel itinerary for a first-time visitor with a mid-range budget',
                 ),
               ),
               QuickActionButton(
-                icon: Icons.map_rounded,
+                iconAssetPath: 'assets/quick_actions/map.png',
                 label: 'Map',
                 onTap: () {},
               ),
               QuickActionButton(
-                icon: Icons.hotel_rounded,
+                iconAssetPath: 'assets/quick_actions/hotels.png',
                 label: 'Hotels',
                 onTap: () {},
               ),
               QuickActionButton(
-                icon: Icons.restaurant_rounded,
+                iconAssetPath: 'assets/quick_actions/food.png',
                 label: 'Food',
                 onTap: () {},
               ),
@@ -757,7 +779,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(exp['title'], style: AppTheme.labelBold),
                 const SizedBox(height: 2),
-                Text(exp['desc'], style: AppTheme.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  exp['desc'],
+                  style: AppTheme.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -770,7 +797,11 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule_rounded, size: 13, color: AppTheme.primary),
+                const Icon(
+                  Icons.schedule_rounded,
+                  size: 13,
+                  color: AppTheme.primary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   exp['duration'],
@@ -794,67 +825,71 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: () => _openAIChat(),
         child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              child: const Center(
-                child: Text('🤖', style: TextStyle(fontSize: 28)),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: const Center(
+                  child: Text('🤖', style: TextStyle(fontSize: 28)),
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Ask AI Travel Assistant',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ask AI Travel Assistant',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Get personalized recommendations instantly',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 12,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Get personalized recommendations instantly',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
               ),
-              child: const Icon(Icons.arrow_forward_rounded, color: AppTheme.primary, size: 20),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

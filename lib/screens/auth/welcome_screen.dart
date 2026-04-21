@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_theme.dart';
+
 import '../../main.dart';
+import '../../utils/app_theme.dart';
 import 'signin.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -18,17 +19,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   final List<_FeatureItem> _features = const [
     _FeatureItem(
-      emoji: '🗺️',
+      emoji: '\u{1F5FA}\uFE0F',
       title: 'AI Travel Planner',
       desc: 'Get personalized itineraries powered by AI',
     ),
     _FeatureItem(
-      emoji: '📍',
+      emoji: '\u{1F4CD}',
       title: 'Discover Places',
       desc: 'Explore beaches, temples, wildlife & more',
     ),
     _FeatureItem(
-      emoji: '💬',
+      emoji: '\u{1F4AC}',
       title: 'Smart Assistant',
       desc: 'Ask anything about Sri Lanka travel',
     ),
@@ -61,10 +62,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ─── TOP HERO SECTION ──────────────────────────────────
           _buildHeroSection(),
-
-          // ─── BOTTOM CONTENT ────────────────────────────────────
           Expanded(
             child: FadeTransition(
               opacity: _fadeAnim,
@@ -86,7 +84,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.primaryDark, AppTheme.primary, AppTheme.primaryLight],
+          colors: [
+            AppTheme.primaryDark,
+            AppTheme.primary,
+            AppTheme.primaryLight,
+          ],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(36),
@@ -100,23 +102,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // App icon
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: const Center(
-                  child: Text('🌴', style: TextStyle(fontSize: 38)),
+              Opacity(
+                opacity: 0.70,
+                child: Image.asset(
+                  'assets/auth/welcome_i1.png',
+                  width: 235,
+                  fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               const Text(
                 'LK TravelMate',
                 style: TextStyle(
@@ -126,7 +120,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 'Your AI-Powered Sri Lanka\nTravel Companion',
                 textAlign: TextAlign.center,
@@ -150,13 +144,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
       child: Column(
         children: [
-          // Feature cards
           ...List.generate(_features.length, (i) {
             return _buildFeatureCard(_features[i]);
           }),
           const SizedBox(height: 28),
-
-          // Sign In Button
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -192,8 +183,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           ),
           const SizedBox(height: 12),
-
-          // Create Account Button
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -229,8 +218,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           ),
           const SizedBox(height: 16),
-
-          // Guest mode
           GestureDetector(
             onTap: () {
               Navigator.pushReplacement(
@@ -249,7 +236,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.explore_outlined, color: AppTheme.primary, size: 20),
+                  Icon(
+                    Icons.explore_outlined,
+                    color: AppTheme.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     'Explore as Guest',
@@ -259,14 +250,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Icon(Icons.arrow_forward_rounded, color: AppTheme.primary, size: 18),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppTheme.primary,
+                    size: 18,
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
-
-          // Footer text
           Text(
             'By continuing, you agree to our Terms of Service\nand Privacy Policy',
             textAlign: TextAlign.center,

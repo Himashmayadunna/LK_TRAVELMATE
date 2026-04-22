@@ -44,21 +44,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Good Evening';
   }
 
-  String get _greetingEmoji {
+  IconData get _greetingIcon {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '🌅';
-    if (hour < 17) return '☀️';
-    return '🌙';
+    if (hour < 12) return Icons.wb_sunny_rounded;
+    if (hour < 17) return Icons.wb_sunny_outlined;
+    return Icons.nightlight_round;
   }
 
   // Sample Data
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Beaches', 'emoji': '🏖️', 'count': 45},
-    {'name': 'Hiking', 'emoji': '🥾', 'count': 32},
-    {'name': 'Temples', 'emoji': '🛕', 'count': 28},
-    {'name': 'Wildlife', 'emoji': '🐘', 'count': 18},
-    {'name': 'Waterfalls', 'emoji': '💧', 'count': 24},
-    {'name': 'Heritage', 'emoji': '🏛️', 'count': 15},
+    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 45},
+    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 32},
+    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 28},
+    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 18},
+    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 24},
+    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 15},
   ];
 
   final List<Map<String, dynamic>> _popularPlaces = [
@@ -165,10 +165,19 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$_greeting, $userName $_greetingEmoji',
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '$_greeting, $userName',
+                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(_greetingIcon, size: 16, color: AppTheme.textSecondary),
+                  ],
                 ),
                 const SizedBox(height: 2),
                 const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
@@ -296,7 +305,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Places you want to visit',
             hint: 'e.g. Beaches, Mountains, Historical sites...',
             icon: Icons.place_rounded,
-            emoji: '📍',
           ),
           const SizedBox(height: 12),
 
@@ -306,7 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Food you like to eat',
             hint: 'e.g. Seafood, Spicy curry, Street food...',
             icon: Icons.restaurant_rounded,
-            emoji: '🍛',
           ),
           const SizedBox(height: 14),
 
@@ -319,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TravelPlanCard(
                     label: 'Duration',
                     value: _selectedDuration,
-                    emoji: '📅',
+                    icon: Icons.calendar_month_rounded,
                     onTap: _showDurationPicker,
                   ),
                 ),
@@ -331,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TravelPlanCard(
                     label: 'Budget',
                     value: _selectedBudget,
-                    emoji: '💰',
+                    icon: Icons.payments_rounded,
                     onTap: _showBudgetPicker,
                   ),
                 ),
@@ -360,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('✨', style: TextStyle(fontSize: 20)),
+                  Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
                   SizedBox(width: 10),
                   Text(
                     'Get AI Suggestions',
@@ -388,7 +395,6 @@ class _HomeScreenState extends State<HomeScreen> {
     required String label,
     required String hint,
     required IconData icon,
-    required String emoji,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -403,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: InputDecoration(
           prefixIcon: Padding(
             padding: const EdgeInsets.only(left: 12, right: 8),
-            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+            child: Icon(icon, color: AppTheme.primary, size: 22),
           ),
           prefixIconConstraints:
               const BoxConstraints(minWidth: 0, minHeight: 0),
@@ -654,7 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final cat = _categories[index];
                 return CategoryChip(
                   name: cat['name'],
-                  emoji: cat['emoji'],
+                  iconAsset: cat['iconAsset'],
                   placeCount: cat['count'],
                   isSelected: _selectedCategoryIndex == index,
                   onTap: () => setState(() => _selectedCategoryIndex = index),

@@ -47,7 +47,7 @@ class AIChatScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
                   child: const Center(
-                    child: Text('🤖', style: TextStyle(fontSize: 18)),
+                    child: Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -105,24 +105,24 @@ class _AIChatScreenBodyState extends State<AIChatScreenBody> {
   bool _isLoading = false;
 
   static const List<Map<String, String>> _suggestions = [
-    {'label': '🏖️ Best beaches', 'prompt': 'What are the best beaches to visit in Sri Lanka?'},
-    {'label': '🥾 Hiking trails', 'prompt': 'Recommend top hiking trails in Sri Lanka'},
-    {'label': '🍛 Local food',    'prompt': 'What are must-try Sri Lankan foods and where to find them?'},
-    {'label': '💰 Budget tips',   'prompt': 'How can I travel Sri Lanka on a tight budget?'},
-    {'label': '📅 7-day plan',    'prompt': 'Create a 7-day Sri Lanka itinerary for a first-time visitor'},
-    {'label': '🐘 Wildlife',      'prompt': 'Best places for wildlife safari in Sri Lanka?'},
+    {'label': 'Best beaches', 'prompt': 'What are the best beaches to visit in Sri Lanka?', 'icon': 'beach_access'},
+    {'label': 'Hiking trails', 'prompt': 'Recommend top hiking trails in Sri Lanka', 'icon': 'terrain'},
+    {'label': 'Local food', 'prompt': 'What are must-try Sri Lankan foods and where to find them?', 'icon': 'restaurant'},
+    {'label': 'Budget tips', 'prompt': 'How can I travel Sri Lanka on a tight budget?', 'icon': 'payments'},
+    {'label': '7-day plan', 'prompt': 'Create a 7-day Sri Lanka itinerary for a first-time visitor', 'icon': 'event_note'},
+    {'label': 'Wildlife', 'prompt': 'Best places for wildlife safari in Sri Lanka?', 'icon': 'parks'},
   ];
 
   @override
   void initState() {
     super.initState();
     _messages.add(_ChatMessage(
-      text: "Hello! 👋 I'm your LK TravelMate AI assistant.\n\n"
+      text: "Hello! I'm your LK TravelMate AI assistant.\n\n"
           "I can help you with:\n"
-          "• 🗺️ Destination recommendations\n"
-          "• 📅 Trip itineraries\n"
-          "• 💰 Budget planning\n"
-          "• 🍛 Food & culture tips\n\n"
+          "• Destination recommendations\n"
+          "• Trip itineraries\n"
+          "• Budget planning\n"
+          "• Food and culture tips\n\n"
           "Ask me anything about Sri Lanka travel!",
       isUser: false,
     ));
@@ -302,19 +302,45 @@ class _AIChatScreenBodyState extends State<AIChatScreenBody> {
                 borderRadius: BorderRadius.circular(AppTheme.radiusRound),
                 border: Border.all(color: AppTheme.primarySoft, width: 1),
               ),
-              child: Text(
-                s['label']!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryDark,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(_suggestionIconFor(s['icon']), size: 14, color: AppTheme.primaryDark),
+                  const SizedBox(width: 6),
+                  Text(
+                    s['label']!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryDark,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  IconData _suggestionIconFor(String? iconName) {
+    switch (iconName) {
+      case 'beach_access':
+        return Icons.beach_access_rounded;
+      case 'terrain':
+        return Icons.terrain_rounded;
+      case 'restaurant':
+        return Icons.restaurant_rounded;
+      case 'payments':
+        return Icons.payments_rounded;
+      case 'event_note':
+        return Icons.event_note_rounded;
+      case 'parks':
+        return Icons.pets_rounded;
+      default:
+        return Icons.auto_awesome_rounded;
+    }
   }
 
   Widget _buildInputBar() {

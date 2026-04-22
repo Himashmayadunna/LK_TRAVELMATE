@@ -83,7 +83,7 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🌐', style: TextStyle(fontSize: 15)),
+                      Icon(Icons.language_rounded, size: 16),
                       SizedBox(width: 6),
                       Text('Translator'),
                     ],
@@ -93,7 +93,7 @@ class _AIAssistantShellState extends State<AIAssistantShell>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('🤖', style: TextStyle(fontSize: 15)),
+                      Icon(Icons.chat_bubble_rounded, size: 16),
                       SizedBox(width: 6),
                       Text('Assistant'),
                     ],

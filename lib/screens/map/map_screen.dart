@@ -398,7 +398,14 @@ class _MapScreenState extends State<MapScreen> {
       origin = LatLng(_originLocation!.latitude, _originLocation!.longitude);
     }
 
+<<<<<<< HEAD
     await _fetchDirections(origin: origin, destination: LatLng(destination.latitude, destination.longitude));
+=======
+    await _fetchDirections(
+      origin: origin,
+      destination: LatLng(destination.latitude, destination.longitude),
+    );
+>>>>>>> 18c1d99d77c0c65af30acd08dd8bf636086c289d
   }
 
   void _clearNavigation() {

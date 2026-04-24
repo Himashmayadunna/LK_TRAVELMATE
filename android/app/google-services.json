@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916966489485",
+    "project_id": "book-e60d3",
+    "storage_bucket": "book-e60d3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916966489485:android:cf239670c80c1763eed1c4",
+        "android_client_info": {
+          "package_name": "com.example.lk_travelmate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB34SXjTz1Xwo0yLiqXYDlmrsTBkoGC-hA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

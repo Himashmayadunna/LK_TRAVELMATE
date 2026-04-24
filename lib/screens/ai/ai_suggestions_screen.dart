@@ -145,31 +145,43 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
                         return;
                       }
 
-                      if (isSaved) {
-                        await savedProvider.removeSavedPlace(placeId);
+                      try {
+                        if (isSaved) {
+                          await savedProvider.removeSavedPlace(placeId);
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${item.name} removed from saved places',
+                              ),
+                              backgroundColor: AppTheme.textSecondary,
+                            ),
+                          );
+                        } else {
+                          await savedProvider.addSavedPlace(
+                            name: item.name,
+                            category: item.category,
+                            imageUrl: item.imageUrl,
+                            location: item.location,
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${item.name} saved to your Explore list',
+                              ),
+                              backgroundColor: AppTheme.success,
+                            ),
+                          );
+                        }
+                      } catch (e) {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '${item.name} removed from saved places',
+                              e.toString().replaceAll('Exception: ', ''),
                             ),
-                            backgroundColor: AppTheme.textSecondary,
-                          ),
-                        );
-                      } else {
-                        await savedProvider.addSavedPlace(
-                          name: item.name,
-                          category: item.category,
-                          imageUrl: item.imageUrl,
-                          location: item.location,
-                        );
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${item.name} saved to your Explore list',
-                            ),
-                            backgroundColor: AppTheme.success,
+                            backgroundColor: AppTheme.error,
                           ),
                         );
                       }

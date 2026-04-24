@@ -311,6 +311,22 @@ class _ExploreScreenState extends State<ExploreScreen> {
             Expanded(
               child: Consumer<SavedPlacesProvider>(
                 builder: (context, savedProvider, _) {
+                  if (savedProvider.lastError != null &&
+                      savedProvider.savedPlaces.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          savedProvider.lastError!,
+                          textAlign: TextAlign.center,
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppTheme.error,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
                   final all = _combinedDestinations(savedProvider.savedPlaces);
                   final filtered = _filtered(all);
 

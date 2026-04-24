@@ -4,14 +4,14 @@ import '../../utils/app_theme.dart';
 class TravelPlanCard extends StatelessWidget {
   final String label;
   final String value;
-  final String emoji;
+  final IconData icon;
   final VoidCallback? onTap;
 
   const TravelPlanCard({
     super.key,
     required this.label,
     required this.value,
-    required this.emoji,
+    required this.icon,
     this.onTap,
   });
 
@@ -29,7 +29,7 @@ class TravelPlanCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
+            Icon(icon, color: AppTheme.primary, size: 28),
             const SizedBox(height: 8),
             Text(
               label,

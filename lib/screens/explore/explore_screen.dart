@@ -360,7 +360,7 @@ class _DestinationCard extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: Colors.grey.shade300,
                       child: const Icon(
                         Icons.image_not_supported,

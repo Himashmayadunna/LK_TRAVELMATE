@@ -71,21 +71,32 @@ class _SignUpScreenState extends State<SignUpScreen>
 		}
 
 		setState(() => _isLoading = true);
-		await Future.delayed(const Duration(milliseconds: 900));
 
-		if (!mounted) return;
+		try {
+			await context.read<AuthProvider>().signUp(
+				name: _nameController.text.trim(),
+				email: _emailController.text.trim(),
+				password: _passwordController.text, // Add this to match AuthProvider params
+			);
 
-		context.read<AuthProvider>().setUser(
-			name: _nameController.text.trim(),
-			email: _emailController.text.trim(),
-		);
-
-		setState(() => _isLoading = false);
-
-		Navigator.pushReplacement(
-			context,
-			MaterialPageRoute(builder: (_) => const MainScreen()),
-		);
+			if (!mounted) return;
+			Navigator.pushReplacement(
+				context,
+				MaterialPageRoute(builder: (_) => const MainScreen()),
+			);
+		} catch (e) {
+			if (!mounted) return;
+			ScaffoldMessenger.of(context).showSnackBar(
+				SnackBar(
+					content: Text(e.toString().replaceAll('Exception: ', '')),
+					backgroundColor: AppTheme.error,
+				),
+			);
+		} finally {
+			if (mounted) {
+				setState(() => _isLoading = false);
+			}
+		}
 	}
 
 	@override

@@ -52,23 +52,30 @@ class _SignInScreenState extends State<SignInScreen>
 
     setState(() => _isLoading = true);
 
-    // Simulate a short sign-in delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      await context.read<AuthProvider>().signIn(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
 
-    if (!mounted) return;
-
-    // Save user details to AuthProvider
-    final email = _emailController.text.trim();
-    final name = email.split('@').first.replaceAll('.', ' ').split(' ').map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '').join(' ');
-    context.read<AuthProvider>().setUser(name: name, email: email);
-
-    setState(() => _isLoading = false);
-
-    // Navigate to the main app screen after successful sign-in
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
-    );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _handleGuestMode() {

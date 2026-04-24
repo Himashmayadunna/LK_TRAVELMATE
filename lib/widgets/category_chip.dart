@@ -3,7 +3,8 @@ import '../../utils/app_theme.dart';
 
 class CategoryChip extends StatelessWidget {
   final String name;
-  final String emoji;
+  final String? emoji;
+  final String? iconAsset;
   final int placeCount;
   final bool isSelected;
   final VoidCallback? onTap;
@@ -11,7 +12,8 @@ class CategoryChip extends StatelessWidget {
   const CategoryChip({
     super.key,
     required this.name,
-    required this.emoji,
+    this.emoji,
+    this.iconAsset,
     required this.placeCount,
     this.isSelected = false,
     this.onTap,
@@ -36,7 +38,21 @@ class CategoryChip extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 26)),
+            if (iconAsset != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                child: Image.asset(
+                  iconAsset!,
+                  width: 34,
+                  height: 34,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.image_not_supported_rounded, size: 26);
+                  },
+                ),
+              )
+            else
+              Text(emoji ?? '', style: const TextStyle(fontSize: 26)),
             const SizedBox(height: 6),
             Text(
               name,

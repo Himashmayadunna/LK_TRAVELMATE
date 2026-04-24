@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/map/map_screen.dart';
-import 'screens/ai/ai_chat_screen.dart';
+import 'screens/ai/ai_assistant_shell.dart';
 import 'screens/profile/profile_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
         ChangeNotifierProvider(create: (_) => SavedPlacesProvider()),
       ],
       child: MaterialApp(
@@ -44,14 +46,14 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    ExploreScreen(),
-    MapScreen(),
-    AIChatScreen(),
-    ProfileScreen(),
-  ];
 
+  late final List<Widget> _screens = [
+    const HomeScreen(),
+    const ExploreScreen(),
+    const MapScreen(),
+    AIAssistantShell(onBack: () => setState(() => _currentIndex = 0)),
+    const ProfileScreen(),
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,9 +79,9 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(Icons.home_outlined, Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.explore_outlined, Icons.explore, 'Explore', 1),
+                _buildNavItem(Icons.search_outlined, Icons.search_rounded, 'Explore', 1),
                 _buildCenterMapButton(),
-                _buildNavItem(Icons.auto_awesome_outlined, Icons.auto_awesome, 'Assistant', 3),
+                _buildNavItem(Icons.chat_bubble_outline, Icons.chat_bubble_rounded, 'Chat', 3),
                 _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
               ],
             ),

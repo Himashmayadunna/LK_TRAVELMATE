@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "916966489485",
-    "project_id": "book-e60d3",
-    "storage_bucket": "book-e60d3.firebasestorage.app"
+    "project_number": "479173819539",
+    "project_id": "lk-travelmate",
+    "storage_bucket": "lk-travelmate.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:916966489485:android:cf239670c80c1763eed1c4",
+        "mobilesdk_app_id": "1:479173819539:android:5291a1ebd21b7e7015a166",
         "android_client_info": {
           "package_name": "com.example.lk_travelmate"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB34SXjTz1Xwo0yLiqXYDlmrsTBkoGC-hA"
+          "current_key": "AIzaSyDsmSDbsnb2o41yd-4VfB47d_iAdQsRTbQ"
         }
       ],
       "services": {

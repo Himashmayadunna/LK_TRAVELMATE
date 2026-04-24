@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBCHLkbjLn-fIidgTCY0fmbkBvZzRQS8vY',
-    appId: '1:916966489485:web:697e671e94d7367beed1c4',
-    messagingSenderId: '916966489485',
-    projectId: 'book-e60d3',
-    authDomain: 'book-e60d3.firebaseapp.com',
-    storageBucket: 'book-e60d3.firebasestorage.app',
-    measurementId: 'G-WS6CEZ7V12',
+    apiKey: 'AIzaSyDsxduEGriI2eM724LgGuSnRqZehUZelVE',
+    appId: '1:479173819539:web:293426aa0bbb79d815a166',
+    messagingSenderId: '479173819539',
+    projectId: 'lk-travelmate',
+    authDomain: 'lk-travelmate.firebaseapp.com',
+    storageBucket: 'lk-travelmate.firebasestorage.app',
+    measurementId: 'G-4LKTK2TDEY',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB34SXjTz1Xwo0yLiqXYDlmrsTBkoGC-hA',
-    appId: '1:916966489485:android:cf239670c80c1763eed1c4',
-    messagingSenderId: '916966489485',
-    projectId: 'book-e60d3',
-    storageBucket: 'book-e60d3.firebasestorage.app',
+    apiKey: 'AIzaSyDsmSDbsnb2o41yd-4VfB47d_iAdQsRTbQ',
+    appId: '1:479173819539:android:5291a1ebd21b7e7015a166',
+    messagingSenderId: '479173819539',
+    projectId: 'lk-travelmate',
+    storageBucket: 'lk-travelmate.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDmYy9tdMbsPBTFEFKQWrFc33KEzPmY7Qw',
-    appId: '1:916966489485:ios:f0798acd5affb95feed1c4',
-    messagingSenderId: '916966489485',
-    projectId: 'book-e60d3',
-    storageBucket: 'book-e60d3.firebasestorage.app',
+    apiKey: 'AIzaSyCsWMzKBfCaN7t06aFN1ehOUvoesOLG48E',
+    appId: '1:479173819539:ios:d97c3a0a873085e515a166',
+    messagingSenderId: '479173819539',
+    projectId: 'lk-travelmate',
+    storageBucket: 'lk-travelmate.firebasestorage.app',
     iosBundleId: 'com.example.lkTravelmate',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDmYy9tdMbsPBTFEFKQWrFc33KEzPmY7Qw',
-    appId: '1:916966489485:ios:f0798acd5affb95feed1c4',
-    messagingSenderId: '916966489485',
-    projectId: 'book-e60d3',
-    storageBucket: 'book-e60d3.firebasestorage.app',
+    apiKey: 'AIzaSyCsWMzKBfCaN7t06aFN1ehOUvoesOLG48E',
+    appId: '1:479173819539:ios:d97c3a0a873085e515a166',
+    messagingSenderId: '479173819539',
+    projectId: 'lk-travelmate',
+    storageBucket: 'lk-travelmate.firebasestorage.app',
     iosBundleId: 'com.example.lkTravelmate',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBCHLkbjLn-fIidgTCY0fmbkBvZzRQS8vY',
-    appId: '1:916966489485:web:697e671e94d7367beed1c4',
-    messagingSenderId: '916966489485',
-    projectId: 'book-e60d3',
-    authDomain: 'book-e60d3.firebaseapp.com',
-    storageBucket: 'book-e60d3.firebasestorage.app',
-    measurementId: 'G-WS6CEZ7V12',
+    apiKey: 'AIzaSyDsxduEGriI2eM724LgGuSnRqZehUZelVE',
+    appId: '1:479173819539:web:650786c6dd91739e15a166',
+    messagingSenderId: '479173819539',
+    projectId: 'lk-travelmate',
+    authDomain: 'lk-travelmate.firebaseapp.com',
+    storageBucket: 'lk-travelmate.firebasestorage.app',
+    measurementId: 'G-PNJJD0DK9M',
   );
+
 }

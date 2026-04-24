@@ -101,7 +101,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               SectionHeader(
                 title: 'Saved Destinations',
-                actionText: savedPlaces.isEmpty ? 'Explore' : '${savedPlaces.length} saved',
+                actionText: savedPlaces.isEmpty
+                    ? 'Explore'
+                    : '${savedPlaces.length} saved',
                 onAction: () {},
               ),
               const SizedBox(height: 16),
@@ -128,7 +130,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'No saved places yet',
-                        style: AppTheme.bodyLarge.copyWith(color: AppTheme.textHint),
+                        style: AppTheme.bodyLarge.copyWith(
+                          color: AppTheme.textHint,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -152,8 +156,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       category: dest.category,
                       imageUrl: dest.imageUrl,
                       onView: () {},
-                      onDelete: () {
-                        savedProvider.removeSavedPlace(dest.id);
+                      onDelete: () async {
+                        await savedProvider.removeSavedPlace(dest.id);
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('${dest.name} removed from saved'),
@@ -161,7 +166,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                           ),
                         );

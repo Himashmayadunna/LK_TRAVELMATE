@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/saved_places_provider.dart';
+import '../auth/signin.dart';
 
 // ── Inline Model ──────────────────────────────────────────────────────────────
 
@@ -116,7 +120,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     'Cultural',
   ];
 
-  List<Destination> get _filtered => _sriLankaDestinations.where((d) {
+  List<Destination> _filtered(List<Destination> source) => source.where((d) {
     final matchCat =
         _selectedCategory == 'All' || d.category == _selectedCategory;
     final matchSearch =
@@ -125,6 +129,36 @@ class _ExploreScreenState extends State<ExploreScreen> {
         d.category.toLowerCase().contains(_searchQuery.toLowerCase());
     return matchCat && matchSearch;
   }).toList();
+
+  List<Destination> _combinedDestinations(List<SavedPlace> savedPlaces) {
+    final result = <Destination>[];
+    final seen = <String>{};
+
+    for (final place in savedPlaces) {
+      final key = place.name.toLowerCase().trim();
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      result.add(
+        Destination(
+          id: place.id,
+          name: place.name,
+          imageUrl: place.imageUrl,
+          category: place.category,
+          rating: 4.9,
+          budget: 'Saved',
+        ),
+      );
+    }
+
+    for (final destination in _sriLankaDestinations) {
+      final key = destination.name.toLowerCase().trim();
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      result.add(destination);
+    }
+
+    return result;
+  }
 
   Color _badgeColor(String cat) {
     switch (cat) {
@@ -176,6 +210,36 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, _) {
+                      if (authProvider.isLoggedIn) {
+                        return Text(
+                          'Your saved AI destinations appear here too.',
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.primary,
+                          ),
+                        );
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SignInScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Sign in to sync and view your saved AI destinations.',
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -245,31 +309,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
             // Destinations grid
             Expanded(
-              child: _filtered.isEmpty
-                  ? const Center(
+              child: Consumer<SavedPlacesProvider>(
+                builder: (context, savedProvider, _) {
+                  final all = _combinedDestinations(savedProvider.savedPlaces);
+                  final filtered = _filtered(all);
+
+                  if (filtered.isEmpty) {
+                    return const Center(
                       child: Text(
                         'No destinations found',
                         style: TextStyle(color: AppTheme.textHint),
                       ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.78,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                      itemCount: _filtered.length,
-                      itemBuilder: (_, i) => _DestinationCard(
-                        destination: _filtered[i],
-                        badgeColor: _badgeColor(_filtered[i].category),
-                      ),
+                    );
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.78,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) => _DestinationCard(
+                      destination: filtered[i],
+                      badgeColor: _badgeColor(filtered[i].category),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

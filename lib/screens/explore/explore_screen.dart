@@ -200,7 +200,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (_, i) {
                   final cat = _categories[i];
                   final selected = _selectedCategory == cat;
@@ -360,7 +360,7 @@ class _DestinationCard extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: Colors.grey.shade300,
                       child: const Icon(
                         Icons.image_not_supported,

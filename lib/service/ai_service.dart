@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class GeminiService {
   static const String _apiKey =
-      "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";
+      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";

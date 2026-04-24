@@ -1,22 +1,26 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_theme.dart';
 
 const String _googleApiKey = 'AIzaSyDi5dcWP-ZQYSoO8S0j3Nq0rM0YK6i-KkU';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final String? initialQuery;
+
+  const MapScreen({super.key, this.initialQuery});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
+  GoogleMapController? mapController;
   final TextEditingController _searchController = TextEditingController();
 
   // Sri Lanka center coordinates
@@ -58,7 +62,6 @@ class _MapScreenState extends State<MapScreen> {
   List<NavigationStep> _navigationSteps = [];
   bool _isLoadingRoute = false;
   bool _showNavigationPanel = false;
-  LatLng? _originLatLng;
   TravelLocation? _originLocation;
   String _travelMode = 'driving';
   String _routeSummary = '';
@@ -94,8 +97,14 @@ class _MapScreenState extends State<MapScreen> {
 
   void _zoomToLocation(TravelLocation location) {
     setState(() => selectedLocation = location);
+    if (kIsWeb) {
+      _showLocationDetails(location);
+      return;
+    }
+    final controller = mapController;
+    if (controller == null) return;
     // Matches guide: zooms to 15.5x on selection
-    mapController.animateCamera(
+    controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(target: LatLng(location.latitude, location.longitude), zoom: 15.5),
       ),
@@ -104,7 +113,12 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _resetToSriLanka() {
-    mapController.animateCamera(
+    final controller = mapController;
+    if (controller == null) {
+      setState(() => selectedLocation = null);
+      return;
+    }
+    controller.animateCamera(
       CameraUpdate.newCameraPosition(
         const CameraPosition(target: _sriLankaCenter, zoom: _initialZoom),
       ),
@@ -204,20 +218,27 @@ class _MapScreenState extends State<MapScreen> {
 
   // ─── Search ────
 
+  TravelLocation? _findLocationByQuery(String query) {
+    if (query.trim().isEmpty) return null;
+    final normalized = query.toLowerCase();
+    for (final loc in travelLocations) {
+      if (loc.name.toLowerCase().contains(normalized) ||
+          loc.shortName.toLowerCase().contains(normalized)) {
+        return loc;
+      }
+    }
+    return null;
+  }
+
   void _searchLocation(String query) {
     if (query.isEmpty) {
       _clearSearch();
       return;
     }
 
-    final location = travelLocations.firstWhere(
-      (loc) =>
-          loc.name.toLowerCase().contains(query.toLowerCase()) ||
-          loc.shortName.toLowerCase().contains(query.toLowerCase()),
-      orElse: () => TravelLocation(id: '0', name: '', latitude: 0, longitude: 0, description: '', category: '', shortName: ''),
-    );
+    final location = _findLocationByQuery(query);
 
-    if (location.id != '0') {
+    if (location != null) {
       _zoomToLocation(location);
       _searchController.clear();
       setState(() {});
@@ -339,7 +360,7 @@ class _MapScreenState extends State<MapScreen> {
 
       // Fit camera to show full route
       final bounds = _boundsFromLatLngList([origin, destination, ...polylineCoords]);
-      mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+      mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
     } catch (e) {
       _showError('Failed to fetch directions. Check your internet connection.');
       setState(() => _isLoadingRoute = false);
@@ -377,8 +398,7 @@ class _MapScreenState extends State<MapScreen> {
       origin = LatLng(_originLocation!.latitude, _originLocation!.longitude);
     }
 
-    setState(() => _originLatLng = origin);
-    await _fetchDirections(origin: origin!, destination: LatLng(destination.latitude, destination.longitude));
+    await _fetchDirections(origin: origin, destination: LatLng(destination.latitude, destination.longitude));
   }
 
   void _clearNavigation() {
@@ -386,7 +406,6 @@ class _MapScreenState extends State<MapScreen> {
       _polylines = {};
       _navigationSteps = [];
       _showNavigationPanel = false;
-      _originLatLng = null;
       _originLocation = null;
       _routeSummary = '';
       _currentStepIndex = 0;
@@ -513,7 +532,11 @@ class _MapScreenState extends State<MapScreen> {
                   label: const Text('Get Directions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   onPressed: () {
                     Navigator.pop(ctx);
-                    _startNavigation(destination);
+                    if (kIsWeb) {
+                      _openExternalDirections(destination, _originMode == 'location' ? _originLocation : null);
+                    } else {
+                      _startNavigation(destination);
+                    }
                   },
                 ),
               ),
@@ -695,6 +718,54 @@ class _MapScreenState extends State<MapScreen> {
   // ─── Map ──────
 
   Widget _buildMap() {
+    if (kIsWeb) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: AppTheme.surface,
+          boxShadow: [BoxShadow(color: AppTheme.cardShadow, blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.map_outlined, size: 42, color: AppTheme.textSecondary),
+                const SizedBox(height: 10),
+                const Text(
+                  'Interactive map is unavailable in web preview.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Use Navigate to open Google Maps directions for the selected place.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    if (selectedLocation != null) {
+                      _openExternalPlaceMap(selectedLocation!);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Open Selected Place in Maps'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -704,7 +775,16 @@ class _MapScreenState extends State<MapScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: GoogleMap(
-          onMapCreated: (controller) => mapController = controller,
+          onMapCreated: (controller) {
+            mapController = controller;
+            final initialQuery = widget.initialQuery?.trim() ?? '';
+            if (initialQuery.isNotEmpty) {
+              final match = _findLocationByQuery(initialQuery);
+              if (match != null) {
+                _zoomToLocation(match);
+              }
+            }
+          },
           initialCameraPosition: const CameraPosition(target: _sriLankaCenter, zoom: _initialZoom),
           markers: markers,
           polylines: _polylines,
@@ -716,6 +796,24 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openExternalPlaceMap(TravelLocation location) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}',
+    );
+    await launchUrl(uri, mode: LaunchMode.platformDefault);
+  }
+
+  Future<void> _openExternalDirections(
+    TravelLocation destination,
+    TravelLocation? origin,
+  ) async {
+    final destinationParam = '${destination.latitude},${destination.longitude}';
+    final url = origin == null
+        ? 'https://www.google.com/maps/dir/?api=1&destination=$destinationParam&travelmode=$_travelMode'
+        : 'https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=$destinationParam&travelmode=$_travelMode';
+    await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
   }
 
   // ─── Loading ─────
@@ -782,7 +880,7 @@ class _MapScreenState extends State<MapScreen> {
                 return GestureDetector(
                   onTap: () {
                     setState(() => _currentStepIndex = index);
-                    mapController.animateCamera(CameraUpdate.newCameraPosition(
+                    mapController?.animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(target: step.startLocation, zoom: 16),
                     ));
                   },
@@ -840,7 +938,7 @@ class _MapScreenState extends State<MapScreen> {
                 onPressed: _currentStepIndex > 0
                     ? () {
                         setState(() => _currentStepIndex--);
-                        mapController.animateCamera(CameraUpdate.newCameraPosition(
+                        mapController?.animateCamera(CameraUpdate.newCameraPosition(
                           CameraPosition(target: _navigationSteps[_currentStepIndex].startLocation, zoom: 16),
                         ));
                       }
@@ -853,7 +951,7 @@ class _MapScreenState extends State<MapScreen> {
                 onPressed: _currentStepIndex < _navigationSteps.length - 1
                     ? () {
                         setState(() => _currentStepIndex++);
-                        mapController.animateCamera(CameraUpdate.newCameraPosition(
+                        mapController?.animateCamera(CameraUpdate.newCameraPosition(
                           CameraPosition(target: _navigationSteps[_currentStepIndex].startLocation, zoom: 16),
                         ));
                       }

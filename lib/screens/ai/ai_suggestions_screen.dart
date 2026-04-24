@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/ai_suggestion_model.dart';
 import '../../providers/ai_suggestion_provider.dart';
+import '../map/map_screen.dart';
 import '../../utils/app_theme.dart';
 
 class AISuggestionsScreen extends StatefulWidget {
@@ -429,6 +430,32 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   _detailRow('🚌 How to get there', item.howToGetThere),
                   const SizedBox(height: 8),
                   _detailRow('💡 Insider tip', item.insiderTip),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MapScreen(initialQuery: item.name),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.map_rounded),
+                      label: const Text(
+                        'Go to Map',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),

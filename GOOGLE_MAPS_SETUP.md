@@ -40,6 +40,16 @@
 4. Add your iOS bundle identifier (find in Xcode: `Runner` → `General` → `Bundle Identifier`)
 5. Copy the generated API key
 
+### For Web:
+
+1. In Google Cloud Console, go to **Credentials**
+2. Click **Create Credentials** → **API Key**
+3. Enable **Maps JavaScript API** for the same project
+4. Add website restrictions (HTTP referrers), for example:
+   - `http://localhost:*/*`
+   - `http://127.0.0.1:*/*`
+5. Copy the web API key
+
 ## Step 3: Add API Keys to Your Project
 
 ### Android Configuration:
@@ -64,6 +74,16 @@ Update `ios/Runner/Info.plist`:
 ```
 
 Replace `AQ.Ab8RN6IQpxs9N-Y91-wI5NDAsZdTpKgUMdSOSs053Uq6r0rEsg` with your iOS API key.
+
+### Web Configuration:
+
+Update `web/index.html` and add this inside `<head>`:
+
+```html
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_WEB_API_KEY"></script>
+```
+
+Replace `YOUR_WEB_API_KEY` with your web API key.
 
 ## Step 4: Test the App
 
@@ -103,6 +123,7 @@ flutter run -v
 ### Map Not Displaying:
 - Verify API keys are correctly added
 - Check that Google Maps APIs are enabled in Console
+- For browser builds, ensure `Maps JavaScript API` is enabled and `web/index.html` contains the Google Maps script tag
 - Ensure internet permission is granted
 - Try running: `flutter clean` then `flutter pub get`
 

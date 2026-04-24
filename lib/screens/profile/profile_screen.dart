@@ -8,6 +8,8 @@ import '../../widgets/profile_stat_card.dart';
 import '../../widgets/saved_destination_tile.dart';
 import '../../widgets/section_header.dart';
 import '../auth/welcome_screen.dart';
+import '../explore/destination_detail_screen.dart';
+import '../explore/explore_screen.dart' show sriLankaDestinations;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -151,7 +153,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       name: dest.name,
                       category: dest.category,
                       imageUrl: dest.imageUrl,
-                      onView: () {},
+                      onView: () {
+                        final fullDest = sriLankaDestinations
+                            .where((d) => d.id == dest.id)
+                            .firstOrNull;
+                        if (fullDest != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DestinationDetailScreen(destination: fullDest),
+                            ),
+                          );
+                        }
+                      },
                       onDelete: () {
                         savedProvider.removeSavedPlace(dest.id);
                         ScaffoldMessenger.of(context).showSnackBar(

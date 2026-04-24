@@ -23,36 +23,7 @@ class SavedPlacesProvider extends ChangeNotifier {
   int get savedCount => _savedPlaces.length;
 
   Future<void> fetchSavedPlaces() async {
-    _isLoading = true;
-    notifyListeners();
-
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Sample data - replace with actual API call
-    _savedPlaces = [
-      SavedPlace(
-        id: '1',
-        name: 'Sigiriya Rock Fortress',
-        category: 'Historical',
-        imageUrl: 'https://example.com/sigiriya.jpg',
-      ),
-      SavedPlace(
-        id: '2',
-        name: 'Temple of the Tooth',
-        category: 'Religious',
-        imageUrl: 'https://example.com/temple.jpg',
-      ),
-      SavedPlace(
-        id: '3',
-        name: 'Yala National Park',
-        category: 'Nature',
-        imageUrl: 'https://example.com/yala.jpg',
-      ),
-    ];
-
-    _isLoading = false;
-    notifyListeners();
+  
   }
 
   void addSavedPlace(SavedPlace place) {

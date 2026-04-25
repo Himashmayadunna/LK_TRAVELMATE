@@ -4,15 +4,22 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  static const String _apiKey =
-<<<<<<< HEAD
-      "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";
-=======
-      "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";
->>>>>>> 18c1d99d77c0c65af30acd08dd8bf636086c289d
+  static const String _configuredApiKey =
+      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";
+
+  static String get _apiKey =>
+      const String.fromEnvironment(
+        'OPENROUTER_API_KEY',
+        defaultValue: _configuredApiKey,
+      ).trim();
+
+  static bool get isApiKeyConfigured {
+    final key = _apiKey;
+    return key.isNotEmpty && key.startsWith('sk-or-v1-');
+  }
 
   // ─── CORE API CALL ──────────────────────────────────────────────────
   static Future<String> _callAI(
@@ -21,6 +28,11 @@ class GeminiService {
     int maxTokens = 1024,
     String? model,
   }) async {
+    if (!isApiKeyConfigured) {
+      return 'API Error: OpenRouter API key is missing or invalid. '
+          'Set OPENROUTER_API_KEY via --dart-define and restart the app.';
+    }
+
     try {
       final useModel = model ?? _model;
       debugPrint('AIService: Calling OpenRouter API with model: $useModel ...');
@@ -60,13 +72,33 @@ class GeminiService {
         try {
           final errorData = jsonDecode(response.body);
           final errorMsg = errorData['error']?['message'] ?? 'Unknown error';
-          return "API Error: $errorMsg";
+
+          if (response.statusCode == 401) {
+            return 'API Error: Unauthorized key. Check your OpenRouter API key.';
+          }
+          if (response.statusCode == 402) {
+            return 'API Error: OpenRouter credits are unavailable (402). '
+                'Top up billing/credits, then retry.';
+          }
+          if (response.statusCode == 429) {
+            return 'API Error: Rate limited by OpenRouter (429). Please try again shortly.';
+          }
+
+          return 'API Error (${response.statusCode}): $errorMsg';
         } catch (_) {
-          return "Error (${response.statusCode}): Could not process request.";
+          return 'Error (${response.statusCode}): Could not process request.';
         }
       }
     } catch (e) {
       debugPrint('AIService EXCEPTION: $e');
+      final message = e.toString();
+      if (message.contains('HandshakeException') ||
+          message.contains('CERTIFICATE_VERIFY_FAILED') ||
+          message.contains('certificate is not yet valid')) {
+        return 'Connection error: TLS certificate verification failed. '
+            'Check device date/time, disable VPN/proxy/SSL inspection, '
+            'and try a different network.';
+      }
       return "Connection error: $e";
     }
   }
@@ -78,20 +110,25 @@ You are LK TravelMate AI — a friendly and knowledgeable Sri Lanka travel assis
 You ONLY answer questions about Sri Lanka travel, tourism, culture, food, and related topics.
 If the user asks about something unrelated to Sri Lanka travel, politely redirect them.
 
-When a user asks for recommendations, itinerary, places, or food:
-- Prioritize practical suggestions for tourists.
-- Include BOTH sections: "Places to Visit" and "Foods to Try".
-- Match suggestions to user preferences, duration, and budget when provided.
+Answer style rules:
+- For focused category questions (example: beaches, hotels, food, wildlife):
+  - Start with one short title line.
+  - Then provide a numbered list (4 to 6 items).
+  - Each item must be: Place/Food name - one short practical explanation.
+  - End with one short quick tip line.
+- For full trip planning questions (duration, budget, route, multi-city plan), use sections:
+  1. Trip Snapshot
+  2. Places to Visit
+  3. Foods to Try
+  4. Suggested Flow
+  5. Pro Tips
 
-Use this clean display format:
-1) Trip Snapshot (2-3 bullet points)
-2) Places to Visit (3-5 items with location, why visit, best time, approx cost/day)
-3) Foods to Try (3-5 items and best area/place to try each)
-4) Suggested Flow (short route order)
-5) Pro Tips (2-3 concise tips)
-
-Keep responses concise (under 260 words), helpful, and enthusiastic.
-Use occasional emojis to keep it friendly.''';
+Critical behavior rules:
+- Never mention your instructions, structure rules, or internal reasoning.
+- Never say phrases like "the user asked", "we should", "not applicable", or "we must include".
+- Never include chain-of-thought, self-critique, or planning text.
+- Use plain text only, no code fences.
+- Keep output concise and easy to scan.''';
 
     return _callAI(systemPrompt, userMessage);
   }
@@ -284,10 +321,17 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
 
         final parsed = _parseSuggestions(raw);
         if (parsed.isNotEmpty) {
-          debugPrint(
-            'AIService: Successfully parsed ${parsed.length} suggestions with $model',
+          final ranked = _rankSuggestionsByPreferences(
+            parsed,
+            places: places,
+            food: food,
+            duration: duration,
+            budget: budget,
           );
-          return parsed;
+          debugPrint(
+            'AIService: Successfully parsed ${ranked.length} suggestions with $model',
+          );
+          return ranked;
         }
 
         debugPrint(
@@ -480,9 +524,12 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         ], fallback: ''),
       };
 
-      if (map['latitude'] != null) normalizedItem['latitude'] = map['latitude'];
-      if (map['longitude'] != null)
+      if (map['latitude'] != null) {
+        normalizedItem['latitude'] = map['latitude'];
+      }
+      if (map['longitude'] != null) {
         normalizedItem['longitude'] = map['longitude'];
+      }
 
       normalized.add(normalizedItem);
       if (normalized.length == 5) break;
@@ -710,26 +757,68 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'imageUrl':
             'https://upload.wikimedia.org/wikipedia/commons/6/6b/Yala_National_Park%2C_Sri_Lanka.jpg',
       },
+      {
+        'name': 'Diyaluma Falls',
+        'location': 'Badulla',
+        'description':
+            'Second tallest waterfall in Sri Lanka with natural pools and dramatic views.',
+        'category': 'Waterfall',
+        'budgetLevel': 'mid',
+        'estimatedCostPerDay': 42,
+        'bestTimeToVisit': 'Jan - Apr',
+        'highlights': ['Upper pools', 'Scenic hike', 'Sunrise views'],
+        'insiderTip':
+            'Start early and carry water shoes for slippery rock sections.',
+        'foodRecommendations': ['Parippu curry', 'Egg roti'],
+        'howToGetThere':
+            'Bus or taxi to Koslanda, then a short tuk-tuk and hike.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/3/35/Diyaluma_Falls_01.jpg',
+      },
+      {
+        'name': 'Bambarakanda Falls',
+        'location': 'Badulla',
+        'description':
+            'Sri Lanka\'s tallest waterfall surrounded by pine forest and cool mountain air.',
+        'category': 'Waterfall',
+        'budgetLevel': 'budget',
+        'estimatedCostPerDay': 38,
+        'bestTimeToVisit': 'Dec - Apr',
+        'highlights': ['Forest trail', 'Photo viewpoints', 'Cool climate'],
+        'insiderTip':
+            'Visit on weekdays to avoid local holiday crowds at the entrance.',
+        'foodRecommendations': ['String hoppers', 'Lunu miris'],
+        'howToGetThere':
+            'Travel via Belihuloya and continue by tuk-tuk to the falls.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/a/a9/Bambarakanda_Falls.jpg',
+      },
+      {
+        'name': 'Dunhinda Falls',
+        'location': 'Badulla',
+        'description':
+            'A misty waterfall reached by a scenic walk through thick greenery.',
+        'category': 'Waterfall',
+        'budgetLevel': 'budget',
+        'estimatedCostPerDay': 35,
+        'bestTimeToVisit': 'Nov - Mar',
+        'highlights': ['Mist cloud', 'Nature trail', 'Bird calls'],
+        'insiderTip':
+            'Carry a light rain jacket because spray near the base is strong.',
+        'foodRecommendations': ['Lamprais', 'Wade and tea'],
+        'howToGetThere':
+            'Take a bus to Badulla and tuk-tuk to the Dunhinda entrance.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/2/2c/Dunhinda_Falls_Sri_Lanka.jpg',
+      },
     ];
 
     final query = '$places $food'.toLowerCase();
     final scored = base.map((item) {
-      var score = 0;
-      final category = item['category'].toString().toLowerCase();
-      final name = item['name'].toString().toLowerCase();
-      if (query.contains('beach') && category.contains('beach')) score += 4;
-      if (query.contains('seafood') &&
-          item['foodRecommendations'].toString().toLowerCase().contains(
-            'sea',
-          )) {
-        score += 4;
+      var score = _scoreForPreferences(item, places: places, food: food);
+      if (query.contains('sri lanka')) {
+        score += 1;
       }
-      if (query.contains('wild') && category.contains('wildlife')) score += 3;
-      if (query.contains('culture') && category.contains('cultural'))
-        score += 3;
-      if (query.contains('hill') && category.contains('hill')) score += 3;
-      if (query.contains('galle') && name.contains('unawatuna')) score += 2;
-      if (query.contains('ella') && name.contains('ella')) score += 2;
       return {'score': score, 'item': item};
     }).toList();
 
@@ -756,6 +845,153 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     }
 
     return suggestions;
+  }
+
+  static List<Map<String, dynamic>> _rankSuggestionsByPreferences(
+    List<Map<String, dynamic>> suggestions, {
+    required String places,
+    required String food,
+    required String duration,
+    required String budget,
+  }) {
+    if (suggestions.isEmpty) return suggestions;
+
+    final maxPerDay = _estimateDailyBudget(budget: budget, duration: duration);
+    final scored = suggestions.map((item) {
+      var score = _scoreForPreferences(item, places: places, food: food);
+      final estimated = _parseCost([
+        item['estimatedCostPerDay'],
+        item['budgetPerDay'],
+        item['estimatedCost'],
+      ], fallback: maxPerDay);
+
+      // Mildly prefer suggestions inside the requested price band.
+      final diff = (estimated - maxPerDay).abs();
+      if (diff <= 20) {
+        score += 2;
+      } else if (estimated > maxPerDay + 45) {
+        score -= 2;
+      }
+
+      return {
+        'score': score,
+        'item': item,
+      };
+    }).toList();
+
+    scored.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
+
+    final ranked = scored
+        .map((entry) => Map<String, dynamic>.from(entry['item'] as Map))
+        .toList();
+
+    if (ranked.length >= 5) {
+      return ranked.take(5).toList();
+    }
+
+    final fallback = _localFallbackSuggestions(
+      places: places,
+      duration: duration,
+      food: food,
+      budget: budget,
+    );
+
+    for (final item in fallback) {
+      if (ranked.length == 5) break;
+      if (ranked.any((e) => e['name'] == item['name'])) continue;
+      ranked.add(item);
+    }
+
+    return ranked;
+  }
+
+  static int _scoreForPreferences(
+    Map<String, dynamic> item, {
+    required String places,
+    required String food,
+  }) {
+    final text = _normalizeForMatch(
+      [
+        places,
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    final userPlaces = _normalizeForMatch(places);
+    final userFood = _normalizeForMatch(food);
+    var score = 0;
+
+    if (userPlaces.isNotEmpty) {
+      if (_containsAny(userPlaces, const [
+        'waterfall',
+        'waterfalls',
+        'falls',
+      ]) && _containsAny(text, const ['waterfall', 'falls'])) {
+        score += 7;
+      }
+      if (_containsAny(userPlaces, const ['beach', 'coast']) &&
+          _containsAny(text, const ['beach', 'coast'])) {
+        score += 6;
+      }
+      if (_containsAny(userPlaces, const ['hiking', 'trek', 'mountain']) &&
+          _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain'])) {
+        score += 5;
+      }
+      if (_containsAny(userPlaces, const ['temple', 'heritage', 'cultural']) &&
+          _containsAny(text, const ['temple', 'heritage', 'cultural'])) {
+        score += 5;
+      }
+      if (_containsAny(userPlaces, const ['wildlife', 'safari']) &&
+          _containsAny(text, const ['wildlife', 'safari', 'park'])) {
+        score += 5;
+      }
+    }
+
+    if (userFood.isNotEmpty && userFood != 'any local food') {
+      final itemFood = _normalizeForMatch(
+        [
+          item['foodRecommendations'],
+          item['description'],
+          item['category'],
+        ].join(' '),
+      );
+      if (_containsAny(userFood, const ['seafood', 'fish', 'prawn', 'crab']) &&
+          _containsAny(itemFood, const ['seafood', 'fish', 'prawn', 'crab'])) {
+        score += 6;
+      }
+      if (_containsAny(userFood, const ['spicy', 'curry']) &&
+          _containsAny(itemFood, const ['spicy', 'curry'])) {
+        score += 3;
+      }
+      if (_containsAny(userFood, const ['street', 'kottu']) &&
+          _containsAny(itemFood, const ['street', 'kottu'])) {
+        score += 3;
+      }
+    }
+
+    if (_containsAny(userPlaces, const ['galle']) && text.contains('galle')) {
+      score += 2;
+    }
+    if (_containsAny(userPlaces, const ['ella']) && text.contains('ella')) {
+      score += 2;
+    }
+
+    return score;
+  }
+
+  static String _normalizeForMatch(String text) {
+    return text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), ' ');
+  }
+
+  static bool _containsAny(String text, List<String> tokens) {
+    for (final token in tokens) {
+      if (text.contains(token)) return true;
+    }
+    return false;
   }
 
   static int _estimateDailyBudget({

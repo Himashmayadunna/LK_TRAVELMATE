@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/saved_places_provider.dart';
+import '../auth/signin.dart';
 
 // ── Inline Model ──────────────────────────────────────────────────────────────
 
@@ -45,7 +49,7 @@ final List<Destination> _sriLankaDestinations = [
     id: '3',
     name: 'Temple of the Tooth',
     imageUrl: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400',
-    category: 'Cultural',
+    category: 'Temples',
     rating: 4.7,
     budget: '\$',
   ),
@@ -53,7 +57,7 @@ final List<Destination> _sriLankaDestinations = [
     id: '4',
     name: 'Ella Rock Train Bridge',
     imageUrl: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400',
-    category: 'Nature',
+    category: 'Hiking',
     rating: 4.8,
     budget: '\$',
   ),
@@ -91,12 +95,53 @@ final List<Destination> _sriLankaDestinations = [
     rating: 4.6,
     budget: '\$\$',
   ),
+  Destination(
+    id: '9',
+    name: 'Little Adam\'s Peak',
+    imageUrl:
+        'https://images.unsplash.com/photo-1504598318550-17eba1008a68?w=400',
+    category: 'Hiking',
+    rating: 4.8,
+    budget: '\$',
+  ),
+  Destination(
+    id: '10',
+    name: 'Dalada Maligawa',
+    imageUrl:
+        'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400',
+    category: 'Temples',
+    rating: 4.7,
+    budget: '\$\$',
+  ),
+  Destination(
+    id: '11',
+    name: 'Bambarakanda Falls',
+    imageUrl:
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400',
+    category: 'Waterfalls',
+    rating: 4.6,
+    budget: '\$\$',
+  ),
+  Destination(
+    id: '12',
+    name: 'Diyaluma Falls',
+    imageUrl:
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
+    category: 'Waterfalls',
+    rating: 4.8,
+    budget: '\$\$',
+  ),
 ];
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final String? initialCategory;
+
+  const ExploreScreen({
+    super.key,
+    this.initialCategory,
+  });
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -104,19 +149,29 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
-  String _searchQuery = '';
+  late String _selectedCategory;
+  late String _searchQuery;
 
   final List<String> _categories = [
     'All',
     'Beach',
     'Heritage',
     'Nature',
+    'Hiking',
+    'Temples',
+    'Waterfalls',
     'Safari',
     'Cultural',
   ];
 
-  List<Destination> get _filtered => _sriLankaDestinations.where((d) {
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialCategory ?? 'All';
+    _searchQuery = '';
+  }
+
+  List<Destination> _filtered(List<Destination> source) => source.where((d) {
     final matchCat =
         _selectedCategory == 'All' || d.category == _selectedCategory;
     final matchSearch =
@@ -126,10 +181,46 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return matchCat && matchSearch;
   }).toList();
 
+  List<Destination> _combinedDestinations(List<SavedPlace> savedPlaces) {
+    final result = <Destination>[];
+    final seen = <String>{};
+
+    for (final place in savedPlaces) {
+      final key = place.name.toLowerCase().trim();
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      result.add(
+        Destination(
+          id: place.id,
+          name: place.name,
+          imageUrl: place.imageUrl,
+          category: place.category,
+          rating: 4.9,
+          budget: 'Saved',
+        ),
+      );
+    }
+
+    for (final destination in _sriLankaDestinations) {
+      final key = destination.name.toLowerCase().trim();
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      result.add(destination);
+    }
+
+    return result;
+  }
+
   Color _badgeColor(String cat) {
     switch (cat) {
       case 'Nature':
         return AppTheme.success;
+      case 'Hiking':
+        return AppTheme.warning;
+      case 'Temples':
+        return AppTheme.primaryLight;
+      case 'Waterfalls':
+        return AppTheme.accent;
       case 'Safari':
         return AppTheme.warning;
       case 'Heritage':
@@ -176,6 +267,36 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, _) {
+                      if (authProvider.isLoggedIn) {
+                        return Text(
+                          'Your saved AI destinations appear here too.',
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.primary,
+                          ),
+                        );
+                      }
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SignInScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Sign in to sync and view your saved AI destinations.',
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -245,31 +366,56 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
             // Destinations grid
             Expanded(
-              child: _filtered.isEmpty
-                  ? const Center(
+              child: Consumer<SavedPlacesProvider>(
+                builder: (context, savedProvider, _) {
+                  if (savedProvider.lastError != null &&
+                      savedProvider.savedPlaces.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          savedProvider.lastError!,
+                          textAlign: TextAlign.center,
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: AppTheme.error,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final all = _combinedDestinations(savedProvider.savedPlaces);
+                  final filtered = _filtered(all);
+
+                  if (filtered.isEmpty) {
+                    return const Center(
                       child: Text(
                         'No destinations found',
                         style: TextStyle(color: AppTheme.textHint),
                       ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.78,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                      itemCount: _filtered.length,
-                      itemBuilder: (_, i) => _DestinationCard(
-                        destination: _filtered[i],
-                        badgeColor: _badgeColor(_filtered[i].category),
-                      ),
+                    );
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.78,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) => _DestinationCard(
+                      destination: filtered[i],
+                      badgeColor: _badgeColor(filtered[i].category),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

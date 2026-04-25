@@ -41,18 +41,13 @@ dependencies:
   http: ^1.2.2
   speech_to_text: ^7.0.0
   connectivity_plus: ^6.1.5
-<<<<<<< HEAD
-  geolocator: ^11.0.0 
-  flutter_polyline_points: ^2.0.0 
-  url_launcher: ^6.3.1
-
-=======
   geolocator: ^11.0.0
   flutter_polyline_points: ^2.0.0
+  url_launcher: ^6.3.1
   flutter_tts: ^4.2.2
   firebase_core: ^4.7.0
   firebase_auth: ^6.4.0
->>>>>>> 18c1d99d77c0c65af30acd08dd8bf636086c289d
+  cloud_firestore: ^6.1.0
 
 
 dev_dependencies:

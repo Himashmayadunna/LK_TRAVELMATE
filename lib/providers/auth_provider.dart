@@ -8,11 +8,13 @@ class AuthProvider extends ChangeNotifier {
   String _displayName = 'Traveler';
   String _email = 'traveler@example.com';
   bool _isLoggedIn = false;
+  bool _isAuthReady = false;
 
   AuthProvider() {
     _auth.authStateChanges().listen((User? user) {
       currentUser = user;
       _isLoggedIn = user != null;
+      _isAuthReady = true;
       if (user != null) {
         _displayName = user.displayName ?? 'Traveler';
         _email = user.email ?? 'traveler@example.com';
@@ -27,6 +29,7 @@ class AuthProvider extends ChangeNotifier {
   String get displayName => _displayName;
   String get email => _email;
   bool get isLoggedIn => _isLoggedIn;
+  bool get isAuthReady => _isAuthReady;
 
   String get initials {
     if (_displayName.isEmpty) return 'T';
@@ -37,16 +40,18 @@ class AuthProvider extends ChangeNotifier {
     return _displayName[0].toUpperCase();
   }
 
-  Future<void> signUp({required String name, required String email, required String password}) async {
+  Future<void> signUp({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
+
       // Update display name immediately
       await userCredential.user?.updateDisplayName(name);
-      
+
       _displayName = name;
       _email = email;
       _isLoggedIn = true;
@@ -59,10 +64,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> signIn({required String email, required String password}) async {
     try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       debugPrint('SignIn Failed: ${e.message}');
       throw Exception(e.message ?? 'Unknown error occurred.');

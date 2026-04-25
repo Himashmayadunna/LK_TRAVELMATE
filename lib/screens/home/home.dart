@@ -8,7 +8,10 @@ import '../../widgets/place_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
+import '../ai/ai_plan_form_screen.dart';
 import '../ai/ai_suggestions_screen.dart';
+import '../explore/explore_screen.dart';
+import '../map/map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,12 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Sample Data
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 45},
-    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 32},
-    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 28},
-    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 18},
-    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 24},
-    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 15},
+    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 2},
+    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 2},
+    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 2},
+    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 1},
+    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 2},
+    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 2},
   ];
 
   final List<Map<String, dynamic>> _popularPlaces = [
@@ -126,6 +129,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openAISuggestionsQuickAction() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AIPlanFormScreen()),
+    );
+  }
+
+  void _openPlaceDetailsQuickAction() {
+    final placeTopic = _placesController.text.trim().isEmpty
+        ? 'Sigiriya, Ella, Galle, Kandy'
+        : _placesController.text.trim();
+
+    _openAIChat(
+      initialPrompt:
+          'Give me practical details about these Sri Lanka places: $placeTopic. Include best time, entry cost, how to reach, and one insider tip for each place.',
+    );
+  }
+
+  void _openRelatedHotelsQuickAction() {
+    final placeTopic = _placesController.text.trim().isEmpty
+        ? 'Sri Lanka'
+        : _placesController.text.trim();
+
+    _openAIChat(
+      initialPrompt:
+          'Find hotels in Sri Lanka related to these places/interests: $placeTopic. Give 5 options in this format: Hotel/Area - who it is best for - approx budget.',
+    );
+  }
+
+  void _openMap({String? initialQuery}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapScreen(initialQuery: initialQuery),
+      ),
+    );
+  }
+
+  void _openExploreCategory(String categoryName) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ExploreScreen(
+          initialCategory: _mapHomeCategoryToExploreCategory(categoryName),
+        ),
+      ),
+    );
+  }
+
+  String _mapHomeCategoryToExploreCategory(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'beaches':
+        return 'Beach';
+      case 'hiking':
+        return 'Hiking';
+      case 'temples':
+        return 'Temples';
+      case 'waterfalls':
+        return 'Waterfalls';
+      case 'wildlife':
+        return 'Safari';
+      case 'heritage':
+        return 'Heritage';
+      default:
+        return 'All';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,12 +205,8 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(child: _buildHeader()),
             SliverToBoxAdapter(child: _buildSearchBar()),
             SliverToBoxAdapter(child: _buildAIRecommendation()),
-            SliverToBoxAdapter(child: _buildTravelPlan()),
+            SliverToBoxAdapter(child: _buildPrimaryActionButtons()),
             SliverToBoxAdapter(child: _buildQuickActions()),
-            SliverToBoxAdapter(child: _buildCategories()),
-            SliverToBoxAdapter(child: _buildPopularPlaces()),
-            SliverToBoxAdapter(child: _buildTrendingExperiences()),
-            SliverToBoxAdapter(child: _buildAIChatCTA()),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
         ),
@@ -271,8 +335,73 @@ class _HomeScreenState extends State<HomeScreen> {
         subtitle: 'Personalized just for you',
         imageUrl: 'assets/Hero/hero.png',
         isAsset: true,
-        onTap: () => _openAIChat(
-          initialPrompt: 'Recommend the top must-visit destinations in Sri Lanka for a first-time traveler',
+        onTap: _openAISuggestionsQuickAction,
+      ),
+    );
+  }
+
+  Widget _buildPrimaryActionButtons() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPrimaryActionCard(
+              icon: Icons.auto_awesome_rounded,
+              label: 'AI Suggestions',
+              onTap: _openAISuggestionsQuickAction,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildPrimaryActionCard(
+              icon: Icons.info_outline_rounded,
+              label: 'Place Details',
+              onTap: _openPlaceDetailsQuickAction,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildPrimaryActionCard(
+              icon: Icons.hotel_rounded,
+              label: 'Related Hotels',
+              onTap: _openRelatedHotelsQuickAction,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrimaryActionCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          border: Border.all(color: AppTheme.divider),
+          boxShadow: AppTheme.softShadow,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppTheme.primary, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTheme.caption.copyWith(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -599,7 +728,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Quick Actions', icon: Icons.bolt_rounded),
+          const SectionHeader(title: 'Quick Access', icon: Icons.bolt_rounded),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -607,24 +736,28 @@ class _HomeScreenState extends State<HomeScreen> {
               QuickActionButton(
                 icon: Icons.auto_awesome,
                 label: 'AI Plan',
-                onTap: () => _openAIChat(
-                  initialPrompt: 'Create a 7-day Sri Lanka travel itinerary for a first-time visitor with a mid-range budget',
-                ),
+                onTap: _openAISuggestionsQuickAction,
               ),
               QuickActionButton(
                 icon: Icons.map_rounded,
                 label: 'Map',
-                onTap: () {},
+                onTap: () => _openMap(),
               ),
               QuickActionButton(
                 icon: Icons.hotel_rounded,
                 label: 'Hotels',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
+                ),
               ),
               QuickActionButton(
                 icon: Icons.restaurant_rounded,
                 label: 'Food',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'What are must-try Sri Lankan foods and the best places to try them?',
+                ),
               ),
             ],
           ),
@@ -661,9 +794,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 return CategoryChip(
                   name: cat['name'],
                   iconAsset: cat['iconAsset'],
+                  emoji: cat['emoji'],
                   placeCount: cat['count'],
                   isSelected: _selectedCategoryIndex == index,
-                  onTap: () => setState(() => _selectedCategoryIndex = index),
+                  onTap: () {
+                    setState(() => _selectedCategoryIndex = index);
+                    _openExploreCategory(cat['name']);
+                  },
                 );
               },
             ),

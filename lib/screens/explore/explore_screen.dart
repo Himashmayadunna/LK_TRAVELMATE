@@ -49,7 +49,7 @@ final List<Destination> _sriLankaDestinations = [
     id: '3',
     name: 'Temple of the Tooth',
     imageUrl: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400',
-    category: 'Cultural',
+    category: 'Temples',
     rating: 4.7,
     budget: '\$',
   ),
@@ -57,7 +57,7 @@ final List<Destination> _sriLankaDestinations = [
     id: '4',
     name: 'Ella Rock Train Bridge',
     imageUrl: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400',
-    category: 'Nature',
+    category: 'Hiking',
     rating: 4.8,
     budget: '\$',
   ),
@@ -95,12 +95,53 @@ final List<Destination> _sriLankaDestinations = [
     rating: 4.6,
     budget: '\$\$',
   ),
+  Destination(
+    id: '9',
+    name: 'Little Adam\'s Peak',
+    imageUrl:
+        'https://images.unsplash.com/photo-1504598318550-17eba1008a68?w=400',
+    category: 'Hiking',
+    rating: 4.8,
+    budget: '\$',
+  ),
+  Destination(
+    id: '10',
+    name: 'Dalada Maligawa',
+    imageUrl:
+        'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400',
+    category: 'Temples',
+    rating: 4.7,
+    budget: '\$\$',
+  ),
+  Destination(
+    id: '11',
+    name: 'Bambarakanda Falls',
+    imageUrl:
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400',
+    category: 'Waterfalls',
+    rating: 4.6,
+    budget: '\$\$',
+  ),
+  Destination(
+    id: '12',
+    name: 'Diyaluma Falls',
+    imageUrl:
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400',
+    category: 'Waterfalls',
+    rating: 4.8,
+    budget: '\$\$',
+  ),
 ];
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final String? initialCategory;
+
+  const ExploreScreen({
+    super.key,
+    this.initialCategory,
+  });
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -108,17 +149,27 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
-  String _searchQuery = '';
+  late String _selectedCategory;
+  late String _searchQuery;
 
   final List<String> _categories = [
     'All',
     'Beach',
     'Heritage',
     'Nature',
+    'Hiking',
+    'Temples',
+    'Waterfalls',
     'Safari',
     'Cultural',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialCategory ?? 'All';
+    _searchQuery = '';
+  }
 
   List<Destination> _filtered(List<Destination> source) => source.where((d) {
     final matchCat =
@@ -164,6 +215,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     switch (cat) {
       case 'Nature':
         return AppTheme.success;
+      case 'Hiking':
+        return AppTheme.warning;
+      case 'Temples':
+        return AppTheme.primaryLight;
+      case 'Waterfalls':
+        return AppTheme.accent;
       case 'Safari':
         return AppTheme.warning;
       case 'Heritage':

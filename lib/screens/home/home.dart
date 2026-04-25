@@ -9,6 +9,8 @@ import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
 import '../ai/ai_suggestions_screen.dart';
+import '../explore/explore_screen.dart';
+import '../map/map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,12 +55,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Sample Data
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 45},
-    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 32},
-    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 28},
-    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 18},
-    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 24},
-    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 15},
+    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 2},
+    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 2},
+    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 2},
+    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 1},
+    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 2},
+    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 2},
   ];
 
   final List<Map<String, dynamic>> _popularPlaces = [
@@ -124,6 +126,43 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (_) => AIChatScreen(initialPrompt: initialPrompt),
       ),
     );
+  }
+
+  void _openMap({String? initialQuery}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapScreen(initialQuery: initialQuery),
+      ),
+    );
+  }
+
+  void _openExploreCategory(String categoryName) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ExploreScreen(
+          initialCategory: _mapHomeCategoryToExploreCategory(categoryName),
+        ),
+      ),
+    );
+  }
+
+  String _mapHomeCategoryToExploreCategory(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'beaches':
+        return 'Beach';
+      case 'hiking':
+        return 'Hiking';
+      case 'temples':
+        return 'Temples';
+      case 'waterfalls':
+        return 'Waterfalls';
+      case 'wildlife':
+        return 'Safari';
+      case 'heritage':
+        return 'Heritage';
+      default:
+        return 'All';
+    }
   }
 
   @override
@@ -614,17 +653,23 @@ class _HomeScreenState extends State<HomeScreen> {
               QuickActionButton(
                 icon: Icons.map_rounded,
                 label: 'Map',
-                onTap: () {},
+                onTap: () => _openMap(),
               ),
               QuickActionButton(
                 icon: Icons.hotel_rounded,
                 label: 'Hotels',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
+                ),
               ),
               QuickActionButton(
                 icon: Icons.restaurant_rounded,
                 label: 'Food',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'What are must-try Sri Lankan foods and the best places to try them?',
+                ),
               ),
             ],
           ),
@@ -661,9 +706,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 return CategoryChip(
                   name: cat['name'],
                   iconAsset: cat['iconAsset'],
+                  emoji: cat['emoji'],
                   placeCount: cat['count'],
                   isSelected: _selectedCategoryIndex == index,
-                  onTap: () => setState(() => _selectedCategoryIndex = index),
+                  onTap: () {
+                    setState(() => _selectedCategoryIndex = index);
+                    _openExploreCategory(cat['name']);
+                  },
                 );
               },
             ),

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class GeminiService {
   static const String _configuredApiKey =
-      "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";
+      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";
@@ -857,6 +857,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     if (suggestions.isEmpty) return suggestions;
 
     final maxPerDay = _estimateDailyBudget(budget: budget, duration: duration);
+    final primaryIntent = _detectPrimaryIntent(places);
     final scored = suggestions.map((item) {
       var score = _scoreForPreferences(item, places: places, food: food);
       final estimated = _parseCost([
@@ -881,9 +882,39 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
 
     scored.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
 
-    final ranked = scored
-        .map((entry) => Map<String, dynamic>.from(entry['item'] as Map))
-        .toList();
+    final ranked = <Map<String, dynamic>>[];
+    final seenNames = <String>{};
+
+    void addFromScored(Iterable<Map<String, dynamic>> items) {
+      for (final entry in items) {
+        final item = Map<String, dynamic>.from(entry['item'] as Map);
+        final name = item['name'].toString();
+        if (seenNames.contains(name)) continue;
+        ranked.add(item);
+        seenNames.add(name);
+        if (ranked.length == 5) return;
+      }
+    }
+
+    if (primaryIntent != null) {
+      addFromScored(
+        scored.where((entry) => _matchesPrimaryIntent(
+              Map<String, dynamic>.from(entry['item'] as Map),
+              primaryIntent,
+            )),
+      );
+
+      if (ranked.length < 5) {
+        addFromScored(
+          scored.where((entry) => !_blocksPrimaryIntent(
+                Map<String, dynamic>.from(entry['item'] as Map),
+                primaryIntent,
+              )),
+        );
+      }
+    } else {
+      addFromScored(scored);
+    }
 
     if (ranked.length >= 5) {
       return ranked.take(5).toList();
@@ -899,10 +930,87 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     for (final item in fallback) {
       if (ranked.length == 5) break;
       if (ranked.any((e) => e['name'] == item['name'])) continue;
+      if (primaryIntent != null &&
+          !_matchesPrimaryIntent(item, primaryIntent) &&
+          _blocksPrimaryIntent(item, primaryIntent)) {
+        continue;
+      }
       ranked.add(item);
     }
 
     return ranked;
+  }
+
+  static String? _detectPrimaryIntent(String places) {
+    final normalized = _normalizeForMatch(places);
+    if (_containsAny(normalized, const ['waterfall', 'waterfalls', 'falls'])) {
+      return 'waterfall';
+    }
+    if (_containsAny(normalized, const ['beach', 'coast'])) return 'beach';
+    if (_containsAny(normalized, const ['hiking', 'trek', 'mountain'])) {
+      return 'hiking';
+    }
+    if (_containsAny(normalized, const ['temple', 'heritage', 'cultural'])) {
+      return 'cultural';
+    }
+    if (_containsAny(normalized, const ['wildlife', 'safari'])) {
+      return 'wildlife';
+    }
+    return null;
+  }
+
+  static bool _matchesPrimaryIntent(
+    Map<String, dynamic> item,
+    String intent,
+  ) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      case 'beach':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'hiking':
+        return _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain']);
+      case 'cultural':
+        return _containsAny(text, const ['temple', 'heritage', 'cultural']);
+      case 'wildlife':
+        return _containsAny(text, const ['wildlife', 'safari', 'park']);
+      default:
+        return false;
+    }
+  }
+
+  static bool _blocksPrimaryIntent(
+    Map<String, dynamic> item,
+    String intent,
+  ) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'beach':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      default:
+        return false;
+    }
   }
 
   static int _scoreForPreferences(
@@ -912,7 +1020,6 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
   }) {
     final text = _normalizeForMatch(
       [
-        places,
         item['name'],
         item['location'],
         item['category'],
@@ -925,29 +1032,38 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     final userFood = _normalizeForMatch(food);
     var score = 0;
 
+    final wantsWaterfall =
+        _containsAny(userPlaces, const ['waterfall', 'waterfalls', 'falls']);
+    final wantsBeach = _containsAny(userPlaces, const ['beach', 'coast']);
+    final wantsHiking =
+        _containsAny(userPlaces, const ['hiking', 'trek', 'mountain']);
+    final wantsCultural =
+        _containsAny(userPlaces, const ['temple', 'heritage', 'cultural']);
+    final wantsWildlife = _containsAny(userPlaces, const ['wildlife', 'safari']);
+
     if (userPlaces.isNotEmpty) {
-      if (_containsAny(userPlaces, const [
-        'waterfall',
-        'waterfalls',
-        'falls',
-      ]) && _containsAny(text, const ['waterfall', 'falls'])) {
-        score += 7;
+      final isWaterfall = _containsAny(text, const ['waterfall', 'falls']);
+      final isBeach = _containsAny(text, const ['beach', 'coast']);
+      final isHiking =
+          _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain']);
+      final isCultural =
+          _containsAny(text, const ['temple', 'heritage', 'cultural']);
+      final isWildlife = _containsAny(text, const ['wildlife', 'safari', 'park']);
+
+      if (wantsWaterfall) {
+        score += isWaterfall ? 14 : -6;
       }
-      if (_containsAny(userPlaces, const ['beach', 'coast']) &&
-          _containsAny(text, const ['beach', 'coast'])) {
-        score += 6;
+      if (wantsBeach) {
+        score += isBeach ? 10 : -4;
       }
-      if (_containsAny(userPlaces, const ['hiking', 'trek', 'mountain']) &&
-          _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain'])) {
-        score += 5;
+      if (wantsHiking) {
+        score += isHiking ? 8 : -3;
       }
-      if (_containsAny(userPlaces, const ['temple', 'heritage', 'cultural']) &&
-          _containsAny(text, const ['temple', 'heritage', 'cultural'])) {
-        score += 5;
+      if (wantsCultural) {
+        score += isCultural ? 8 : -3;
       }
-      if (_containsAny(userPlaces, const ['wildlife', 'safari']) &&
-          _containsAny(text, const ['wildlife', 'safari', 'park'])) {
-        score += 5;
+      if (wantsWildlife) {
+        score += isWildlife ? 8 : -3;
       }
     }
 

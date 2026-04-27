@@ -108,7 +108,7 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Official park info, permits & fees',
-      url: 'https://www.dwc.gov.lk/yala-national-park/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.park_rounded,
       color: Color(0xFF2E7D32),
     ),
@@ -132,7 +132,7 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Wilpattu official park info',
-      url: 'https://www.dwc.gov.lk/wilpattu-national-park/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.park_rounded,
       color: Color(0xFF2E7D32),
     ),
@@ -149,7 +149,7 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: '"The Gathering" details & jeep permits',
-      url: 'https://www.dwc.gov.lk/minneriya-national-park/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.park_rounded,
       color: Color(0xFF2E7D32),
     ),
@@ -166,14 +166,14 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
     _ExternalLink(
       label: 'Elephant Transit Home',
       subtitle: 'Orphaned elephant rehabilitation sanctuary',
-      url: 'https://www.dwc.gov.lk/elephant-transit-home/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.volunteer_activism_rounded,
       color: Color(0xFF6A1B9A),
     ),
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Udawalawe park info & permits',
-      url: 'https://www.dwc.gov.lk/udawalawe-national-park/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.park_rounded,
       color: Color(0xFF2E7D32),
     ),
@@ -234,7 +234,7 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Trail info, permit & entry fees',
-      url: 'https://www.dwc.gov.lk/horton-plains-national-park/',
+      url: 'https://www.dwc.gov.lk/',
       icon: Icons.park_rounded,
       color: Color(0xFF2E7D32),
     ),
@@ -293,6 +293,214 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF4527A0),
     ),
   ],
+
+  // ── Hiking ──────────────────────────────────────────────────────────────────
+
+  'h1': [
+    // Little Adam's Peak
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Ella',
+      subtitle: 'Ella hiking guide & activities',
+      url: 'https://www.srilanka.travel/ella',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Dept. of Wildlife Conservation',
+      subtitle: 'Trail permits & park regulations',
+      url: 'https://www.dwc.gov.lk/',
+      icon: Icons.park_rounded,
+      color: Color(0xFF1B5E20),
+    ),
+  ],
+
+  'h2': [
+    // Ella Rock
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Ella',
+      subtitle: 'Ella Rock trail guide & tips',
+      url: 'https://www.srilanka.travel/ella',
+      icon: Icons.hiking_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Sri Lanka Railways',
+      subtitle: 'Ella train schedules — combine with Nine Arch',
+      url: 'http://www.railway.gov.lk/',
+      icon: Icons.train_rounded,
+      color: Color(0xFF4527A0),
+    ),
+  ],
+
+  'h3': [
+    // Knuckles Mountain Range
+    _ExternalLink(
+      label: 'UNESCO — Central Highlands',
+      subtitle: 'Knuckles World Heritage listing',
+      url: 'https://whc.unesco.org/en/list/1203/',
+      icon: Icons.account_balance_rounded,
+      color: Color(0xFF1565C0),
+    ),
+    _ExternalLink(
+      label: 'Dept. of Wildlife Conservation',
+      subtitle: 'Knuckles trail permits & regulations',
+      url: 'https://www.dwc.gov.lk/',
+      icon: Icons.park_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Hill Country',
+      subtitle: 'Central highlands travel guide',
+      url: 'https://www.srilanka.travel/',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF00695C),
+    ),
+  ],
+
+  'h4': [
+    // Pidurutalagala
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Nuwara Eliya',
+      subtitle: 'Hill country hiking & travel guide',
+      url: 'https://www.srilanka.travel/nuwara-eliya',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Nuwara Eliya Police',
+      subtitle: 'Summit access permit enquiries',
+      url: 'https://www.police.lk/',
+      icon: Icons.local_police_rounded,
+      color: Color(0xFF1565C0),
+    ),
+  ],
+
+  // ── Temples ──────────────────────────────────────────────────────────────────
+
+  't1': [
+    // Kelaniya Raja Maha Vihara
+    _ExternalLink(
+      label: 'Kelaniya Temple Official',
+      subtitle: 'Official temple website & puja times',
+      url: 'https://kelaniyatemple.lk/',
+      icon: Icons.temple_buddhist_rounded,
+      color: Color(0xFFE65100),
+    ),
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Colombo',
+      subtitle: 'Colombo region travel guide',
+      url: 'https://www.srilanka.travel/colombo',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+  ],
+
+  't2': [
+    // Embekke Devale
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Kandy',
+      subtitle: 'Kandy day trips & temple guide',
+      url: 'https://www.srilanka.travel/kandy',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Central Cultural Fund',
+      subtitle: 'Heritage site entry & opening hours',
+      url: 'https://ccf.gov.lk/',
+      icon: Icons.confirmation_number_rounded,
+      color: Color(0xFF6A1B9A),
+    ),
+  ],
+
+  't3': [
+    // Kataragama Maha Devale
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Kataragama',
+      subtitle: 'Pilgrimage guide & festival calendar',
+      url: 'https://www.srilanka.travel/kataragama',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Dept. of Wildlife Conservation',
+      subtitle: 'Yala National Park nearby — plan a safari',
+      url: 'https://www.dwc.gov.lk/',
+      icon: Icons.park_rounded,
+      color: Color(0xFFE65100),
+    ),
+  ],
+
+  't4': [
+    // Thuparamaya Stupa
+    _ExternalLink(
+      label: 'UNESCO — Sacred City of Anuradhapura',
+      subtitle: 'World Heritage listing & site map',
+      url: 'https://whc.unesco.org/en/list/200/',
+      icon: Icons.account_balance_rounded,
+      color: Color(0xFF1565C0),
+    ),
+    _ExternalLink(
+      label: 'Central Cultural Fund',
+      subtitle: 'Anuradhapura tickets & opening hours',
+      url: 'https://ccf.gov.lk/',
+      icon: Icons.confirmation_number_rounded,
+      color: Color(0xFF6A1B9A),
+    ),
+  ],
+
+  // ── Waterfalls ───────────────────────────────────────────────────────────────
+
+  'w1': [
+    // Bambarakanda Falls
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Waterfalls',
+      subtitle: 'Waterfall travel guide & visitor tips',
+      url: 'https://www.srilanka.travel/',
+      icon: Icons.water_rounded,
+      color: Color(0xFF0277BD),
+    ),
+  ],
+
+  'w2': [
+    // Diyaluma Falls
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Ella Region',
+      subtitle: 'Ella & surrounds travel guide',
+      url: 'https://www.srilanka.travel/ella',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+  ],
+
+  'w3': [
+    // Rawana Falls
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Ella',
+      subtitle: 'Ella attractions & visitor guide',
+      url: 'https://www.srilanka.travel/ella',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+    _ExternalLink(
+      label: 'Sri Lanka Railways',
+      subtitle: 'Ella train — combine with falls visit',
+      url: 'http://www.railway.gov.lk/',
+      icon: Icons.train_rounded,
+      color: Color(0xFF4527A0),
+    ),
+  ],
+
+  'w4': [
+    // Aberdeen Falls
+    _ExternalLink(
+      label: 'Sri Lanka Tourism — Hill Country',
+      subtitle: 'Hatton & Nuwara Eliya travel guide',
+      url: 'https://www.srilanka.travel/nuwara-eliya',
+      icon: Icons.travel_explore_rounded,
+      color: Color(0xFF2E7D32),
+    ),
+  ],
 };
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -334,9 +542,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
     return '$count reviews';
   }
 
-  // FIX: replaced doc-comment angle-bracket warnings with plain comment,
-  // and replaced canLaunchUrl/launchUrl/LaunchMode which were broken
-  // because the import was missing — now fixed via pubspec.yaml.
   Future<void> _launchUrl(String rawUrl, String label) async {
     final uri = Uri.parse(rawUrl);
     final able = await canLaunchUrl(uri);
@@ -427,7 +632,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
               actions: [
                 GestureDetector(
                   onTap: () {
-                    // ── Guest check ──────────────────────────────────────
                     final auth = context.read<AuthProvider>();
                     if (!auth.isLoggedIn) {
                       showDialog(
@@ -478,10 +682,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                           ],
                         ),
                       );
-                      return; // ← stop here for guests
+                      return;
                     }
 
-                    // ── Logged-in user: toggle save ──────────────────────
                     final provider = context.read<SavedPlacesProvider>();
                     final alreadySaved = provider.isPlaceSaved(dest.id);
                     if (alreadySaved) {
@@ -564,8 +767,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                       errorBuilder: (context, error, stackTrace) =>
                           Container(color: Colors.grey.shade300),
                     ),
-                    // FIX: removed const + Colors.black60 (doesn't exist).
-                    // Using Color(0x99000000) which is black at ~60% opacity.
                     DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -573,7 +774,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Color(0x99000000), // was Colors.black60
+                            Color(0x99000000),
                           ],
                           stops: const [0.45, 1.0],
                         ),
@@ -626,7 +827,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Tagline
                     Text(
                       dest.tagline,
                       style: TextStyle(
@@ -639,7 +839,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 14),
 
-                    // Badges
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -659,7 +858,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 14),
 
-                    // Tappable location → opens Google Maps
                     GestureDetector(
                       onTap: () => _launchUrl(
                         'https://maps.google.com/?q=${Uri.encodeComponent('${dest.name}, Sri Lanka')}',
@@ -671,7 +869,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                           vertical: 9,
                         ),
                         decoration: BoxDecoration(
-                          // FIX: withOpacity → withValues
                           color: AppTheme.primary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
@@ -701,7 +898,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                             Icon(
                               Icons.open_in_new_rounded,
                               size: 13,
-                              // FIX: withOpacity → withValues
                               color: AppTheme.primary.withValues(alpha: 0.6),
                             ),
                           ],
@@ -711,7 +907,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 18),
 
-                    // Description
                     Text(
                       dest.description,
                       style: TextStyle(
@@ -723,7 +918,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 20),
 
-                    // Info cards
                     Row(
                       children: [
                         Expanded(
@@ -748,7 +942,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 24),
 
-                    // ── Highlights ─────────────────────────────────────
                     _SectionHeader(title: 'Highlights', color: catColor),
                     const SizedBox(height: 12),
                     Container(
@@ -780,7 +973,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                                       width: 34,
                                       height: 34,
                                       decoration: BoxDecoration(
-                                        // FIX: withOpacity → withValues
                                         color: catColor.withValues(alpha: 0.12),
                                         shape: BoxShape.circle,
                                       ),
@@ -815,7 +1007,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 28),
 
-                    // ── EXPLORE FURTHER SECTION ────────────────────────
                     _SectionHeader(
                       title: 'Explore Further',
                       subtitle: 'Trusted official resources & links',
@@ -823,7 +1014,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     ),
                     const SizedBox(height: 14),
 
-                    // Curated destination-specific links
                     ...links.asMap().entries.map((entry) {
                       final i = entry.key;
                       final link = entry.value;
@@ -840,7 +1030,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 10),
 
-                    // Always-present official Sri Lanka Tourism prominent card
                     _LinkCard(
                       link: const _ExternalLink(
                         label: 'Sri Lanka Tourism — Official Portal',
@@ -858,10 +1047,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                     const SizedBox(height: 28),
 
-                    // ── CTA BUTTONS ────────────────────────────────────
                     Row(
                       children: [
-                        // Open in Maps
                         Expanded(
                           flex: 1,
                           child: OutlinedButton.icon(
@@ -888,7 +1075,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                         const SizedBox(width: 8),
 
-                        // Share
                         Expanded(
                           flex: 1,
                           child: OutlinedButton.icon(
@@ -925,7 +1111,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
 
                         const SizedBox(width: 8),
 
-                        // Plan My Visit
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
@@ -998,7 +1183,6 @@ class _LinkCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          // FIX: withOpacity → withValues
           color: isProminent
               ? link.color.withValues(alpha: 0.07)
               : AppTheme.surface,
@@ -1011,7 +1195,6 @@ class _LinkCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              // FIX: withOpacity → withValues
               color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
@@ -1024,7 +1207,6 @@ class _LinkCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                // FIX: withOpacity → withValues
                 color: link.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -1057,7 +1239,6 @@ class _LinkCard extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 14,
-              // FIX: withOpacity → withValues
               color: link.color.withValues(alpha: 0.5),
             ),
           ],
@@ -1132,7 +1313,6 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        // FIX: withOpacity → withValues
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -1189,7 +1369,6 @@ class _InfoCard extends StatelessWidget {
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  // FIX: withOpacity → withValues
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),

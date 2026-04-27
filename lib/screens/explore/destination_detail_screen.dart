@@ -4,6 +4,8 @@ import '../../utils/app_theme.dart';
 import '../../models/destination.dart';
 import 'package:provider/provider.dart';
 import '../../providers/saved_places_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../auth/welcome_screen.dart';
 
 // ── External link model ───────────────────────────────────────────────────────
 
@@ -26,7 +28,8 @@ class _ExternalLink {
 // ── Per-destination curated external links ────────────────────────────────────
 
 const Map<String, List<_ExternalLink>> _destinationLinks = {
-  '1': [ // Sigiriya
+  '1': [
+    // Sigiriya
     _ExternalLink(
       label: 'UNESCO World Heritage',
       subtitle: 'Official heritage listing & history',
@@ -49,7 +52,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF6A1B9A),
     ),
   ],
-  '2': [ // Mirissa
+  '2': [
+    // Mirissa
     _ExternalLink(
       label: 'Sri Lanka Tourism — Mirissa',
       subtitle: 'Whale watching guide & best season',
@@ -65,7 +69,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF00838F),
     ),
   ],
-  '3': [ // Temple of the Tooth
+  '3': [
+    // Temple of the Tooth
     _ExternalLink(
       label: 'Sri Dalada Maligawa Official',
       subtitle: 'Temple website & puja timings',
@@ -81,7 +86,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF1565C0),
     ),
   ],
-  '4': [ // Nine Arch Bridge
+  '4': [
+    // Nine Arch Bridge
     _ExternalLink(
       label: 'Sri Lanka Railways',
       subtitle: 'Ella train schedules & online booking',
@@ -97,7 +103,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF2E7D32),
     ),
   ],
-  '5': [ // Yala
+  '5': [
+    // Yala
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Official park info, permits & fees',
@@ -120,7 +127,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF4E342E),
     ),
   ],
-  '5b': [ // Wilpattu
+  '5b': [
+    // Wilpattu
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Wilpattu official park info',
@@ -136,7 +144,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFFE65100),
     ),
   ],
-  '5c': [ // Minneriya — The Gathering
+  '5c': [
+    // Minneriya — The Gathering
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: '"The Gathering" details & jeep permits',
@@ -152,7 +161,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFFE65100),
     ),
   ],
-  '5d': [ // Udawalawe
+  '5d': [
+    // Udawalawe
     _ExternalLink(
       label: 'Elephant Transit Home',
       subtitle: 'Orphaned elephant rehabilitation sanctuary',
@@ -168,7 +178,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF2E7D32),
     ),
   ],
-  '5e': [ // Kumana
+  '5e': [
+    // Kumana
     _ExternalLink(
       label: 'Dept. of Wildlife Conservation',
       subtitle: 'Kumana bird sanctuary & permits',
@@ -184,7 +195,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFFE65100),
     ),
   ],
-  '6': [ // Unawatuna
+  '6': [
+    // Unawatuna
     _ExternalLink(
       label: 'Sri Lanka Tourism — Beaches',
       subtitle: 'Southern beach & snorkelling guide',
@@ -193,7 +205,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF0277BD),
     ),
   ],
-  '7': [ // Dambulla
+  '7': [
+    // Dambulla
     _ExternalLink(
       label: 'UNESCO World Heritage — Dambulla',
       subtitle: 'Cave temple official listing',
@@ -209,7 +222,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF6A1B9A),
     ),
   ],
-  '8': [ // Horton Plains
+  '8': [
+    // Horton Plains
     _ExternalLink(
       label: "UNESCO — Central Highlands",
       subtitle: "World's End heritage listing",
@@ -225,7 +239,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF2E7D32),
     ),
   ],
-  '9': [ // Galle Fort
+  '9': [
+    // Galle Fort
     _ExternalLink(
       label: 'UNESCO — Galle Fort',
       subtitle: 'Official World Heritage listing',
@@ -241,7 +256,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF4E342E),
     ),
   ],
-  '10': [ // Adam's Peak
+  '10': [
+    // Adam's Peak
     _ExternalLink(
       label: "Sri Lanka Tourism — Adam's Peak",
       subtitle: 'Pilgrimage season, routes & tips',
@@ -250,7 +266,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF2E7D32),
     ),
   ],
-  '11': [ // Arugam Bay
+  '11': [
+    // Arugam Bay
     _ExternalLink(
       label: 'Sri Lanka Tourism — Arugam Bay',
       subtitle: 'Surf season, breaks & local tips',
@@ -259,7 +276,8 @@ const Map<String, List<_ExternalLink>> _destinationLinks = {
       color: Color(0xFF0277BD),
     ),
   ],
-  '12': [ // Nuwara Eliya
+  '12': [
+    // Nuwara Eliya
     _ExternalLink(
       label: 'Sri Lanka Tourism — Nuwara Eliya',
       subtitle: 'Tea country & hill station guide',
@@ -291,7 +309,6 @@ class DestinationDetailScreen extends StatefulWidget {
 
 class _DestinationDetailScreenState extends State<DestinationDetailScreen>
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
 
@@ -331,7 +348,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -367,7 +385,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
     final isSaved = savedProvider.isPlaceSaved(dest.id);
     final catColor = _categoryColor(dest.category);
 
-    final links = _destinationLinks[dest.id] ??
+    final links =
+        _destinationLinks[dest.id] ??
         const [
           _ExternalLink(
             label: 'Sri Lanka Tourism Board',
@@ -398,24 +417,82 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     color: Colors.black45,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
               actions: [
                 GestureDetector(
-                   onTap: () {
+                  onTap: () {
+                    // ── Guest check ──────────────────────────────────────
+                    final auth = context.read<AuthProvider>();
+                    if (!auth.isLoggedIn) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(
+                                Icons.bookmark_rounded,
+                                color: AppTheme.primary,
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                'Sign In to Save',
+                                style: AppTheme.headingSmall,
+                              ),
+                            ],
+                          ),
+                          content: const Text(
+                            'Create a free account to save your favourite destinations and access them anytime from your profile.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text('Maybe Later'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(ctx).pop();
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const WelcomeScreen(),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text('Sign Up'),
+                            ),
+                          ],
+                        ),
+                      );
+                      return; // ← stop here for guests
+                    }
+
+                    // ── Logged-in user: toggle save ──────────────────────
                     final provider = context.read<SavedPlacesProvider>();
                     final alreadySaved = provider.isPlaceSaved(dest.id);
                     if (alreadySaved) {
                       provider.removeSavedPlace(dest.id);
                     } else {
-                     provider.addSavedPlace(
+                      provider.addSavedPlace(
                         name: dest.name,
                         category: dest.category,
                         imageUrl: dest.imageUrl,
                         location: dest.location,
-                     );
+                      );
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -429,19 +506,22 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                               size: 16,
                             ),
                             const SizedBox(width: 8),
-                            Text(alreadySaved
-                                ? 'Removed from saved places.'
-                                : '${dest.name} saved!'),
+                            Text(
+                              alreadySaved
+                                  ? 'Removed from saved places.'
+                                  : '${dest.name} saved!',
+                            ),
                           ],
                         ),
                         backgroundColor: AppTheme.primary,
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         duration: const Duration(seconds: 2),
                       ),
                     );
-                   },
+                  },
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     decoration: const BoxDecoration(
@@ -451,10 +531,12 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Icon(
-                              isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                              color: isSaved ? const Color(0xFFFFD700) : Colors.white,
-                              size: 20,
-                        ),
+                        isSaved
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_outline_rounded,
+                        color: isSaved ? const Color(0xFFFFD700) : Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -476,10 +558,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     Image.network(
                       dest.imageUrl,
                       fit: BoxFit.cover,
-                      loadingBuilder: (_, child, progress) =>
-                          progress == null
-                              ? child
-                              : Container(color: Colors.grey.shade300),
+                      loadingBuilder: (_, child, progress) => progress == null
+                          ? child
+                          : Container(color: Colors.grey.shade300),
                       errorBuilder: (context, error, stackTrace) =>
                           Container(color: Colors.grey.shade300),
                     ),
@@ -504,7 +585,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                         right: 16,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFD700),
                             borderRadius: BorderRadius.circular(20),
@@ -512,8 +595,11 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.star_rounded,
-                                  size: 13, color: Color(0xFF7A5800)),
+                              Icon(
+                                Icons.star_rounded,
+                                size: 13,
+                                color: Color(0xFF7A5800),
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'TOP PICK',
@@ -560,8 +646,9 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                       children: [
                         _Badge(label: dest.category, color: catColor),
                         _Badge(
-                            label: 'Budget: ${dest.budget}',
-                            color: AppTheme.primary),
+                          label: 'Budget: ${dest.budget}',
+                          color: AppTheme.primary,
+                        ),
                         _Badge(
                           label:
                               '★ ${dest.rating.toStringAsFixed(1)}  ·  ${_formatReviews(dest.reviewCount)}',
@@ -580,19 +667,25 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 9),
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
                         decoration: BoxDecoration(
                           // FIX: withOpacity → withValues
                           color: AppTheme.primary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppTheme.primary.withValues(alpha: 0.2)),
+                            color: AppTheme.primary.withValues(alpha: 0.2),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.location_on,
-                                size: 15, color: AppTheme.primary),
+                            Icon(
+                              Icons.location_on,
+                              size: 15,
+                              color: AppTheme.primary,
+                            ),
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
@@ -605,10 +698,12 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Icon(Icons.open_in_new_rounded,
-                                size: 13,
-                                // FIX: withOpacity → withValues
-                                color: AppTheme.primary.withValues(alpha: 0.6)),
+                            Icon(
+                              Icons.open_in_new_rounded,
+                              size: 13,
+                              // FIX: withOpacity → withValues
+                              color: AppTheme.primary.withValues(alpha: 0.6),
+                            ),
                           ],
                         ),
                       ),
@@ -662,9 +757,10 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: const [
                           BoxShadow(
-                              color: AppTheme.cardShadow,
-                              blurRadius: 10,
-                              offset: Offset(0, 3)),
+                            color: AppTheme.cardShadow,
+                            blurRadius: 10,
+                            offset: Offset(0, 3),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -676,9 +772,10 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                                 children: [
                                   ListTile(
                                     dense: true,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 2),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 2,
+                                    ),
                                     leading: Container(
                                       width: 34,
                                       height: 34,
@@ -687,8 +784,11 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                                         color: catColor.withValues(alpha: 0.12),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(Icons.check_rounded,
-                                          size: 16, color: catColor),
+                                      child: Icon(
+                                        Icons.check_rounded,
+                                        size: 16,
+                                        color: catColor,
+                                      ),
                                     ),
                                     title: Text(
                                       e.value,
@@ -729,7 +829,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                       final link = entry.value;
                       return Padding(
                         padding: EdgeInsets.only(
-                            bottom: i < links.length - 1 ? 10 : 0),
+                          bottom: i < links.length - 1 ? 10 : 0,
+                        ),
                         child: _LinkCard(
                           link: link,
                           onTap: () => _launchUrl(link.url, link.label),
@@ -743,14 +844,15 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     _LinkCard(
                       link: const _ExternalLink(
                         label: 'Sri Lanka Tourism — Official Portal',
-                        subtitle:
-                            'srilanka.travel  ·  Plan your complete trip',
+                        subtitle: 'srilanka.travel  ·  Plan your complete trip',
                         url: 'https://www.srilanka.travel/',
                         icon: Icons.public_rounded,
                         color: Color(0xFF00695C),
                       ),
                       onTap: () => _launchUrl(
-                          'https://www.srilanka.travel/', 'Sri Lanka Tourism'),
+                        'https://www.srilanka.travel/',
+                        'Sri Lanka Tourism',
+                      ),
                       isProminent: true,
                     ),
 
@@ -772,12 +874,14 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primary,
                               side: BorderSide(color: AppTheme.primary),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                               textStyle: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -792,27 +896,29 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: const Text(
-                                      'Add share_plus for real sharing!'),
+                                    'Add share_plus for real sharing!',
+                                  ),
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(12)),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                   duration: const Duration(seconds: 2),
                                 ),
                               );
                             },
-                            icon:
-                                const Icon(Icons.share_outlined, size: 17),
+                            icon: const Icon(Icons.share_outlined, size: 17),
                             label: const Text('Share'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primary,
                               side: BorderSide(color: AppTheme.primary),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                               textStyle: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -823,23 +929,25 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
-                            onPressed: () => _launchUrl(
-                              links.first.url,
-                              'Plan My Visit',
+                            onPressed: () =>
+                                _launchUrl(links.first.url, 'Plan My Visit'),
+                            icon: const Icon(
+                              Icons.travel_explore_rounded,
+                              size: 18,
                             ),
-                            icon: const Icon(Icons.travel_explore_rounded,
-                                size: 18),
                             label: const Text('Plan My Visit'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
                               elevation: 0,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14)),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                               textStyle: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w700),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
@@ -1066,9 +1174,10 @@ class _InfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(
-              color: AppTheme.cardShadow,
-              blurRadius: 8,
-              offset: Offset(0, 3)),
+            color: AppTheme.cardShadow,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Column(

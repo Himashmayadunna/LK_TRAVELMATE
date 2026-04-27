@@ -10,6 +10,9 @@ import '../../widgets/section_header.dart';
 import '../auth/welcome_screen.dart';
 import '../explore/destination_detail_screen.dart';
 import '../../models/destination.dart';
+import '../../providers/destinations_provider.dart';
+
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -156,8 +159,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       name: dest.name,
                       category: dest.category,
                       imageUrl: dest.imageUrl,
-                 onView: () {
-                       
+                      onView: () {
+                        final destProvider = context
+                            .read<DestinationsProvider>();
+                        final fullDest = destProvider.destinations.firstWhere(
+                          (d) => d.id == dest.id,
+                          orElse: () => Destination(
+                            id: dest.id,
+                            name: dest.name,
+                            imageUrl: dest.imageUrl,
+                            category: dest.category,
+                            rating: 0.0,
+                            budget: '',
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                DestinationDetailScreen(destination: fullDest),
+                          ),
+                        );
                       },
                       onDelete: () async {
                         await savedProvider.removeSavedPlace(dest.id);

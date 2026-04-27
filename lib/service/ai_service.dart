@@ -7,8 +7,6 @@ class GeminiService {
   // API Keys: Separate keys for Chat vs Suggestions to avoid rate limiting conflicts
   static const String _configuredApiKey =
       "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";
-  static const String _suggestionsApiKey =
-      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";
@@ -988,15 +986,6 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
 
     final maxPerDay = _estimateDailyBudget(budget: budget, duration: duration);
     final primaryIntent = _detectPrimaryIntent(places);
-    
-    debugPrint('');
-    debugPrint('=== _rankSuggestionsByPreferences() STARTED ===');
-    debugPrint('   Primary intent detected: "$primaryIntent"');
-    debugPrint('   Input places: "$places"');
-    debugPrint('   Max per day budget: \$maxPerDay');
-    debugPrint('   Number of incoming suggestions: ${suggestions.length}');
-    debugPrint('');
-
     final scored = suggestions.map((item) {
       var score = _scoreForPreferences(item, places: places, food: food);
       final estimated = _parseCost([
@@ -1039,24 +1028,29 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         final item = Map<String, dynamic>.from(entry['item'] as Map);
         final name = item['name'].toString();
         if (seenNames.contains(name)) continue;
-        
-        debugPrint('AIService: Adding suggestion: ${item['name']} (score: ${entry['score']})');
-        
         ranked.add(item);
         seenNames.add(name);
         if (ranked.length == 5) return;
       }
     }
 
-    // FIRST: Add primary-intent matching suggestions
     if (primaryIntent != null) {
-      final matchingIntent = scored.where((entry) => _matchesPrimaryIntent(
-            Map<String, dynamic>.from(entry['item'] as Map),
-            primaryIntent,
-          ));
-      addFromScored(matchingIntent);
+      addFromScored(
+        scored.where((entry) => _matchesPrimaryIntent(
+              Map<String, dynamic>.from(entry['item'] as Map),
+              primaryIntent,
+            )),
+      );
+
+      if (ranked.length < 5) {
+        addFromScored(
+          scored.where((entry) => !_blocksPrimaryIntent(
+                Map<String, dynamic>.from(entry['item'] as Map),
+                primaryIntent,
+              )),
+        );
+      }
     } else {
-      // No specific intent, just add all sorted by score
       addFromScored(scored);
     }
 
@@ -1105,14 +1099,12 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     // Add remaining fallback items if still needed
     for (final item in fallback) {
       if (ranked.length == 5) break;
-      if (seenNames.contains(item['name'].toString())) continue;
-      
-      // Be strict: NEVER add if it blocks the primary intent
-      if (primaryIntent != null && _blocksPrimaryIntent(item, primaryIntent)) {
+      if (ranked.any((e) => e['name'] == item['name'])) continue;
+      if (primaryIntent != null &&
+          !_matchesPrimaryIntent(item, primaryIntent) &&
+          _blocksPrimaryIntent(item, primaryIntent)) {
         continue;
       }
-      
-      debugPrint('AIService: Adding fallback suggestion: ${item['name']}');
       ranked.add(item);
       seenNames.add(item['name'].toString());
     }
@@ -1366,6 +1358,78 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     }
   }
 
+  static String? _detectPrimaryIntent(String places) {
+    final normalized = _normalizeForMatch(places);
+    if (_containsAny(normalized, const ['waterfall', 'waterfalls', 'falls'])) {
+      return 'waterfall';
+    }
+    if (_containsAny(normalized, const ['beach', 'coast'])) return 'beach';
+    if (_containsAny(normalized, const ['hiking', 'trek', 'mountain'])) {
+      return 'hiking';
+    }
+    if (_containsAny(normalized, const ['temple', 'heritage', 'cultural'])) {
+      return 'cultural';
+    }
+    if (_containsAny(normalized, const ['wildlife', 'safari'])) {
+      return 'wildlife';
+    }
+    return null;
+  }
+
+  static bool _matchesPrimaryIntent(
+    Map<String, dynamic> item,
+    String intent,
+  ) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      case 'beach':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'hiking':
+        return _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain']);
+      case 'cultural':
+        return _containsAny(text, const ['temple', 'heritage', 'cultural']);
+      case 'wildlife':
+        return _containsAny(text, const ['wildlife', 'safari', 'park']);
+      default:
+        return false;
+    }
+  }
+
+  static bool _blocksPrimaryIntent(
+    Map<String, dynamic> item,
+    String intent,
+  ) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'beach':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      default:
+        return false;
+    }
+  }
+
   static int _scoreForPreferences(
     Map<String, dynamic> item, {
     required String places,
@@ -1384,19 +1448,6 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     final userPlaces = _normalizeForMatch(places);
     final userFood = _normalizeForMatch(food);
     var score = 0;
-
-    if (userPlaces.isNotEmpty) {
-      // NEW: Strong boost for explicit names
-      final nameLocation = _normalizeForMatch([item['name'], item['location']].join(' '));
-      final userTokens = userPlaces.split(' ').where((t) => t.length >= 3).toList();
-      for (final t in userTokens) {
-        if (nameLocation.contains(t)) {
-          score += 40; // Massive boost for exact place/location match
-        } else if (text.contains(t)) {
-          score += 10;
-        }
-      }
-    }
 
     final wantsWaterfall =
         _containsAny(userPlaces, const ['waterfall', 'waterfalls', 'falls']);

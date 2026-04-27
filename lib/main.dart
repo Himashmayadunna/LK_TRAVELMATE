@@ -12,6 +12,7 @@ import 'screens/map/map_screen.dart';
 import 'screens/ai/ai_assistant_shell.dart';
 import 'screens/profile/profile_screen.dart';
 import 'utils/app_theme.dart';
+import 'providers/destinations_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
+        ChangeNotifierProvider(create: (_) => DestinationsProvider()),
         ChangeNotifierProxyProvider<AuthProvider, SavedPlacesProvider>(
           create: (_) => SavedPlacesProvider(),
           update: (_, auth, savedPlaces) {

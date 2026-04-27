@@ -13,6 +13,7 @@ import '../ai/ai_suggestions_screen.dart';
 import '../explore/explore_screen.dart';
 import '../map/map_screen.dart';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,16 +21,22 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-final TextEditingController _searchController = TextEditingController();
+
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
-
+  final TextEditingController _searchController = TextEditingController();
   // ─── User input controllers for AI suggestions ──────────────────
   final TextEditingController _placesController = TextEditingController();
   final TextEditingController _foodController = TextEditingController();
   String _selectedDuration = '7 Days';
   String _selectedBudget = '\$800';
+
+  @override
+void initState() {
+  super.initState();
+
+}
 
   @override
   void dispose() {

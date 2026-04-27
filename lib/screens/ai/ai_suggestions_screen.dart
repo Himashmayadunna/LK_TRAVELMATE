@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../models/ai_suggestion_model.dart';
 import '../../providers/ai_suggestion_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/saved_places_provider.dart';
+import '../auth/signin.dart';
+import '../map/map_screen.dart';
 import '../../utils/app_theme.dart';
 
 class AISuggestionsScreen extends StatefulWidget {
@@ -73,6 +77,9 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final savedProvider = context.watch<SavedPlacesProvider>();
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
@@ -87,10 +94,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
               ),
             )
           else if (_error != null)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildErrorView(),
-            )
+            SliverFillRemaining(hasScrollBody: false, child: _buildErrorView())
           else ...[
             SliverToBoxAdapter(
               child: Padding(
@@ -108,11 +112,80 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
               sliver: SliverList.separated(
                 itemCount: _items.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
+                  final item = _items[index];
+                  final placeId = SavedPlacesProvider.buildPlaceId(
+                    name: item.name,
+                    location: item.location,
+                  );
+                  final isSaved = savedProvider.isPlaceSaved(placeId);
+
                   return _SuggestionCard(
                     rank: index + 1,
-                    item: _items[index],
+                    item: item,
+                    isSaved: isSaved,
+                    onToggleSave: () async {
+                      if (!authProvider.isLoggedIn) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please sign in to save AI destinations.',
+                            ),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SignInScreen(),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        if (isSaved) {
+                          await savedProvider.removeSavedPlace(placeId);
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${item.name} removed from saved places',
+                              ),
+                              backgroundColor: AppTheme.textSecondary,
+                            ),
+                          );
+                        } else {
+                          await savedProvider.addSavedPlace(
+                            name: item.name,
+                            category: item.category,
+                            imageUrl: item.imageUrl,
+                            location: item.location,
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${item.name} saved to your Explore list',
+                              ),
+                              backgroundColor: AppTheme.success,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceAll('Exception: ', ''),
+                            ),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                      }
+                    },
                   );
                 },
               ),
@@ -188,7 +261,10 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.28), width: 1),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.28),
+          width: 1,
+        ),
       ),
       child: Text(
         text,
@@ -208,7 +284,11 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 44, color: AppTheme.textHint),
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 44,
+              color: AppTheme.textHint,
+            ),
             const SizedBox(height: 12),
             Text(
               _error ?? 'Something went wrong.',
@@ -238,8 +318,15 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
 class _SuggestionCard extends StatefulWidget {
   final int rank;
   final AISuggestion item;
+  final bool isSaved;
+  final VoidCallback onToggleSave;
 
-  const _SuggestionCard({required this.rank, required this.item});
+  const _SuggestionCard({
+    required this.rank,
+    required this.item,
+    required this.isSaved,
+    required this.onToggleSave,
+  });
 
   @override
   State<_SuggestionCard> createState() => _SuggestionCardState();
@@ -298,7 +385,10 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   left: 10,
                   top: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFC93C),
                       borderRadius: BorderRadius.circular(999),
@@ -317,7 +407,10 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                   right: 10,
                   top: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF135CB4).withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(999),
@@ -352,9 +445,38 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 16),
-                    const SizedBox(width: 4),
-                    Text(item.location, style: AppTheme.bodyMedium),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_rounded,
+                            color: AppTheme.primary,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              item.location,
+                              style: AppTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: widget.onToggleSave,
+                      tooltip: widget.isSaved
+                          ? 'Remove from saved'
+                          : 'Save destination',
+                      icon: Icon(
+                        widget.isSaved
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: widget.isSaved
+                            ? AppTheme.error
+                            : AppTheme.textHint,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -372,9 +494,7 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                       child: _metaPill('💰 \$${item.estimatedCostPerDay}/day'),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: _metaPill('📅 ${item.bestTimeToVisit}'),
-                    ),
+                    Expanded(child: _metaPill('📅 ${item.bestTimeToVisit}')),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -424,11 +544,40 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                 ),
                 if (_expanded) ...[
                   const SizedBox(height: 12),
-                  _detailRow('🍛 Food to try nearby', item.foodRecommendations.join(', ')),
+                  _detailRow(
+                    '🍛 Food to try nearby',
+                    item.foodRecommendations.join(', '),
+                  ),
                   const SizedBox(height: 8),
                   _detailRow('🚌 How to get there', item.howToGetThere),
                   const SizedBox(height: 8),
                   _detailRow('💡 Insider tip', item.insiderTip),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MapScreen(initialQuery: item.name),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.map_rounded),
+                      label: const Text(
+                        'Go to Map',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),

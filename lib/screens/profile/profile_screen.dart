@@ -9,8 +9,7 @@ import '../../widgets/saved_destination_tile.dart';
 import '../../widgets/section_header.dart';
 import '../auth/welcome_screen.dart';
 import '../explore/destination_detail_screen.dart';
-import '../explore/explore_screen.dart' show sriLankaDestinations;
-
+import '../../models/destination.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -103,7 +102,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               SectionHeader(
                 title: 'Saved Destinations',
-                actionText: savedPlaces.isEmpty ? 'Explore' : '${savedPlaces.length} saved',
+                actionText: savedPlaces.isEmpty
+                    ? 'Explore'
+                    : '${savedPlaces.length} saved',
                 onAction: () {},
               ),
               const SizedBox(height: 16),
@@ -130,7 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'No saved places yet',
-                        style: AppTheme.bodyLarge.copyWith(color: AppTheme.textHint),
+                        style: AppTheme.bodyLarge.copyWith(
+                          color: AppTheme.textHint,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -153,21 +156,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       name: dest.name,
                       category: dest.category,
                       imageUrl: dest.imageUrl,
-                      onView: () {
-                        final fullDest = sriLankaDestinations
-                            .where((d) => d.id == dest.id)
-                            .firstOrNull;
-                        if (fullDest != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DestinationDetailScreen(destination: fullDest),
-                            ),
-                          );
-                        }
+                 onView: () {
+                       
                       },
-                      onDelete: () {
-                        savedProvider.removeSavedPlace(dest.id);
+                      onDelete: () async {
+                        await savedProvider.removeSavedPlace(dest.id);
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('${dest.name} removed from saved'),
@@ -175,7 +169,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radiusMedium,
+                              ),
                             ),
                           ),
                         );

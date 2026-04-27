@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_theme.dart';
-import 'explore_screen.dart' show Destination;
+import '../../models/destination.dart';
 import 'package:provider/provider.dart';
 import '../../providers/saved_places_provider.dart';
 
@@ -410,12 +410,12 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                     if (alreadySaved) {
                       provider.removeSavedPlace(dest.id);
                     } else {
-                      provider.addSavedPlace(SavedPlace(
-                        id: dest.id,
+                     provider.addSavedPlace(
                         name: dest.name,
                         category: dest.category,
                         imageUrl: dest.imageUrl,
-                      ));
+                        location: dest.location,
+                     );
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -480,7 +480,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen>
                           progress == null
                               ? child
                               : Container(color: Colors.grey.shade300),
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (context, error, stackTrace) =>
                           Container(color: Colors.grey.shade300),
                     ),
                     // FIX: removed const + Colors.black60 (doesn't exist).

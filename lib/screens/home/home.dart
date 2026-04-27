@@ -9,6 +9,9 @@ import '../../widgets/section_header.dart';
 import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
 import '../ai/ai_suggestions_screen.dart';
+import '../explore/explore_screen.dart';
+import '../map/map_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,16 +20,22 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-final TextEditingController _searchController = TextEditingController();
+
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
-
+  final TextEditingController _searchController = TextEditingController();
   // ─── User input controllers for AI suggestions ──────────────────
   final TextEditingController _placesController = TextEditingController();
   final TextEditingController _foodController = TextEditingController();
   String _selectedDuration = '7 Days';
   String _selectedBudget = '\$800';
+
+  @override
+void initState() {
+  super.initState();
+
+}
 
   @override
   void dispose() {
@@ -44,21 +53,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Good Evening';
   }
 
-  String get _greetingEmoji {
+  IconData get _greetingIcon {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '🌅';
-    if (hour < 17) return '☀️';
-    return '🌙';
+    if (hour < 12) return Icons.wb_sunny_rounded;
+    if (hour < 17) return Icons.wb_sunny_outlined;
+    return Icons.nightlight_round;
   }
 
   // Sample Data
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Beaches', 'emoji': '🏖️', 'count': 45},
-    {'name': 'Hiking', 'emoji': '🥾', 'count': 32},
-    {'name': 'Temples', 'emoji': '🛕', 'count': 28},
-    {'name': 'Wildlife', 'emoji': '🐘', 'count': 18},
-    {'name': 'Waterfalls', 'emoji': '💧', 'count': 24},
-    {'name': 'Heritage', 'emoji': '🏛️', 'count': 15},
+    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 2},
+    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 2},
+    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 2},
+    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 1},
+    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 2},
+    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 2},
   ];
 
   final List<Map<String, dynamic>> _popularPlaces = [
@@ -126,6 +135,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openMap({String? initialQuery}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapScreen(initialQuery: initialQuery),
+      ),
+    );
+  }
+
+  void _openExploreCategory(String categoryName) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ExploreScreen(
+          initialCategory: _mapHomeCategoryToExploreCategory(categoryName),
+        ),
+      ),
+    );
+  }
+
+  String _mapHomeCategoryToExploreCategory(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'beaches':
+        return 'Beach';
+      case 'hiking':
+        return 'Hiking';
+      case 'temples':
+        return 'Temples';
+      case 'waterfalls':
+        return 'Waterfalls';
+      case 'wildlife':
+        return 'Safari';
+      case 'heritage':
+        return 'Heritage';
+      default:
+        return 'All';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,10 +211,19 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$_greeting, $userName $_greetingEmoji',
-                  style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '$_greeting, $userName',
+                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(_greetingIcon, size: 16, color: AppTheme.textSecondary),
+                  ],
                 ),
                 const SizedBox(height: 2),
                 const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
@@ -296,7 +351,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Places you want to visit',
             hint: 'e.g. Beaches, Mountains, Historical sites...',
             icon: Icons.place_rounded,
-            emoji: '📍',
           ),
           const SizedBox(height: 12),
 
@@ -306,7 +360,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Food you like to eat',
             hint: 'e.g. Seafood, Spicy curry, Street food...',
             icon: Icons.restaurant_rounded,
-            emoji: '🍛',
           ),
           const SizedBox(height: 14),
 
@@ -319,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TravelPlanCard(
                     label: 'Duration',
                     value: _selectedDuration,
-                    emoji: '📅',
+                    icon: Icons.calendar_month_rounded,
                     onTap: _showDurationPicker,
                   ),
                 ),
@@ -331,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TravelPlanCard(
                     label: 'Budget',
                     value: _selectedBudget,
-                    emoji: '💰',
+                    icon: Icons.payments_rounded,
                     onTap: _showBudgetPicker,
                   ),
                 ),
@@ -360,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('✨', style: TextStyle(fontSize: 20)),
+                  Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
                   SizedBox(width: 10),
                   Text(
                     'Get AI Suggestions',
@@ -388,7 +441,6 @@ class _HomeScreenState extends State<HomeScreen> {
     required String label,
     required String hint,
     required IconData icon,
-    required String emoji,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -403,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: InputDecoration(
           prefixIcon: Padding(
             padding: const EdgeInsets.only(left: 12, right: 8),
-            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+            child: Icon(icon, color: AppTheme.primary, size: 22),
           ),
           prefixIconConstraints:
               const BoxConstraints(minWidth: 0, minHeight: 0),
@@ -608,17 +660,23 @@ class _HomeScreenState extends State<HomeScreen> {
               QuickActionButton(
                 icon: Icons.map_rounded,
                 label: 'Map',
-                onTap: () {},
+                onTap: () => _openMap(),
               ),
               QuickActionButton(
                 icon: Icons.hotel_rounded,
                 label: 'Hotels',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
+                ),
               ),
               QuickActionButton(
                 icon: Icons.restaurant_rounded,
                 label: 'Food',
-                onTap: () {},
+                onTap: () => _openAIChat(
+                  initialPrompt:
+                      'What are must-try Sri Lankan foods and the best places to try them?',
+                ),
               ),
             ],
           ),
@@ -654,10 +712,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 final cat = _categories[index];
                 return CategoryChip(
                   name: cat['name'],
+                  iconAsset: cat['iconAsset'],
                   emoji: cat['emoji'],
                   placeCount: cat['count'],
                   isSelected: _selectedCategoryIndex == index,
-                  onTap: () => setState(() => _selectedCategoryIndex = index),
+                  onTap: () {
+                    setState(() => _selectedCategoryIndex = index);
+                    _openExploreCategory(cat['name']);
+                  },
                 );
               },
             ),

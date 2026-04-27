@@ -35,7 +35,9 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSuggestions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSuggestions();
+    });
   }
 
   Future<void> _loadSuggestions() async {
@@ -208,7 +210,7 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -219,33 +221,67 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
                   backgroundColor: Colors.white.withValues(alpha: 0.12),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              const Text(
+                'Your Personalized Matches ✨',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.6,
+                ),
+              ),
+              const SizedBox(height: 4),
               Text(
                 'Based on your preferences',
                 style: AppTheme.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _prefChip('📍 ${widget.places}'),
-                  _prefChip('📅 ${widget.duration}'),
-                  _prefChip('🍛 ${widget.food}'),
-                  _prefChip('💰 ${widget.budget}'),
-                ],
-              ),
               const SizedBox(height: 14),
-              const Text(
-                'AI Suggestions ✨',
+              // User Preferences Display
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Your Criteria',
+                      style: AppTheme.caption.copyWith(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _preferenceBadge('📍', widget.places),
+                        _preferenceBadge('📅', widget.duration),
+                        _preferenceBadge('🍛', widget.food),
+                        _preferenceBadge('💰', widget.budget),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${_items.length} destinations found',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -255,24 +291,31 @@ class _AISuggestionsScreenState extends State<AISuggestionsScreen> {
     );
   }
 
-  Widget _prefChip(String text) {
+  Widget _preferenceBadge(String emoji, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.28),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -496,6 +539,56 @@ class _SuggestionCardState extends State<_SuggestionCard> {
                     const SizedBox(width: 8),
                     Expanded(child: _metaPill('📅 ${item.bestTimeToVisit}')),
                   ],
+                ),
+                const SizedBox(height: 12),
+                // Match Reasons Section
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A4FA8).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppTheme.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '✅ Why this matches',
+                        style: AppTheme.caption.copyWith(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ...item.matchReasons.take(2).map((reason) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '•',
+                                  style: AppTheme.bodySmall.copyWith(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    reason,
+                                    style: AppTheme.bodySmall.copyWith(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(

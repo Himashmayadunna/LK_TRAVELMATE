@@ -25,38 +25,43 @@ class ProfileStatCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
           decoration: BoxDecoration(
             color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
             boxShadow: AppTheme.softShadow,
+            border: Border.all(color: AppTheme.divider, width: 1),
           ),
           child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: AppTheme.headingSmall.copyWith(
-                fontWeight: FontWeight.w700,
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: AppTheme.headingSmall.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: AppTheme.caption,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: AppTheme.caption.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

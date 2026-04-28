@@ -361,32 +361,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPrimaryActionButtons() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.auto_awesome_rounded,
-              label: 'AI Suggestions',
-              highlighted: true,
-              onTap: _openAISuggestionsQuickAction,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.info_outline_rounded,
-              label: 'Place Details',
-              onTap: _openPlaceDetailsQuickAction,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.hotel_rounded,
-              label: 'Related Hotels',
-              onTap: _openRelatedHotelsQuickAction,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPrimaryActionCard(
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'AI Suggestions',
+                  highlighted: true,
+                  onTap: _openAISuggestionsQuickAction,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _buildPrimaryActionCard(
+                  icon: Icons.info_outline_rounded,
+                  label: 'Place Details',
+                  onTap: _openPlaceDetailsQuickAction,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _buildPrimaryActionCard(
+                  icon: Icons.hotel_rounded,
+                  label: 'Related Hotels',
+                  onTap: _openRelatedHotelsQuickAction,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -402,14 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
         decoration: BoxDecoration(
           gradient: highlighted ? AppTheme.primaryGradient : null,
           color: highlighted ? null : AppTheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           border: highlighted
-              ? Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.45))
-              : Border.all(color: AppTheme.divider),
+              ? Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.45), width: 1.2)
+              : Border.all(color: AppTheme.divider, width: 0.8),
           boxShadow: highlighted
               ? [
                   BoxShadow(
@@ -422,19 +427,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
               color: highlighted ? Colors.white : AppTheme.primary,
-              size: 22,
+              size: 28,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               label,
               textAlign: TextAlign.center,
               style: AppTheme.caption.copyWith(
                 color: highlighted ? Colors.white : AppTheme.textPrimary,
                 fontWeight: FontWeight.w700,
+                fontSize: 12,
               ),
             ),
           ],

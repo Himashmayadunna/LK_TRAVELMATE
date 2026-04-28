@@ -13,15 +13,12 @@ import '../ai/ai_suggestions_screen.dart';
 import '../explore/explore_screen.dart';
 import '../map/map_screen.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
-
-
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategoryIndex = 0;
@@ -33,10 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedBudget = '\$800';
 
   @override
-void initState() {
-  super.initState();
-
-}
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -67,7 +63,11 @@ void initState() {
     {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 2},
     {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 2},
     {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 1},
-    {'name': 'Waterfalls', 'iconAsset': 'assets/Icons/waterfalls.jpg', 'count': 2},
+    {
+      'name': 'Waterfalls',
+      'iconAsset': 'assets/Icons/waterfalls.jpg',
+      'count': 2,
+    },
     {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 2},
   ];
 
@@ -75,7 +75,8 @@ void initState() {
     {
       'name': 'Sigiriya Rock',
       'location': 'Matale District',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
       'rating': 4.8,
       'distance': '165 km',
       'favorite': false,
@@ -83,7 +84,8 @@ void initState() {
     {
       'name': 'Mirissa Beach',
       'location': 'Southern Province',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
       'rating': 4.6,
       'distance': '150 km',
       'favorite': true,
@@ -91,7 +93,8 @@ void initState() {
     {
       'name': 'Temple of Tooth',
       'location': 'Kandy',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
       'rating': 4.7,
       'distance': '115 km',
       'favorite': false,
@@ -99,7 +102,8 @@ void initState() {
     {
       'name': 'Ella Rock',
       'location': 'Badulla District',
-      'image': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg/1280px-Ella_Rock_from_Little_Adam%27s_Peak.jpg',
+      'image':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg/1280px-Ella_Rock_from_Little_Adam%27s_Peak.jpg',
       'rating': 4.5,
       'distance': '195 km',
       'favorite': false,
@@ -137,9 +141,9 @@ void initState() {
   }
 
   void _openAISuggestionsQuickAction() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AIPlanFormScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AIPlanFormScreen()));
   }
 
   void _openPlaceDetailsQuickAction() {
@@ -166,9 +170,7 @@ void initState() {
 
   void _openMap({String? initialQuery}) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => MapScreen(initialQuery: initialQuery),
-      ),
+      MaterialPageRoute(builder: (_) => MapScreen(initialQuery: initialQuery)),
     );
   }
 
@@ -242,12 +244,18 @@ void initState() {
                     Flexible(
                       child: Text(
                         '$_greeting, $userName',
-                        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textSecondary),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Icon(_greetingIcon, size: 16, color: AppTheme.textSecondary),
+                    Icon(
+                      _greetingIcon,
+                      size: 16,
+                      color: AppTheme.textSecondary,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -269,7 +277,11 @@ void initState() {
                 child: Stack(
                   children: [
                     const Center(
-                      child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 22),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: AppTheme.textPrimary,
+                        size: 22,
+                      ),
                     ),
                     Positioned(
                       right: 10,
@@ -322,15 +334,15 @@ void initState() {
 
   // ─── SEARCH BAR ───────────────────────────────────────────────────
   Widget _buildSearchBar() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-    child: SearchBarWidget(
-      controller: _searchController,
-      onChanged: (value) {
-        // handle search if needed, or leave empty
-      },
-    ),
-   );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: SearchBarWidget(
+        controller: _searchController,
+        onChanged: (value) {
+          // handle search if needed, or leave empty
+        },
+      ),
+    );
   }
 
   // ─── AI RECOMMENDATION HERO ───────────────────────────────────────
@@ -356,6 +368,7 @@ void initState() {
             child: _buildPrimaryActionCard(
               icon: Icons.auto_awesome_rounded,
               label: 'AI Suggestions',
+              highlighted: true,
               onTap: _openAISuggestionsQuickAction,
             ),
           ),
@@ -384,27 +397,43 @@ void initState() {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool highlighted = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          gradient: highlighted ? AppTheme.primaryGradient : null,
+          color: highlighted ? null : AppTheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: AppTheme.divider),
-          boxShadow: AppTheme.softShadow,
+          border: highlighted
+              ? Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.45))
+              : Border.all(color: AppTheme.divider),
+          boxShadow: highlighted
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.32),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : AppTheme.softShadow,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: AppTheme.primary, size: 22),
+            Icon(
+              icon,
+              color: highlighted ? Colors.white : AppTheme.primary,
+              size: 22,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
               textAlign: TextAlign.center,
               style: AppTheme.caption.copyWith(
-                color: AppTheme.textPrimary,
+                color: highlighted ? Colors.white : AppTheme.textPrimary,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -503,7 +532,11 @@ void initState() {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                   SizedBox(width: 10),
                   Text(
                     'Get AI Suggestions',
@@ -514,8 +547,11 @@ void initState() {
                     ),
                   ),
                   SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white, size: 20),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
@@ -547,17 +583,22 @@ void initState() {
             padding: const EdgeInsets.only(left: 12, right: 8),
             child: Icon(icon, color: AppTheme.primary, size: 22),
           ),
-          prefixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
           labelText: label,
-          labelStyle:
-              AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
+          labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
           hintText: hint,
-          hintStyle: AppTheme.bodyMedium
-              .copyWith(color: AppTheme.textHint, fontSize: 12),
+          hintStyle: AppTheme.bodyMedium.copyWith(
+            color: AppTheme.textHint,
+            fontSize: 12,
+          ),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -566,7 +607,12 @@ void initState() {
   // ─── DURATION PICKER ──────────────────────────────────────────────
   void _showDurationPicker() {
     final durations = [
-      '3 Days', '5 Days', '7 Days', '10 Days', '14 Days', '21 Days'
+      '3 Days',
+      '5 Days',
+      '7 Days',
+      '10 Days',
+      '14 Days',
+      '21 Days',
     ];
 
     showModalBottomSheet(
@@ -595,13 +641,13 @@ void initState() {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 12),
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      gradient:
-                          isSelected ? AppTheme.primaryGradient : null,
+                      gradient: isSelected ? AppTheme.primaryGradient : null,
                       color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusRound),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
                       border: isSelected
                           ? null
                           : Border.all(color: AppTheme.divider),
@@ -609,9 +655,7 @@ void initState() {
                     child: Text(
                       d,
                       style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : AppTheme.textPrimary,
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -629,14 +673,7 @@ void initState() {
 
   // ─── BUDGET PICKER ────────────────────────────────────────────────
   void _showBudgetPicker() {
-    final budgets = [
-      '\$300',
-      '\$500',
-      '\$800',
-      '\$1200',
-      '\$2000',
-      '\$3000+',
-    ];
+    final budgets = ['\$300', '\$500', '\$800', '\$1200', '\$2000', '\$3000+'];
 
     showModalBottomSheet(
       context: context,
@@ -664,13 +701,13 @@ void initState() {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 12),
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      gradient:
-                          isSelected ? AppTheme.primaryGradient : null,
+                      gradient: isSelected ? AppTheme.primaryGradient : null,
                       color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusRound),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
                       border: isSelected
                           ? null
                           : Border.all(color: AppTheme.divider),
@@ -678,9 +715,7 @@ void initState() {
                     child: Text(
                       b,
                       style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : AppTheme.textPrimary,
+                        color: isSelected ? Colors.white : AppTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -732,43 +767,93 @@ void initState() {
   Widget _buildQuickActions() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(title: 'Quick Access', icon: Icons.bolt_rounded),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              QuickActionButton(
-                icon: Icons.auto_awesome,
-                label: 'AI Plan',
-                onTap: _openAISuggestionsQuickAction,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.14)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.10),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionHeader(
+              title: 'Quick Access',
+              icon: Icons.bolt_rounded,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Tap any shortcut to launch tools instantly',
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
               ),
-              QuickActionButton(
-                icon: Icons.map_rounded,
-                label: 'Map',
-                onTap: () => _openMap(),
-              ),
-              QuickActionButton(
-                icon: Icons.hotel_rounded,
-                label: 'Hotels',
-                onTap: () => _openAIChat(
-                  initialPrompt:
-                      'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
-                ),
-              ),
-              QuickActionButton(
-                icon: Icons.restaurant_rounded,
-                label: 'Food',
-                onTap: () => _openAIChat(
-                  initialPrompt:
-                      'What are must-try Sri Lankan foods and the best places to try them?',
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 14),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth > 420 ? 4 : 2;
+                final spacing = 10.0;
+                final itemWidth =
+                    (constraints.maxWidth - ((columns - 1) * spacing)) /
+                    columns;
+
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: itemWidth,
+                      child: QuickActionButton(
+                        icon: Icons.auto_awesome,
+                        label: 'AI Plan',
+                        highlighted: true,
+                        onTap: _openAISuggestionsQuickAction,
+                      ),
+                    ),
+                    SizedBox(
+                      width: itemWidth,
+                      child: QuickActionButton(
+                        icon: Icons.map_rounded,
+                        label: 'Map',
+                        onTap: () => _openMap(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: itemWidth,
+                      child: QuickActionButton(
+                        icon: Icons.hotel_rounded,
+                        label: 'Hotels',
+                        onTap: () => _openAIChat(
+                          initialPrompt:
+                              'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: itemWidth,
+                      child: QuickActionButton(
+                        icon: Icons.restaurant_rounded,
+                        label: 'Food',
+                        onTap: () => _openAIChat(
+                          initialPrompt:
+                              'What are must-try Sri Lankan foods and the best places to try them?',
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -911,7 +996,12 @@ void initState() {
               children: [
                 Text(exp['title'], style: AppTheme.labelBold),
                 const SizedBox(height: 2),
-                Text(exp['desc'], style: AppTheme.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  exp['desc'],
+                  style: AppTheme.caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -924,7 +1014,11 @@ void initState() {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule_rounded, size: 13, color: AppTheme.primary),
+                const Icon(
+                  Icons.schedule_rounded,
+                  size: 13,
+                  color: AppTheme.primary,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   exp['duration'],
@@ -948,67 +1042,71 @@ void initState() {
       child: GestureDetector(
         onTap: () => _openAIChat(),
         child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              child: const Center(
-                child: Text('🤖', style: TextStyle(fontSize: 28)),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: const Center(
+                  child: Text('🤖', style: TextStyle(fontSize: 28)),
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Ask AI Travel Assistant',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ask AI Travel Assistant',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Get personalized recommendations instantly',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 12,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Get personalized recommendations instantly',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppTheme.primary,
+                  size: 20,
+                ),
               ),
-              child: const Icon(Icons.arrow_forward_rounded, color: AppTheme.primary, size: 20),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

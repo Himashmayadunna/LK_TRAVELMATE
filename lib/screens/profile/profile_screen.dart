@@ -64,15 +64,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildStatsSection(int savedCount) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Row(
         children: [
           ProfileStatCard(
             label: 'Saved Places',
             value: '$savedCount',
             icon: Icons.favorite_rounded,
-            iconColor: const Color(0xFFE65100),
-            iconBgColor: const Color(0xFFFBE9E7),
+            iconColor: AppTheme.accent,
+            iconBgColor: AppTheme.accent.withValues(alpha: 0.15),
           ),
           const SizedBox(width: 12),
           ProfileStatCard(
@@ -86,9 +86,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ProfileStatCard(
             label: 'Visited',
             value: '$_visited',
-            icon: Icons.check_box_rounded,
+            icon: Icons.check_circle_rounded,
             iconColor: AppTheme.success,
-            iconBgColor: const Color(0xFFE8F5E9),
+            iconBgColor: AppTheme.success.withValues(alpha: 0.15),
           ),
         ],
       ),
@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, savedProvider, _) {
         final savedPlaces = savedProvider.savedPlaces;
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
           child: Column(
             children: [
               SectionHeader(

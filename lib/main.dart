@@ -87,37 +87,46 @@ class _MainScreenState extends State<MainScreen> {
           boxShadow: [
             BoxShadow(
               color: AppTheme.cardShadow,
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(
+                _buildModernNavItem(
                   Icons.home_outlined,
                   Icons.home_rounded,
                   'Home',
                   0,
+                  AppTheme.primary,
                 ),
-                _buildNavItem(
+                _buildModernNavItem(
                   Icons.search_outlined,
                   Icons.search_rounded,
                   'Explore',
                   1,
+                  AppTheme.accent,
                 ),
                 _buildCenterMapButton(),
-                _buildNavItem(
+                _buildModernNavItem(
                   Icons.chat_bubble_outline,
                   Icons.chat_bubble_rounded,
                   'Chat',
                   3,
+                  AppTheme.purple,
                 ),
-                _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
+                _buildModernNavItem(
+                  Icons.person_outline,
+                  Icons.person_rounded,
+                  'Profile',
+                  4,
+                  AppTheme.primaryLight,
+                ),
               ],
             ),
           ),
@@ -126,31 +135,44 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(
+  Widget _buildModernNavItem(
     IconData icon,
     IconData activeIcon,
     String label,
     int index,
+    Color activeColor,
   ) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 60,
+        width: 56,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? AppTheme.primary : AppTheme.textHint,
-              size: 24,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? activeColor.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              ),
+              child: Center(
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: isSelected ? activeColor : AppTheme.textHint,
+                  size: 22,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primary : AppTheme.textHint,
+                color: isSelected ? activeColor : AppTheme.textHint,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -169,18 +191,18 @@ class _MainScreenState extends State<MainScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Transform.translate(
-            offset: const Offset(0, -12),
+            offset: const Offset(0, -14),
             child: Container(
-              width: 52,
-              height: 52,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradient,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primary.withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -192,7 +214,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
           Transform.translate(
-            offset: const Offset(0, -8),
+            offset: const Offset(0, -10),
             child: Text(
               'Map',
               style: TextStyle(

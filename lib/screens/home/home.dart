@@ -516,31 +516,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.home_rounded,
                   label: 'Home',
                   color: AppTheme.primary,
-                  onTap: () {},
                 ),
                 _buildQuickAccessItem(
                   icon: Icons.explore_rounded,
                   label: 'Explore',
                   color: AppTheme.accent,
-                  onTap: () {},
                 ),
                 _buildQuickAccessItem(
                   icon: Icons.chat_rounded,
                   label: 'Chat',
                   color: AppTheme.purple,
-                  onTap: () {},
                 ),
                 _buildQuickAccessItem(
                   icon: Icons.map_rounded,
                   label: 'Map',
                   color: AppTheme.gold,
-                  onTap: () {},
                 ),
                 _buildQuickAccessItem(
                   icon: Icons.person_rounded,
                   label: 'Profile',
                   color: AppTheme.primary,
-                  onTap: () {},
                 ),
               ],
             ),
@@ -554,39 +549,35 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            ),
-            child: Center(
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: AppTheme.caption.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: AppTheme.caption.copyWith(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

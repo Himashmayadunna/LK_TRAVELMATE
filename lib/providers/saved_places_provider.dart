@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+
+/// Mock Saved Places Provider - replaces Cloud Firestore
+/// To enable Firestore later, add google-services.json and restore the original file
 
 class SavedPlace {
   final String id;
@@ -18,27 +20,13 @@ class SavedPlace {
     required this.location,
     this.savedAt,
   });
-
-  factory SavedPlace.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data() ?? <String, dynamic>{};
-    return SavedPlace(
-      id: doc.id,
-      name: (data['name'] ?? '').toString(),
-      category: (data['category'] ?? 'Travel').toString(),
-      imageUrl: (data['imageUrl'] ?? '').toString(),
-      location: (data['location'] ?? 'Sri Lanka').toString(),
-      savedAt: (data['savedAt'] as Timestamp?)?.toDate(),
-    );
-  }
 }
 
 class SavedPlacesProvider extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  // Mock local storage - no Firestore required
   List<SavedPlace> _savedPlaces = [];
   bool _isLoading = false;
   String? _activeUserId;
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _savedPlacesSub;
   String? _lastError;
 
   List<SavedPlace> get savedPlaces => _savedPlaces;
@@ -57,8 +45,6 @@ class SavedPlacesProvider extends ChangeNotifier {
 
   Future<void> configureForUser(String? userId) async {
     if (_activeUserId == userId) return;
-    await _savedPlacesSub?.cancel();
-    _savedPlacesSub = null;
 
     _activeUserId = userId;
     _lastError = null;
@@ -70,70 +56,12 @@ class SavedPlacesProvider extends ChangeNotifier {
       return;
     }
 
-    _isLoading = true;
+    _isLoading = false;
     notifyListeners();
-
-    final collection = _collection;
-    if (collection == null) {
-      _isLoading = false;
-      notifyListeners();
-      return;
-    }
-
-    _savedPlacesSub = collection
-        .orderBy('savedAt', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) {
-            _savedPlaces = snapshot.docs
-                .map(SavedPlace.fromFirestore)
-                .toList(growable: false);
-            _isLoading = false;
-            _lastError = null;
-            notifyListeners();
-          },
-          onError: (Object e) {
-            _isLoading = false;
-            _lastError = 'Failed to sync saved places: $e';
-            notifyListeners();
-          },
-        );
-  }
-
-  CollectionReference<Map<String, dynamic>>? get _collection {
-    final userId = _activeUserId;
-    if (userId == null || userId.isEmpty) return null;
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('saved_places');
   }
 
   Future<void> fetchSavedPlaces() async {
-    final collection = _collection;
-    if (collection == null) {
-      _savedPlaces = [];
-      _isLoading = false;
-      notifyListeners();
-      return;
-    }
-
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final snapshot = await collection
-          .orderBy('savedAt', descending: true)
-          .get();
-      _savedPlaces = snapshot.docs
-          .map(SavedPlace.fromFirestore)
-          .toList(growable: false);
-      _lastError = null;
-    } catch (e) {
-      _savedPlaces = [];
-      _lastError = 'Failed to load saved places: $e';
-    }
-
+    _savedPlaces = [];
     _isLoading = false;
     notifyListeners();
   }
@@ -144,8 +72,7 @@ class SavedPlacesProvider extends ChangeNotifier {
     required String imageUrl,
     required String location,
   }) async {
-    final collection = _collection;
-    if (collection == null) {
+    if (_activeUserId == null) {
       throw Exception('Please sign in to save places.');
     }
 
@@ -154,22 +81,7 @@ class SavedPlacesProvider extends ChangeNotifier {
       throw Exception('Invalid place details. Please try another place.');
     }
 
-    try {
-      await collection.doc(docId).set({
-        'name': name,
-        'category': category,
-        'imageUrl': imageUrl,
-        'location': location,
-        'savedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-      _lastError = null;
-    } catch (e) {
-      _lastError = 'Failed to save place: $e';
-      notifyListeners();
-      throw Exception('Could not save this place to Firebase.');
-    }
-
-    final index = _savedPlaces.indexWhere((p) => p.id == docId);
+    // Mock: just add locally
     final place = SavedPlace(
       id: docId,
       name: name,
@@ -178,6 +90,8 @@ class SavedPlacesProvider extends ChangeNotifier {
       location: location,
       savedAt: DateTime.now(),
     );
+    
+    final index = _savedPlaces.indexWhere((p) => p.id == docId);
     if (index >= 0) {
       _savedPlaces[index] = place;
     } else {
@@ -187,17 +101,6 @@ class SavedPlacesProvider extends ChangeNotifier {
   }
 
   Future<void> removeSavedPlace(String id) async {
-    final collection = _collection;
-    if (collection != null && id.isNotEmpty) {
-      try {
-        await collection.doc(id).delete();
-        _lastError = null;
-      } catch (e) {
-        _lastError = 'Failed to remove place: $e';
-        notifyListeners();
-        throw Exception('Could not remove this place from Firebase.');
-      }
-    }
     _savedPlaces.removeWhere((place) => place.id == id);
     notifyListeners();
   }
@@ -208,7 +111,6 @@ class SavedPlacesProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _savedPlacesSub?.cancel();
     super.dispose();
   }
 }

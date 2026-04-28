@@ -8,6 +8,7 @@ class AISuggestion {
   final List<String> highlights;
   final String insiderTip;
   final List<String> foodRecommendations;
+  final List<String> matchReasons;
   final String howToGetThere;
   final String imageUrl;
 
@@ -21,6 +22,7 @@ class AISuggestion {
     required this.highlights,
     required this.insiderTip,
     required this.foodRecommendations,
+    required this.matchReasons,
     required this.howToGetThere,
     required this.imageUrl,
   });
@@ -37,6 +39,7 @@ class AISuggestion {
       highlights: _toStringList(json['highlights'], const ['Scenic views', 'Local culture']),
       insiderTip: (json['insiderTip'] ?? 'Visit early morning for fewer crowds.').toString(),
       foodRecommendations: _toStringList(json['foodRecommendations'], const ['Rice and curry']),
+      matchReasons: _toStringList(json['matchReasons'], const ['Recommended for you', 'Great value']),
       howToGetThere: (json['howToGetThere'] ?? 'Travel by bus, train, or taxi from Colombo.').toString(),
       imageUrl: _resolveImageUrl(
         raw: json['imageUrl']?.toString(),

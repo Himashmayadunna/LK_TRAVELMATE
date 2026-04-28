@@ -1,20 +1,24 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
+  // API Keys: Separate keys for Chat vs Suggestions to avoid rate limiting conflicts
   static const String _configuredApiKey =
-      "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";
+      "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";
   static const String _baseUrl =
       "https://openrouter.ai/api/v1/chat/completions";
   static const String _model = "deepseek/deepseek-r1-0528";
 
-  static String get _apiKey =>
-      const String.fromEnvironment(
-        'OPENROUTER_API_KEY',
-        defaultValue: _configuredApiKey,
-      ).trim();
+  static String get _apiKey => const String.fromEnvironment(
+    'OPENROUTER_API_KEY',
+    defaultValue: _configuredApiKey,
+  ).trim();
+
+  // Currently both chat and suggestions use the same key; kept as a separate getter
+  // so we can split keys later without touching call sites.
+  static String get _suggestionsApiKey => _apiKey;
 
   static bool get isApiKeyConfigured {
     final key = _apiKey;
@@ -27,21 +31,25 @@ class GeminiService {
     String userMessage, {
     int maxTokens = 1024,
     String? model,
+    bool useSuggestionsKey = false,
   }) async {
-    if (!isApiKeyConfigured) {
-      return 'API Error: OpenRouter API key is missing or invalid. '
-          'Set OPENROUTER_API_KEY via --dart-define and restart the app.';
+    final apiKey = useSuggestionsKey ? _suggestionsApiKey : _apiKey;
+    if (apiKey.isEmpty || !apiKey.startsWith('sk-or-v1-')) {
+      return 'API Error: OpenRouter API key is missing or invalid.';
     }
 
     try {
       final useModel = model ?? _model;
-      debugPrint('AIService: Calling OpenRouter API with model: $useModel ...');
+      final keyType = useSuggestionsKey ? "Suggestions" : "Chat";
+      debugPrint(
+        'AIService ($keyType): Calling OpenRouter API with model: $useModel ...',
+      );
 
       final response = await http
           .post(
             Uri.parse(_baseUrl),
             headers: {
-              "Authorization": "Bearer $_apiKey",
+              "Authorization": "Bearer $apiKey",
               "Content-Type": "application/json",
               "HTTP-Referer": "https://lk-travelmate.app",
               "X-Title": "LK TravelMate",
@@ -77,6 +85,14 @@ class GeminiService {
             return 'API Error: Unauthorized key. Check your OpenRouter API key.';
           }
           if (response.statusCode == 402) {
+            final affordableMatch = RegExp(
+              r'can only afford (\d+)',
+            ).firstMatch(errorMsg);
+            final affordable = affordableMatch?.group(1);
+            if (affordable != null) {
+              return 'API Error: OpenRouter credits are unavailable (402). '
+                  'Affordable max_tokens: $affordable.';
+            }
             return 'API Error: OpenRouter credits are unavailable (402). '
                 'Top up billing/credits, then retry.';
           }
@@ -181,7 +197,12 @@ Pro Tips:
 Give 4 place suggestions and 4 food suggestions. Match budget and preferences closely.
 ''';
 
-    return _callAI(systemPrompt, userMessage, maxTokens: 1400);
+    return _callAI(
+      systemPrompt,
+      userMessage,
+      maxTokens: 1400,
+      useSuggestionsKey: true,
+    );
   }
 
   // ─── GENERATE ITINERARY ─────────────────────────────────────────────
@@ -208,7 +229,7 @@ Include:
 
 Format it cleanly with day headers and bullet points. Keep it under 500 words.''';
 
-    return _callAI(systemPrompt, userMessage);
+    return _callAI(systemPrompt, userMessage, useSuggestionsKey: true);
   }
 
   // ─── DESTINATION RECOMMENDATION ─────────────────────────────────────
@@ -233,7 +254,7 @@ For each destination provide:
 
 Use emojis for visual appeal.''';
 
-    return _callAI(systemPrompt, userMessage);
+    return _callAI(systemPrompt, userMessage, useSuggestionsKey: true);
   }
 
   // ─── DESTINATION DETAILS ────────────────────────────────────────────
@@ -255,7 +276,7 @@ Include:
 
 Keep it under 200 words.''';
 
-    return _callAI(systemPrompt, userMessage);
+    return _callAI(systemPrompt, userMessage, useSuggestionsKey: true);
   }
 
   // ─── TRAVEL TIPS ────────────────────────────────────────────────────
@@ -270,7 +291,7 @@ Give practical travel tips about: "$topic" in Sri Lanka.
 Provide 5 concise, actionable tips. Include local insights that most tourists miss.
 Keep each tip to 1-2 sentences. Use emojis for visual appeal.''';
 
-    return _callAI(systemPrompt, userMessage);
+    return _callAI(systemPrompt, userMessage, useSuggestionsKey: true);
   }
 
   // ─── PERSONALIZED AI SUGGESTIONS (Structured JSON) ──────────────────
@@ -280,75 +301,165 @@ Keep each tip to 1-2 sentences. Use emojis for visual appeal.''';
     required String food,
     required String budget,
   }) async {
+    debugPrint(
+      '═══════════════════════════════════════════════════════════════',
+    );
+    debugPrint('🚀 AIService.getPersonalizedSuggestions() CALLED');
+    debugPrint('  places: "$places"');
+    debugPrint('  duration: "$duration"');
+    debugPrint('  food: "$food"');
+    debugPrint('  budget: "$budget"');
+    debugPrint(
+      '═══════════════════════════════════════════════════════════════',
+    );
+
     const systemPrompt = '''
 You are a Sri Lanka travel planning expert. You MUST respond ONLY with a valid JSON array — no markdown, no explanation, no extra text, no code fences, no thinking tags.
 Return a JSON array of exactly 5 destination objects. Output ONLY the JSON array, nothing else.''';
 
     final userMessage =
         '''
-Suggest 5 Sri Lanka destinations for this traveler:
-- Places they want to visit or are interested in: $places
+Suggest 5 Sri Lanka destinations for this traveler. CRITICAL: MATCH THE EXACT USER PREFERENCES BELOW.
+- Places/interests they want to visit: $places
 - Duration of trip: $duration
-- Food preferences: $food
+- Food preferences/cuisine they like: $food
 - Total budget: $budget
 
+MATCHING REQUIREMENTS (MUST FOLLOW):
+1. Each destination MUST align with "$places" - if user wants "beaches" suggest beach destinations; if "waterfalls" suggest waterfall areas; if "historical" suggest cultural/heritage sites
+2. Each destination's food recommendations MUST include foods similar to: $food (if user likes "spicy" include spicy dishes, if "seafood" include seafood options)
+3. Estimated daily cost must fit within budget range
+4. Include a "matchReasons" field listing 2-3 specific reasons why this matches their preferences
+5. Do NOT suggest generic places if user specified something specific - be precise
+
 Return ONLY a JSON array with these fields per object:
-[{"name":"Place Name","location":"District","description":"2 sentence description","category":"Beach","budgetLevel":"mid","estimatedCostPerDay":50,"bestTimeToVisit":"Dec - Mar","highlights":["h1","h2","h3"],"insiderTip":"tip","foodRecommendations":["food1","food2"],"howToGetThere":"transport info","imageUrl":"https://...","latitude":6.0324,"longitude":80.2170}]
+[{"name":"Place Name","location":"District","description":"2 sentence description matching their interests","category":"Beach","budgetLevel":"mid","estimatedCostPerDay":50,"bestTimeToVisit":"Dec - Mar","highlights":["h1","h2","h3"],"matchReasons":["reason1","reason2","reason3"],"insiderTip":"tip","foodRecommendations":["food1","food2"],"howToGetThere":"transport info","imageUrl":"https://...","latitude":6.0324,"longitude":80.2170}]
 
 For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links for the exact place.
-5 objects. Match food preferences and budget. Sri Lankan places only. JSON only, no other text.''';
+5 objects. PRIORITY: Match user preferences exactly, then budget fit. Sri Lankan places only. JSON only, no other text.''';
 
-    final models = ['deepseek/deepseek-chat', _model];
+    final models = [
+      'google/gemma-3-27b-it:free',
+      'qwen/qwen3-coder:free',
+      'openai/gpt-oss-20b:free',
+      'meta-llama/llama-3.3-70b-instruct:free',
+      _model,
+    ];
+    final tokenPlans = <int>[1200, 900, 700, 500, 350, 250];
 
     for (final model in models) {
-      try {
-        final raw = await _callAI(
-          systemPrompt,
-          userMessage,
-          maxTokens: 4096,
-          model: model,
-        );
-        debugPrint('AIService: Raw suggestions response length: ${raw.length}');
-        debugPrint(
-          'AIService: Raw response preview: ${raw.substring(0, raw.length > 300 ? 300 : raw.length)}',
-        );
-        if (raw.startsWith('API Error') ||
-            raw.startsWith('Error') ||
-            raw.startsWith('Connection error')) {
-          debugPrint('AIService: API returned error: $raw');
-          continue;
-        }
+      final attempts = List<int>.from(tokenPlans);
+      var attemptIndex = 0;
 
-        final parsed = _parseSuggestions(raw);
-        if (parsed.isNotEmpty) {
-          final ranked = _rankSuggestionsByPreferences(
-            parsed,
-            places: places,
-            food: food,
-            duration: duration,
-            budget: budget,
+      while (attemptIndex < attempts.length) {
+        final maxTokens = attempts[attemptIndex++];
+
+        try {
+          debugPrint('📡 Trying model: $model (max_tokens=$maxTokens)');
+          final raw = await _callAI(
+            systemPrompt,
+            userMessage,
+            maxTokens: maxTokens,
+            model: model,
+            useSuggestionsKey: true,
           );
           debugPrint(
-            'AIService: Successfully parsed ${ranked.length} suggestions with $model',
+            'AIService: Raw suggestions response length: ${raw.length}',
           );
-          return ranked;
-        }
+          debugPrint(
+            'AIService: Raw response preview: ${raw.substring(0, raw.length > 300 ? 300 : raw.length)}',
+          );
 
-        debugPrint(
-          'AIService: Parsed zero suggestions with $model, trying fallback model.',
-        );
-      } catch (e) {
-        debugPrint('AIService: Failed to parse suggestions with $model: $e');
+          if (raw.startsWith('API Error') ||
+              raw.startsWith('Error') ||
+              raw.startsWith('Connection error')) {
+            debugPrint('❌ API returned error: $raw');
+
+            final affordableMatch = RegExp(
+              r'Affordable max_tokens: (\d+)',
+            ).firstMatch(raw);
+            if (affordableMatch != null) {
+              final affordable = int.tryParse(affordableMatch.group(1)!);
+              if (affordable != null) {
+                final adjusted = affordable > 80 ? affordable - 80 : affordable;
+                if (adjusted > 120 && !attempts.contains(adjusted)) {
+                  attempts.add(adjusted);
+                  attempts.sort((a, b) => b.compareTo(a));
+                  debugPrint(
+                    '↩️ Added adaptive retry with max_tokens=$adjusted for low-credit account.',
+                  );
+                }
+              }
+            }
+
+            continue;
+          }
+
+          final parsed = _parseSuggestions(raw);
+          debugPrint(
+            '✅ Parsed ${parsed.length} suggestions from API with $model',
+          );
+
+          if (parsed.isNotEmpty) {
+            debugPrint('📊 API Suggestions BEFORE ranking:');
+            for (var i = 0; i < parsed.length; i++) {
+              debugPrint(
+                '  [$i] ${parsed[i]['name']} - ${parsed[i]['category']}',
+              );
+            }
+
+            final ranked = _rankSuggestionsByPreferences(
+              parsed,
+              places: places,
+              food: food,
+              duration: duration,
+              budget: budget,
+            );
+
+            debugPrint('📊 Suggestions AFTER ranking and enrichment:');
+            for (var i = 0; i < ranked.length; i++) {
+              final reasons = ranked[i]['matchReasons'] as List? ?? [];
+              debugPrint(
+                '  [$i] ${ranked[i]['name']} - ${ranked[i]['category']}',
+              );
+              debugPrint('       Reasons: ${reasons.join(" | ")}');
+            }
+
+            debugPrint(
+              '✨ Successfully returning ${ranked.length} ranked suggestions with $model',
+            );
+            return ranked;
+          }
+
+          debugPrint(
+            '⚠️  Parsed zero suggestions with $model (max_tokens=$maxTokens), trying next attempt.',
+          );
+        } catch (e) {
+          debugPrint(
+            '❌ Failed to parse suggestions with $model (max_tokens=$maxTokens): $e',
+          );
+        }
       }
     }
 
-    debugPrint('AIService: Using local fallback suggestions.');
-    return _localFallbackSuggestions(
+    debugPrint('⚠️  All API models failed, using LOCAL FALLBACK suggestions');
+    final fallbackSuggestions = _localFallbackSuggestions(
       places: places,
       duration: duration,
       food: food,
       budget: budget,
     );
+
+    debugPrint('📊 Fallback suggestions returned:');
+    for (var i = 0; i < fallbackSuggestions.length; i++) {
+      final reasons = fallbackSuggestions[i]['matchReasons'] as List? ?? [];
+      debugPrint(
+        '  [$i] ${fallbackSuggestions[i]['name']} - ${fallbackSuggestions[i]['category']}',
+      );
+      debugPrint('       Reasons: ${reasons.join(" | ")}');
+    }
+
+    return fallbackSuggestions;
   }
 
   static String _extractMessageContent(dynamic responseData) {
@@ -512,6 +623,14 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
           ]),
           const ['Rice and curry'],
         ),
+        'matchReasons': _toStringList(
+          _firstAvailable([
+            map['matchReasons'],
+            map['matchReason'],
+            map['reasons'],
+          ]),
+          const ['Recommended for you', 'Great value'],
+        ),
         'howToGetThere': _firstNonEmptyString([
           map['howToGetThere'],
           map['transport'],
@@ -653,6 +772,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'highlights': ['Calm beach', 'Snorkeling', 'Sunset cafes'],
         'insiderTip': 'Visit Jungle Beach in the morning to avoid crowds.',
         'foodRecommendations': ['Seafood kottu', 'Grilled prawns'],
+        'matchReasons': [],
         'howToGetThere':
             'Train or highway bus from Colombo to Galle, then tuk-tuk.',
         'imageUrl':
@@ -675,6 +795,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Book whale tours from the harbor directly for better prices.',
         'foodRecommendations': ['Devilled cuttlefish', 'Seafood rice'],
+        'matchReasons': [],
         'howToGetThere':
             'Train to Weligama/Mirissa area, then short tuk-tuk ride.',
         'imageUrl':
@@ -692,6 +813,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'highlights': ['Lion Rock', 'Frescoes', 'Pidurangala sunrise'],
         'insiderTip': 'Start climbing before 7 AM to beat heat and queues.',
         'foodRecommendations': ['Village rice and curry', 'Wood-apple juice'],
+        'matchReasons': [],
         'howToGetThere':
             'Bus or taxi from Dambulla; nearest rail hub is Habarana.',
         'imageUrl':
@@ -714,6 +836,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'See Nine Arches Bridge around train passing times for best photos.',
         'foodRecommendations': ['Hot butter cuttlefish', 'Ceylon tea'],
+        'matchReasons': [],
         'howToGetThere':
             'Scenic train from Kandy or bus routes via Bandarawela.',
         'imageUrl':
@@ -736,6 +859,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Visit the temple in the evening for a more atmospheric experience.',
         'foodRecommendations': ['Kottu roti', 'Kiribath'],
+        'matchReasons': [],
         'howToGetThere': 'Frequent train and bus services from Colombo.',
         'imageUrl':
             'https://upload.wikimedia.org/wikipedia/commons/c/c4/Sri_Dalada_Maligawa.jpg',
@@ -753,6 +877,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Choose half-day early safari for better wildlife activity.',
         'foodRecommendations': ['Rice packets', 'Grilled fish'],
+        'matchReasons': [],
         'howToGetThere': 'Bus or car to Tissamaharama, then safari transport.',
         'imageUrl':
             'https://upload.wikimedia.org/wikipedia/commons/6/6b/Yala_National_Park%2C_Sri_Lanka.jpg',
@@ -770,6 +895,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Start early and carry water shoes for slippery rock sections.',
         'foodRecommendations': ['Parippu curry', 'Egg roti'],
+        'matchReasons': [],
         'howToGetThere':
             'Bus or taxi to Koslanda, then a short tuk-tuk and hike.',
         'imageUrl':
@@ -788,6 +914,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Visit on weekdays to avoid local holiday crowds at the entrance.',
         'foodRecommendations': ['String hoppers', 'Lunu miris'],
+        'matchReasons': [],
         'howToGetThere':
             'Travel via Belihuloya and continue by tuk-tuk to the falls.',
         'imageUrl':
@@ -806,6 +933,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'insiderTip':
             'Carry a light rain jacket because spray near the base is strong.',
         'foodRecommendations': ['Lamprais', 'Wade and tea'],
+        'matchReasons': [],
         'howToGetThere':
             'Take a bus to Badulla and tuk-tuk to the Dunhinda entrance.',
         'imageUrl':
@@ -814,6 +942,8 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     ];
 
     final query = '$places $food'.toLowerCase();
+    final primaryIntent = _detectPrimaryIntent(places);
+
     final scored = base.map((item) {
       var score = _scoreForPreferences(item, places: places, food: food);
       if (query.contains('sri lanka')) {
@@ -825,26 +955,59 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     scored.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
 
     final maxPerDay = _estimateDailyBudget(budget: budget, duration: duration);
-    final suggestions = scored
-        .map((entry) => Map<String, dynamic>.from(entry['item'] as Map))
-        .where(
-          (item) =>
-              item['estimatedCostPerDay'] is int &&
-              (item['estimatedCostPerDay'] as int) <= maxPerDay + 30,
-        )
-        .take(5)
-        .toList();
 
-    if (suggestions.length < 5) {
+    // STRICT INTENT FILTERING: Only return suggestions matching user's primary intent
+    final suggestions = <Map<String, dynamic>>[];
+    final seenNames = <String>{};
+
+    if (primaryIntent != null) {
+      debugPrint('[FALLBACK-INTENT] Filtering for: $primaryIntent');
+      // FIRST: Add only suggestions that match the primary intent
       for (final entry in scored) {
-        if (suggestions.length == 5) break;
-        final candidate = Map<String, dynamic>.from(entry['item'] as Map);
-        if (suggestions.any((e) => e['name'] == candidate['name'])) continue;
-        suggestions.add(candidate);
+        if (suggestions.length >= 5) break;
+        final item = Map<String, dynamic>.from(entry['item'] as Map);
+        final name = item['name'].toString();
+        if (seenNames.contains(name)) continue;
+
+        if (_matchesPrimaryIntent(item, primaryIntent)) {
+          final cost = item['estimatedCostPerDay'] as int? ?? 50;
+          if (cost <= maxPerDay + 30) {
+            suggestions.add(item);
+            seenNames.add(name);
+          }
+        }
       }
     }
 
-    return suggestions;
+    // FALLBACK: If not enough matching, add non-blocking suggestions
+    if (suggestions.length < 5) {
+      for (final entry in scored) {
+        if (suggestions.length >= 5) break;
+        final item = Map<String, dynamic>.from(entry['item'] as Map);
+        final name = item['name'].toString();
+        if (seenNames.contains(name)) continue;
+
+        // Skip if it blocks the primary intent
+        if (primaryIntent != null &&
+            _blocksPrimaryIntent(item, primaryIntent)) {
+          continue;
+        }
+
+        final cost = item['estimatedCostPerDay'] as int? ?? 50;
+        if (cost <= maxPerDay + 30) {
+          suggestions.add(item);
+          seenNames.add(name);
+        }
+      }
+    }
+
+    return _enrichWithMatchReasons(
+      suggestions,
+      places: places,
+      food: food,
+      duration: duration,
+      budget: budget,
+    );
   }
 
   static List<Map<String, dynamic>> _rankSuggestionsByPreferences(
@@ -857,6 +1020,7 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     if (suggestions.isEmpty) return suggestions;
 
     final maxPerDay = _estimateDailyBudget(budget: budget, duration: duration);
+    final primaryIntent = _detectPrimaryIntent(places);
     final scored = suggestions.map((item) {
       var score = _scoreForPreferences(item, places: places, food: food);
       final estimated = _parseCost([
@@ -865,30 +1029,81 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         item['estimatedCost'],
       ], fallback: maxPerDay);
 
-      // Mildly prefer suggestions inside the requested price band.
+      // Strongly prefer suggestions inside the requested price band.
       final diff = (estimated - maxPerDay).abs();
       if (diff <= 20) {
-        score += 2;
+        score += 3;
       } else if (estimated > maxPerDay + 45) {
-        score -= 2;
+        score -= 5;
       }
 
-      return {
-        'score': score,
-        'item': item,
-      };
+      // STRONGLY boost matching primary intent
+      if (primaryIntent != null && _matchesPrimaryIntent(item, primaryIntent)) {
+        score += 20; // Major boost for intent matching
+      }
+
+      // HEAVILY penalize conflicting primary intent
+      if (primaryIntent != null && _blocksPrimaryIntent(item, primaryIntent)) {
+        score -= 15;
+      }
+
+      return {'score': score, 'item': item};
     }).toList();
 
     scored.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
 
-    final ranked = scored
-        .map((entry) => Map<String, dynamic>.from(entry['item'] as Map))
-        .toList();
+    final ranked = <Map<String, dynamic>>[];
+    final seenNames = <String>{};
 
-    if (ranked.length >= 5) {
-      return ranked.take(5).toList();
+    void addFromScored(Iterable<Map<String, dynamic>> items) {
+      for (final entry in items) {
+        final item = Map<String, dynamic>.from(entry['item'] as Map);
+        final name = item['name'].toString();
+        if (seenNames.contains(name)) continue;
+        ranked.add(item);
+        seenNames.add(name);
+        if (ranked.length == 5) return;
+      }
     }
 
+    if (primaryIntent != null) {
+      addFromScored(
+        scored.where(
+          (entry) => _matchesPrimaryIntent(
+            Map<String, dynamic>.from(entry['item'] as Map),
+            primaryIntent,
+          ),
+        ),
+      );
+
+      if (ranked.length < 5) {
+        addFromScored(
+          scored.where(
+            (entry) => !_blocksPrimaryIntent(
+              Map<String, dynamic>.from(entry['item'] as Map),
+              primaryIntent,
+            ),
+          ),
+        );
+      }
+    } else {
+      addFromScored(scored);
+    }
+
+    if (ranked.length >= 5) {
+      return _enrichWithMatchReasons(
+        ranked.take(5).toList(),
+        places: places,
+        food: food,
+        duration: duration,
+        budget: budget,
+      );
+    }
+
+    // FALLBACK: Use local suggestions to fill remaining spots
+    debugPrint(
+      'AIService: Using fallback suggestions (${5 - ranked.length} more needed)',
+    );
     final fallback = _localFallbackSuggestions(
       places: places,
       duration: duration,
@@ -896,13 +1111,406 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
       budget: budget,
     );
 
+    // If we have an intent, try to fill with matching fallback items first!
+    if (primaryIntent != null) {
+      for (final item in fallback) {
+        if (ranked.length == 5) break;
+        if (seenNames.contains(item['name'].toString())) continue;
+
+        if (_matchesPrimaryIntent(item, primaryIntent)) {
+          debugPrint(
+            'AIService: Adding fallback suggestion (matches intent): ${item['name']}',
+          );
+          ranked.add(item);
+          seenNames.add(item['name'].toString());
+        }
+      }
+
+      // If STILL short, add non-blocking from API
+      if (ranked.length < 5) {
+        final nonBlocking = scored.where(
+          (entry) => !_blocksPrimaryIntent(
+            Map<String, dynamic>.from(entry['item'] as Map),
+            primaryIntent,
+          ),
+        );
+        addFromScored(nonBlocking);
+      }
+    }
+
+    // Add remaining fallback items if still needed
     for (final item in fallback) {
       if (ranked.length == 5) break;
       if (ranked.any((e) => e['name'] == item['name'])) continue;
+      if (primaryIntent != null &&
+          !_matchesPrimaryIntent(item, primaryIntent) &&
+          _blocksPrimaryIntent(item, primaryIntent)) {
+        continue;
+      }
       ranked.add(item);
+      seenNames.add(item['name'].toString());
     }
 
-    return ranked;
+    return _enrichWithMatchReasons(
+      ranked,
+      places: places,
+      food: food,
+      duration: duration,
+      budget: budget,
+    );
+  }
+
+  static List<Map<String, dynamic>> _enrichWithMatchReasons(
+    List<Map<String, dynamic>> suggestions, {
+    required String places,
+    required String food,
+    required String duration,
+    required String budget,
+  }) {
+    return suggestions.map((item) {
+      final reasons = _generateMatchReasons(
+        item: item,
+        places: places,
+        food: food,
+        duration: duration,
+        budget: budget,
+      );
+
+      final enriched = Map<String, dynamic>.from(item);
+      enriched['matchReasons'] = reasons;
+      return enriched;
+    }).toList();
+  }
+
+  static List<String> _generateMatchReasons({
+    required Map<String, dynamic> item,
+    required String places,
+    required String food,
+    required String duration,
+    required String budget,
+  }) {
+    final reasons = <String>[];
+
+    final itemName = item['name']?.toString().toLowerCase() ?? '';
+    final itemCategory = item['category']?.toString().toLowerCase() ?? '';
+    final itemDesc = item['description']?.toString().toLowerCase() ?? '';
+    final itemFood =
+        (item['foodRecommendations'] as List?)
+            ?.map((f) => f.toString().toLowerCase())
+            .join(' ') ??
+        '';
+    final itemHighlights =
+        (item['highlights'] as List?)
+            ?.map((h) => h.toString().toLowerCase())
+            .join(' ') ??
+        '';
+    final combinedItem = '$itemName $itemCategory $itemDesc $itemHighlights'
+        .toLowerCase();
+
+    final placesNorm = places.toLowerCase();
+    final foodNorm = food.toLowerCase();
+    final budgetNum = _extractBudgetNumber(budget);
+    final costPerDay = _parseCost([item['estimatedCostPerDay']], fallback: 50);
+
+    debugPrint('🔍 _generateMatchReasons for "${item['name']}"');
+    debugPrint('   Budget parsed: \${budgetNum}');
+    debugPrint('   Max per day: \${maxPerDay}');
+
+    // === PRIORITY 1: Check place/category matching ===
+
+    // BEACHES
+    if (_containsAny(placesNorm, const ['beach', 'coast', 'shore'])) {
+      debugPrint('   ✓ User wants BEACHES');
+      if (_containsAny(combinedItem, const [
+        'beach',
+        'coast',
+        'shore',
+        'unawatuna',
+        'mirissa',
+        'arugambe',
+      ])) {
+        reasons.add('Perfect beach destination matching your request');
+        debugPrint('     ✅ Item matches beach');
+      } else {
+        debugPrint(
+          '     ❌ Item does NOT match beach (combined: "$combinedItem")',
+        );
+      }
+    }
+    // WATERFALLS
+    else if (_containsAny(placesNorm, const [
+      'waterfall',
+      'falls',
+      'cascade',
+    ])) {
+      debugPrint('   ✓ User wants WATERFALLS');
+      if (_containsAny(combinedItem, const [
+        'waterfall',
+        'falls',
+        'cascade',
+        'diyaluma',
+        'bambarakanda',
+        'dunhinda',
+      ])) {
+        reasons.add('Excellent waterfall destination matching your request');
+        debugPrint('     ✅ Item matches waterfall');
+      } else {
+        debugPrint('     ❌ Item does NOT match waterfall');
+      }
+    }
+    // HIKING/MOUNTAINS
+    else if (_containsAny(placesNorm, const [
+      'mountain',
+      'hiking',
+      'trek',
+      'hill',
+      'peak',
+      'climb',
+    ])) {
+      debugPrint('   ✓ User wants HIKING');
+      if (_containsAny(combinedItem, const [
+        'hiking',
+        'trek',
+        'mountain',
+        'hill',
+        'peak',
+        'ella',
+        'climb',
+        'trail',
+      ])) {
+        reasons.add('Great hiking and mountain destination for you');
+        debugPrint('     ✅ Item matches hiking');
+      } else {
+        debugPrint('     ❌ Item does NOT match hiking');
+      }
+    }
+    // CULTURAL/HERITAGE
+    else if (_containsAny(placesNorm, const [
+      'cultural',
+      'heritage',
+      'temple',
+      'history',
+      'ancient',
+      'historic',
+    ])) {
+      debugPrint('   ✓ User wants CULTURAL');
+      if (_containsAny(combinedItem, const [
+        'temple',
+        'heritage',
+        'cultural',
+        'historic',
+        'ancient',
+        'sigiriya',
+        'kandy',
+      ])) {
+        reasons.add('Rich cultural heritage site matching your interests');
+        debugPrint('     ✅ Item matches cultural');
+      } else {
+        debugPrint('     ❌ Item does NOT match cultural');
+      }
+    }
+    // WILDLIFE/SAFARI
+    else if (_containsAny(placesNorm, const [
+      'wildlife',
+      'safari',
+      'animal',
+      'leopard',
+      'elephant',
+      'park',
+    ])) {
+      debugPrint('   ✓ User wants WILDLIFE');
+      if (_containsAny(combinedItem, const [
+        'wildlife',
+        'safari',
+        'leopard',
+        'elephant',
+        'yala',
+        'park',
+      ])) {
+        reasons.add('Premier wildlife and safari destination for you');
+        debugPrint('     ✅ Item matches wildlife');
+      } else {
+        debugPrint('     ❌ Item does NOT match wildlife');
+      }
+    }
+    // If no specific category matched but user requested specific type, still provide relevant reason
+    else if (placesNorm.isNotEmpty && placesNorm.length > 2) {
+      debugPrint('   ! User has preferences but no category match found');
+      reasons.add('Popular Sri Lanka destination');
+    }
+
+    // === PRIORITY 2: Check food matching ===
+    if (foodNorm.isNotEmpty &&
+        !_containsAny(foodNorm, const [
+          'any',
+          'anything',
+          'n/a',
+          'none',
+          'no preference',
+        ])) {
+      if (_containsAny(foodNorm, const ['spicy', 'curry', 'hot', 'chilli']) &&
+          _containsAny(itemFood + itemDesc, const [
+            'curry',
+            'devilled',
+            'kottu',
+            'spicy',
+            'chilli',
+          ])) {
+        reasons.add('Serves spicy Sri Lankan curries you\'ll enjoy');
+        debugPrint('     ✅ Food: Spicy match');
+      } else if (_containsAny(foodNorm, const [
+            'seafood',
+            'fish',
+            'prawn',
+            'shrimp',
+          ]) &&
+          _containsAny(itemFood, const [
+            'seafood',
+            'fish',
+            'prawn',
+            'shrimp',
+            'cuttlefish',
+            'crab',
+          ])) {
+        reasons.add('Offers fresh local seafood specialties');
+        debugPrint('     ✅ Food: Seafood match');
+      } else if (_containsAny(foodNorm, const ['vegetarian', 'vegan']) &&
+          (_containsAny(itemFood, const ['curry', 'rice', 'vegetable']) ||
+              itemFood.contains('curry'))) {
+        reasons.add('Has great vegetarian and plant-based options');
+        debugPrint('     ✅ Food: Vegetarian match');
+      }
+    }
+
+    // === PRIORITY 3: Check budget matching ===
+    if (budgetNum > 0) {
+      if (costPerDay <= budgetNum * 0.5) {
+        reasons.add('Excellent value - just \$$costPerDay/day');
+        debugPrint('     ✅ Budget: Excellent value');
+      } else if (costPerDay <= budgetNum * 0.8) {
+        reasons.add('Great value at \$$costPerDay/day');
+        debugPrint('     ✅ Budget: Great value');
+      } else if (costPerDay <= budgetNum) {
+        reasons.add('Fits perfectly within your \$$budgetNum budget');
+        debugPrint('     ✅ Budget: Fits budget');
+      }
+    }
+
+    // === FINAL FALLBACK: If still no reasons, generate generic ones ===
+    if (reasons.isEmpty) {
+      reasons.add('Highly recommended Sri Lanka destination');
+      if (costPerDay > 0) {
+        reasons.add('Affordable at \$$costPerDay per day');
+      }
+      debugPrint('     ⚠️  NO MATCH - Using generic fallback reasons');
+    }
+
+    debugPrint('   Final reasons: ${reasons.take(3).toList().join(" | ")}');
+
+    // Return top 2-3 reasons
+    return reasons.take(3).toList();
+  }
+
+  static int _extractBudgetNumber(String budget) {
+    final match = RegExp(r'\d+').firstMatch(budget);
+    if (match != null) {
+      return int.tryParse(match.group(0)!) ?? 0;
+    }
+    return 0;
+  }
+
+  static String? _detectPrimaryIntent(String places) {
+    final normalized = _normalizeForMatch(places);
+    if (_containsAny(normalized, const ['waterfall', 'waterfalls', 'falls'])) {
+      return 'waterfall';
+    }
+    if (_containsAny(normalized, const ['beach', 'coast'])) return 'beach';
+    if (_containsAny(normalized, const ['hiking', 'trek', 'mountain'])) {
+      return 'hiking';
+    }
+    if (_containsAny(normalized, const ['temple', 'heritage', 'cultural'])) {
+      return 'cultural';
+    }
+    if (_containsAny(normalized, const ['wildlife', 'safari'])) {
+      return 'wildlife';
+    }
+    return null;
+  }
+
+  static bool _matchesPrimaryIntent(Map<String, dynamic> item, String intent) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      case 'beach':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'hiking':
+        return _containsAny(text, const [
+          'hiking',
+          'trail',
+          'hill',
+          'mountain',
+        ]);
+      case 'cultural':
+        return _containsAny(text, const ['temple', 'heritage', 'cultural']);
+      case 'wildlife':
+        return _containsAny(text, const ['wildlife', 'safari', 'park']);
+      default:
+        return false;
+    }
+  }
+
+  static bool _blocksPrimaryIntent(Map<String, dynamic> item, String intent) {
+    final text = _normalizeForMatch(
+      [
+        item['name'],
+        item['location'],
+        item['category'],
+        item['description'],
+        item['highlights'],
+      ].join(' '),
+    );
+
+    switch (intent) {
+      case 'waterfall':
+        return _containsAny(text, const ['beach', 'coast']);
+      case 'beach':
+        return _containsAny(text, const ['waterfall', 'falls']);
+      case 'cultural':
+        return _containsAny(text, const [
+          'beach',
+          'coast',
+          'waterfall',
+          'falls',
+        ]);
+      case 'hiking':
+        return _containsAny(text, const [
+          'beach',
+          'coast',
+          'temple',
+          'heritage',
+          'cultural',
+        ]);
+      case 'wildlife':
+        return _containsAny(text, const [
+          'beach',
+          'coast',
+          'temple',
+          'heritage',
+          'cultural',
+        ]);
+      default:
+        return false;
+    }
   }
 
   static int _scoreForPreferences(
@@ -912,7 +1520,6 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
   }) {
     final text = _normalizeForMatch(
       [
-        places,
         item['name'],
         item['location'],
         item['category'],
@@ -925,29 +1532,61 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     final userFood = _normalizeForMatch(food);
     var score = 0;
 
+    final wantsWaterfall = _containsAny(userPlaces, const [
+      'waterfall',
+      'waterfalls',
+      'falls',
+    ]);
+    final wantsBeach = _containsAny(userPlaces, const ['beach', 'coast']);
+    final wantsHiking = _containsAny(userPlaces, const [
+      'hiking',
+      'trek',
+      'mountain',
+    ]);
+    final wantsCultural = _containsAny(userPlaces, const [
+      'temple',
+      'heritage',
+      'cultural',
+    ]);
+    final wantsWildlife = _containsAny(userPlaces, const [
+      'wildlife',
+      'safari',
+    ]);
+
     if (userPlaces.isNotEmpty) {
-      if (_containsAny(userPlaces, const [
-        'waterfall',
-        'waterfalls',
-        'falls',
-      ]) && _containsAny(text, const ['waterfall', 'falls'])) {
-        score += 7;
+      final isWaterfall = _containsAny(text, const ['waterfall', 'falls']);
+      final isBeach = _containsAny(text, const ['beach', 'coast']);
+      final isHiking = _containsAny(text, const [
+        'hiking',
+        'trail',
+        'hill',
+        'mountain',
+      ]);
+      final isCultural = _containsAny(text, const [
+        'temple',
+        'heritage',
+        'cultural',
+      ]);
+      final isWildlife = _containsAny(text, const [
+        'wildlife',
+        'safari',
+        'park',
+      ]);
+
+      if (wantsWaterfall) {
+        score += isWaterfall ? 14 : -6;
       }
-      if (_containsAny(userPlaces, const ['beach', 'coast']) &&
-          _containsAny(text, const ['beach', 'coast'])) {
-        score += 6;
+      if (wantsBeach) {
+        score += isBeach ? 10 : -4;
       }
-      if (_containsAny(userPlaces, const ['hiking', 'trek', 'mountain']) &&
-          _containsAny(text, const ['hiking', 'trail', 'hill', 'mountain'])) {
-        score += 5;
+      if (wantsHiking) {
+        score += isHiking ? 8 : -3;
       }
-      if (_containsAny(userPlaces, const ['temple', 'heritage', 'cultural']) &&
-          _containsAny(text, const ['temple', 'heritage', 'cultural'])) {
-        score += 5;
+      if (wantsCultural) {
+        score += isCultural ? 8 : -3;
       }
-      if (_containsAny(userPlaces, const ['wildlife', 'safari']) &&
-          _containsAny(text, const ['wildlife', 'safari', 'park'])) {
-        score += 5;
+      if (wantsWildlife) {
+        score += isWildlife ? 8 : -3;
       }
     }
 

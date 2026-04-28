@@ -10,6 +10,7 @@ import '../../widgets/quick_action_button.dart';
 import '../ai/ai_chat_screen.dart';
 import '../ai/ai_plan_form_screen.dart';
 import '../ai/ai_suggestions_screen.dart';
+import '../ai/place_details_form_screen.dart';
 import '../explore/explore_screen.dart';
 import '../map/map_screen.dart';
 
@@ -147,14 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openPlaceDetailsQuickAction() {
-    final placeTopic = _placesController.text.trim().isEmpty
-        ? 'Sigiriya, Ella, Galle, Kandy'
-        : _placesController.text.trim();
-
-    _openAIChat(
-      initialPrompt:
-          'Give me practical details about these Sri Lanka places: $placeTopic. Include best time, entry cost, how to reach, and one insider tip for each place.',
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PlaceDetailsFormScreen()));
   }
 
   void _openRelatedHotelsQuickAction() {
@@ -413,7 +409,10 @@ class _HomeScreenState extends State<HomeScreen> {
           color: highlighted ? null : AppTheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           border: highlighted
-              ? Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.45), width: 1.2)
+              ? Border.all(
+                  color: AppTheme.primaryLight.withValues(alpha: 0.45),
+                  width: 1.2,
+                )
               : Border.all(color: AppTheme.divider, width: 0.8),
           boxShadow: highlighted
               ? [

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 /// Mock Auth Provider - replaces Firebase Auth
@@ -7,6 +8,7 @@ class AuthProvider extends ChangeNotifier {
   String? _currentUserId;
   String _displayName = 'Traveler';
   String _email = 'traveler@example.com';
+  String? _photoUrl;
   bool _isLoggedIn = false;
   bool _isAuthReady = true; // Always ready since no Firebase init needed
 
@@ -22,16 +24,41 @@ class AuthProvider extends ChangeNotifier {
   String? get currentUser => _currentUserId;
   String get displayName => _displayName;
   String get email => _email;
+  String? get photoUrl => _photoUrl;
   bool get isLoggedIn => _isLoggedIn;
   bool get isAuthReady => _isAuthReady;
 
   String get initials {
     if (_displayName.isEmpty) return 'T';
     final names = _displayName.split(' ');
-    if (names.length >= 2) {
+    if (names.length >= 2 && names[0].isNotEmpty && names[1].isNotEmpty) {
       return '${names[0][0]}${names[1][0]}'.toUpperCase();
     }
-    return _displayName[0].toUpperCase();
+    return _displayName.isNotEmpty ? _displayName[0].toUpperCase() : 'T';
+  }
+
+  Future<void> uploadProfilePhoto(File imageFile) async {
+    if (currentUser == null) return;
+    
+    try {
+      _isUploadingPhoto = true;
+      notifyListeners();
+
+      final ref = _storage.ref().child('profile_photos').child('${currentUser!.uid}.jpg');
+      await ref.putFile(imageFile);
+      
+      final downloadUrl = await ref.getDownloadURL();
+      
+      await currentUser!.updatePhotoURL(downloadUrl);
+      _photoUrl = downloadUrl;
+      
+    } catch (e) {
+      debugPrint('Profile photo upload failed: $e');
+      rethrow;
+    } finally {
+      _isUploadingPhoto = false;
+      notifyListeners();
+    }
   }
 
   Future<void> signUp({

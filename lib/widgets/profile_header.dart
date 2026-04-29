@@ -5,6 +5,9 @@ class ProfileHeader extends StatelessWidget {
   final String name;
   final String email;
   final String initials;
+  final String? photoUrl;
+  final bool isUploadingPhoto;
+  final VoidCallback? onEditPhoto;
   final String badge;
   final int tripCount;
 
@@ -13,9 +16,23 @@ class ProfileHeader extends StatelessWidget {
     required this.name,
     required this.email,
     required this.initials,
+    this.photoUrl,
+    this.isUploadingPhoto = false,
+    this.onEditPhoto,
     this.badge = 'Explorer',
     this.tripCount = 0,
   });
+
+  Widget _buildInitials() {
+    return Text(
+      initials,
+      style: const TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: AppTheme.primary,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,30 +60,60 @@ class ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // Avatar
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+          Stack(
+            children: [
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primary,
+                child: Center(
+                  child: isUploadingPhoto
+                      ? const CircularProgressIndicator(color: AppTheme.primary)
+                      : photoUrl != null && photoUrl!.isNotEmpty
+                          ? ClipOval(
+                              child: Image.network(
+                                photoUrl!,
+                                width: 90,
+                                height: 90,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildInitials();
+                                },
+                              ),
+                            )
+                          : _buildInitials(),
                 ),
               ),
-            ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: isUploadingPhoto ? null : onEditPhoto,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           // Name

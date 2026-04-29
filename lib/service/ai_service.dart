@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
+<<<<<<< HEAD
   // API Keys: Separate keys for Chat vs Suggestions to avoid rate limiting conflicts
   static const String _configuredApiKey =
       "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";

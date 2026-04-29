@@ -10,34 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lk_travelmate/main.dart';
 
 void main() {
-  testWidgets('shows the start screen', (WidgetTester tester) async {
+  testWidgets('shows the welcome screen', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Find the best of Sri Lanka for every journey'),
-      findsOneWidget,
-    );
-    expect(find.text('Get Started'), findsOneWidget);
-    expect(find.text('Continue as Guest'), findsNothing);
-    expect(find.text('Create Account'), findsNothing);
-    expect(find.text('Sign In'), findsNothing);
-  });
-
-  testWidgets('get started opens auth choice page', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
-
-    final getStarted = find.text('Get Started');
-    await tester.ensureVisible(getStarted);
-    await tester.tap(getStarted);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Welcome to LK TravelMate'), findsOneWidget);
+    expect(find.text('LK TravelMate'), findsOneWidget);
     expect(find.text('Sign In'), findsOneWidget);
-    expect(find.text('Sign Up'), findsOneWidget);
     expect(find.text('Explore as Guest'), findsOneWidget);
   });
 }

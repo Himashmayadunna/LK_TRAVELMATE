@@ -12,6 +12,10 @@ class DestinationsProvider extends ChangeNotifier {
   List<Destination> get destinations => _destinations;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  
+  /// Get only trending destinations
+  List<Destination> get trendingDestinations => 
+      _destinations.where((d) => d.isTrending).toList();
 
   DestinationsProvider() {
     _loadDestinations();
@@ -38,6 +42,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'Morning',
         reviewCount: 2500,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'mirissa',
@@ -54,6 +59,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'November - April',
         reviewCount: 1800,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'temple_tooth',
@@ -70,6 +76,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'Year round',
         reviewCount: 3200,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'ella',
@@ -86,6 +93,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'January - April',
         reviewCount: 1500,
         isFeatured: false,
+        isTrending: false,
       ),
     ];
 

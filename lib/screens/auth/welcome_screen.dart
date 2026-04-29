@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../../utils/app_theme.dart';
 import 'signin.dart';
 import 'signup.dart';
@@ -19,13 +18,6 @@ class WelcomeScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SignUpScreen()),
-    );
-  }
-
-  void _continueAsGuest(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
     );
   }
 
@@ -85,11 +77,6 @@ class WelcomeScreen extends StatelessWidget {
               _SecondaryActionButton(
                 label: 'Sign Up',
                 onTap: () => _openSignUp(context),
-              ),
-              const SizedBox(height: 14),
-              _GuestActionButton(
-                label: 'Explore as Guest',
-                onTap: () => _continueAsGuest(context),
               ),
               const SizedBox(height: 18),
             ],
@@ -153,36 +140,6 @@ class _SecondaryActionButton extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-}
-
-class _GuestActionButton extends StatelessWidget {
-  const _GuestActionButton({required this.label, required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: TextButton.icon(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          foregroundColor: AppTheme.primary,
-          backgroundColor: AppTheme.primarySurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        icon: const Icon(Icons.explore_outlined, size: 20),
-        label: Text(
-          label,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
     );

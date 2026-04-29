@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
-import '../../main.dart';
 import 'signup.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -54,9 +54,9 @@ class _SignInScreenState extends State<SignInScreen>
 
     try {
       await context.read<AuthProvider>().signIn(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -76,13 +76,6 @@ class _SignInScreenState extends State<SignInScreen>
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _handleGuestMode() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
-    );
   }
 
   @override
@@ -319,10 +312,6 @@ class _SignInScreenState extends State<SignInScreen>
             ),
             const SizedBox(height: 24),
 
-            // Guest mode
-            _buildGuestButton(),
-            const SizedBox(height: 24),
-
             // Switch to sign up
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -509,40 +498,6 @@ class _SignInScreenState extends State<SignInScreen>
             Text(emoji, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 8),
             Text(label, style: AppTheme.labelBold.copyWith(fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGuestButton() {
-    return GestureDetector(
-      onTap: _handleGuestMode,
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: AppTheme.primarySurface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: AppTheme.primarySoft),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.explore_outlined, color: AppTheme.primary, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              'Continue as Guest',
-              style: AppTheme.labelBold.copyWith(
-                color: AppTheme.primary,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: AppTheme.primary,
-              size: 18,
-            ),
           ],
         ),
       ),

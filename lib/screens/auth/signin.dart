@@ -69,8 +69,7 @@ class _SignInScreenState extends State<SignInScreen>
     setState(() => _isLoading = true);
 
     try {
-      final authProvider = context.read<AuthProvider>();
-      await authProvider.signIn(
+      await context.read<AuthProvider>().signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -256,7 +255,9 @@ class _SignInScreenState extends State<SignInScreen>
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
+
+            // Switch to sign up
             Row(
               children: const [
                 _HeroStat(label: '24+', value: 'Destinations'),
@@ -622,49 +623,6 @@ class _SignInScreenState extends State<SignInScreen>
             Icon(icon, color: tint, size: 22),
             const SizedBox(width: 8),
             Text(label, style: AppTheme.labelBold.copyWith(fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: AppTheme.bodyMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: AppTheme.caption.copyWith(
-                color: Colors.white.withValues(alpha: 0.82),
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
           ],
         ),
       ),

@@ -13,6 +13,7 @@ class Destination {
   final String bestTime;
   final int reviewCount;
   final bool isFeatured;
+  final bool isTrending;
 
   const Destination({
     required this.id,
@@ -29,5 +30,6 @@ class Destination {
     this.bestTime = '',
     this.reviewCount = 0,
     this.isFeatured = false,
+    this.isTrending = false,
   });
 }

@@ -44,34 +44,53 @@ class PlaceCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(AppTheme.radiusLarge),
                   ),
-                  child: Image.network(
-                    imageUrl,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, st) => Container(
-                      height: 120,
-                      decoration: const BoxDecoration(
-                        gradient: AppTheme.cardGradient,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(AppTheme.radiusLarge),
+                  child: imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          imageUrl,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => Container(
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              gradient: AppTheme.cardGradient,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppTheme.radiusLarge),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.image_rounded, color: Colors.white54, size: 36),
+                            ),
+                          ),
+                        )
+                      : Image.network(
+                          imageUrl,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, st) => Container(
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              gradient: AppTheme.cardGradient,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppTheme.radiusLarge),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.image_rounded, color: Colors.white54, size: 36),
+                            ),
+                          ),
+                          loadingBuilder: (ctx, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              height: 120,
+                              color: AppTheme.primarySurface,
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.image_rounded, color: Colors.white54, size: 36),
-                      ),
-                    ),
-                    loadingBuilder: (ctx, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        height: 120,
-                        color: AppTheme.primarySurface,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      );
-                    },
-                  ),
                 ),
                 // Favorite button
                 Positioned(

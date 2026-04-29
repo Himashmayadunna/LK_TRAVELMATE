@@ -115,30 +115,43 @@ class _TrendingPlaceCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Background image
-            Image.network(
-              place.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (ctx, err, st) => Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.cardGradient,
-                ),
-                child: const Center(
-                  child: Icon(Icons.image_rounded, color: Colors.white54, size: 48),
-                ),
-              ),
-              loadingBuilder: (ctx, child, progress) {
-                if (progress == null) return child;
-                return Container(
-                  color: AppTheme.primarySurface,
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            place.imageUrl.startsWith('assets/')
+                ? Image.asset(
+                    place.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, st) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: AppTheme.cardGradient,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.image_rounded, color: Colors.white54, size: 48),
+                      ),
                     ),
+                  )
+                : Image.network(
+                    place.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, st) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: AppTheme.cardGradient,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.image_rounded, color: Colors.white54, size: 48),
+                      ),
+                    ),
+                    loadingBuilder: (ctx, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        color: AppTheme.primarySurface,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
             // Overlay gradient
             Container(
               decoration: BoxDecoration(

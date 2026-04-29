@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
@@ -53,16 +52,46 @@ class _SignInScreenState extends State<SignInScreen>
   }
 
   Future<void> _handleSignIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please fill in all fields correctly'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          ),
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      await context.read<AuthProvider>().signIn(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
+      if (!mounted) return;
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Sign in successful! 🎉'),
+          backgroundColor: AppTheme.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          ),
+        ),
+      );
+
+      // Navigate to home after brief delay
+      await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -75,6 +104,7 @@ class _SignInScreenState extends State<SignInScreen>
           content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
           ),
@@ -85,13 +115,6 @@ class _SignInScreenState extends State<SignInScreen>
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _handleGuestMode() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
-    );
   }
 
   @override
@@ -299,7 +322,7 @@ class _SignInScreenState extends State<SignInScreen>
                   if (val == null || val.isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!RegExp(r'^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$').hasMatch(val)) {
+                  if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(val)) {
                     return 'Enter a valid email';
                   }
                   return null;
@@ -411,8 +434,6 @@ class _SignInScreenState extends State<SignInScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              _buildGuestButton(),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -515,43 +536,46 @@ class _SignInScreenState extends State<SignInScreen>
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: _isLoading ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: _isLoading ? null : AppTheme.primaryGradient,
-          color: _isLoading ? AppTheme.primary.withValues(alpha: 0.65) : null,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          boxShadow: _isLoading
-              ? []
-              : [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.28),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
+      onTap: _isLoading ? () {} : onTap,
+      child: MouseRegion(
+        cursor: _isLoading ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: _isLoading ? null : AppTheme.primaryGradient,
+            color: _isLoading ? AppTheme.primary.withValues(alpha: 0.65) : null,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            boxShadow: _isLoading
+                ? []
+                : [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+          ),
+          child: Center(
+            child: _isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                ],
-        ),
-        child: Center(
-          child: _isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
-                )
-              : Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                  ),
-                ),
+          ),
         ),
       ),
     );
@@ -598,34 +622,6 @@ class _SignInScreenState extends State<SignInScreen>
             Icon(icon, color: tint, size: 22),
             const SizedBox(width: 8),
             Text(label, style: AppTheme.labelBold.copyWith(fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGuestButton() {
-    return GestureDetector(
-      onTap: _handleGuestMode,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppTheme.primarySurface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: AppTheme.divider),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.explore_outlined, color: AppTheme.primary, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              'Continue as Guest',
-              style: AppTheme.labelBold.copyWith(
-                color: AppTheme.primary,
-                fontSize: 13,
-              ),
-            ),
           ],
         ),
       ),

@@ -646,32 +646,53 @@ class _DestinationCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(18)),
-                  child: Image.network(
-                    destination.imageUrl,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) => progress == null
-                        ? child
-                        : Container(
-                            color: Colors.grey.shade200,
+                  child: destination.imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          destination.imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18)),
+                            ),
                             child: const Center(
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                              child: Icon(Icons.landscape,
+                                  color: Colors.grey, size: 36),
                             ),
                           ),
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(18)),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.landscape,
-                            color: Colors.grey, size: 36),
-                      ),
-                    ),
-                  ),
+                        )
+                      : Image.network(
+                          destination.imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (_, child, progress) => progress ==
+                                  null
+                              ? child
+                              : Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18)),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.landscape,
+                                  color: Colors.grey, size: 36),
+                            ),
+                          ),
+                        ),
                 ),
 
                 // Gradient overlay

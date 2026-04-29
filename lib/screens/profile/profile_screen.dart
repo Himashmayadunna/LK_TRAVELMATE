@@ -56,6 +56,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Color _getAvatarColor(int index) {
+    final colors = [
+      const Color(0xFF6366F1), // Indigo
+      const Color(0xFFEC4899), // Pink
+      const Color(0xFF14B8A6), // Teal
+      const Color(0xFFF59E0B), // Amber
+      const Color(0xFF8B5CF6), // Violet
+      const Color(0xFF06B6D4), // Cyan
+      const Color(0xFFEF4444), // Red
+      const Color(0xFF10B981), // Emerald
+    ];
+    return colors[index % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -67,15 +81,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
-            child: ProfileHeader(
-              name: authProvider.displayName,
-              email: authProvider.email,
-              initials: authProvider.initials,
-              photoUrl: authProvider.photoUrl,
-              isUploadingPhoto: authProvider.isUploadingPhoto,
-              onEditPhoto: () => _pickAndUploadImage(authProvider),
-              badge: 'Explorer',
-              tripCount: _visited,
+            child: SizedBox(
+              height: 260,
+              child: ProfileHeader(
+                name: authProvider.displayName,
+                email: authProvider.email,
+                initials: authProvider.initials,
+                photoUrl: authProvider.photoUrl,
+                isUploadingPhoto: authProvider.isUploadingPhoto,
+                onEditPhoto: () => _pickAndUploadImage(authProvider),
+                badge: 'Explorer',
+                tripCount: _visited,
+                memberSince: authProvider.memberSince,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _buildQuickActionsSection(savedProvider),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Community Members', style: AppTheme.headingSmall),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${authProvider.registeredUsers.length}',
+                          style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 110,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(right: 24),
+                      itemCount: authProvider.registeredUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = authProvider.registeredUsers[index];
+                        final DateTime mSince = user['memberSince'] as DateTime? ?? DateTime.now();
+                        final color = _getAvatarColor(index);
+                        final initials = (user['name'] as String? ?? 'U').split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join();
+
+                        return GestureDetector(
+                          onTap: () {},
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 14),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        color,
+                                        color.withValues(alpha: 0.6),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: color.withValues(alpha: 0.3),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      initials,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                SizedBox(
+                                  width: 72,
+                                  child: Text(
+                                    (user['name'] as String?) ?? 'User',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                SizedBox(
+                                  width: 72,
+                                  child: Text(
+                                    'Joined ${mSince.year}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 10, color: AppTheme.textHint),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -94,30 +223,212 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Row(
         children: [
-          ProfileStatCard(
-            label: 'Saved Places',
-            value: '$savedCount',
-            icon: Icons.favorite_rounded,
-            iconColor: AppTheme.accent,
-            iconBgColor: AppTheme.accent.withValues(alpha: 0.15),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openSavedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Saved Places',
+                  value: '$savedCount',
+                  icon: Icons.favorite_rounded,
+                  iconColor: AppTheme.accent,
+                  iconBgColor: AppTheme.accent.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Travel Plans',
-            value: '$_travelPlans',
-            icon: Icons.map_outlined,
-            iconColor: AppTheme.primary,
-            iconBgColor: AppTheme.primarySurface,
+          Expanded(
+            child: GestureDetector(
+              onTap: _openTravelPlans,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Travel Plans',
+                  value: '$_travelPlans',
+                  icon: Icons.map_outlined,
+                  iconColor: AppTheme.primary,
+                  iconBgColor: AppTheme.primarySurface,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Visited',
-            value: '$_visited',
-            icon: Icons.check_circle_rounded,
-            iconColor: AppTheme.success,
-            iconBgColor: AppTheme.success.withValues(alpha: 0.15),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openVisitedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Visited',
+                  value: '$_visited',
+                  icon: Icons.check_circle_rounded,
+                  iconColor: AppTheme.success,
+                  iconBgColor: AppTheme.success.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection(SavedPlacesProvider savedProvider) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.edit_rounded,
+                  label: 'Edit Profile',
+                  highlighted: true,
+                  onTap: _editProfile,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.share_rounded,
+                  label: 'Share Profile',
+                  onTap: _shareProfile,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.download_rounded,
+                  label: 'Download Data',
+                  onTap: _downloadData,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool highlighted = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: highlighted ? AppTheme.primaryGradient : null,
+            color: highlighted ? null : AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            boxShadow: highlighted
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : AppTheme.softShadow,
+            border: !highlighted
+                ? Border.all(color: AppTheme.divider, width: 1)
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: highlighted
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : AppTheme.primarySurface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: highlighted ? Colors.white : AppTheme.primary,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppTheme.caption.copyWith(
+                  color: highlighted ? Colors.white : AppTheme.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _editProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Edit Profile feature coming soon'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _openSavedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Saved Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openTravelPlans() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Travel Plans...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openVisitedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Visited Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _shareProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Share Profile feature coming soon'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _downloadData() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Download Data feature coming soon'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

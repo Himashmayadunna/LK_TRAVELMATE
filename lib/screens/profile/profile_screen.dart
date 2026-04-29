@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/saved_places_provider.dart';
 import '../../utils/app_theme.dart';
@@ -28,6 +30,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _pickAndUploadImage(AuthProvider authProvider) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    
+    if (image != null && context.mounted) {
+      try {
+        await authProvider.uploadProfilePhoto(File(image.path));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo updated successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update profile photo')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -43,6 +67,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               name: authProvider.displayName,
               email: authProvider.email,
               initials: authProvider.initials,
+              photoUrl: authProvider.photoUrl,
+              isUploadingPhoto: authProvider.isUploadingPhoto,
+              onEditPhoto: () => _pickAndUploadImage(authProvider),
               badge: 'Explorer',
               tripCount: _visited,
             ),

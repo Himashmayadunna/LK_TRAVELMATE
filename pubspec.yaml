@@ -75,6 +75,7 @@ flutter:
     - assets/logo/Travelmate.png
     - assets/Icons/
     - assets/start/
+    - assets/trending places/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

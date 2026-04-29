@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
+import '../../widgets/trending_places_section.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/saved_places_provider.dart';
 import '../auth/signin.dart';
@@ -296,6 +297,25 @@ class _ExploreScreenState extends State<ExploreScreen>
                   ),
 
                   const SizedBox(height: 10),
+
+                  // ── Trending places section (when no filters active) ────
+                  if (_selectedCategory == 'All' && _searchQuery.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: TrendingPlacesSection(
+                        trendingPlaces: destProvider.trendingDestinations,
+                        onViewAll: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${destProvider.trendingDestinations.length} trending places found',
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
 
                   // ── Results count + active budget pills ──────────────────
                   Padding(
@@ -626,32 +646,53 @@ class _DestinationCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(18)),
-                  child: Image.network(
-                    destination.imageUrl,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (_, child, progress) => progress == null
-                        ? child
-                        : Container(
-                            color: Colors.grey.shade200,
+                  child: destination.imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          destination.imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18)),
+                            ),
                             child: const Center(
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                              child: Icon(Icons.landscape,
+                                  color: Colors.grey, size: 36),
                             ),
                           ),
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(18)),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.landscape,
-                            color: Colors.grey, size: 36),
-                      ),
-                    ),
-                  ),
+                        )
+                      : Image.network(
+                          destination.imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (_, child, progress) => progress ==
+                                  null
+                              ? child
+                              : Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18)),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.landscape,
+                                  color: Colors.grey, size: 36),
+                            ),
+                          ),
+                        ),
                 ),
 
                 // Gradient overlay

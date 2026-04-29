@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/saved_places_provider.dart';
 import '../../utils/app_theme.dart';
@@ -32,6 +34,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _pickAndUploadImage(AuthProvider authProvider) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    
+    if (image != null && context.mounted) {
+      try {
+        await authProvider.uploadProfilePhoto(File(image.path));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo updated successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update profile photo')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -47,6 +71,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               name: authProvider.displayName,
               email: authProvider.email,
               initials: authProvider.initials,
+              photoUrl: authProvider.photoUrl,
+              isUploadingPhoto: authProvider.isUploadingPhoto,
+              onEditPhoto: () => _pickAndUploadImage(authProvider),
               badge: 'Explorer',
               tripCount: _visited,
             ),
@@ -64,33 +91,215 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildStatsSection(int savedCount) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Row(
         children: [
-          ProfileStatCard(
-            label: 'Saved Places',
-            value: '$savedCount',
-            icon: Icons.favorite_rounded,
-            iconColor: const Color(0xFFE65100),
-            iconBgColor: const Color(0xFFFBE9E7),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openSavedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Saved Places',
+                  value: '$savedCount',
+                  icon: Icons.favorite_rounded,
+                  iconColor: AppTheme.accent,
+                  iconBgColor: AppTheme.accent.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Travel Plans',
-            value: '$_travelPlans',
-            icon: Icons.map_outlined,
-            iconColor: AppTheme.primary,
-            iconBgColor: AppTheme.primarySurface,
+          Expanded(
+            child: GestureDetector(
+              onTap: _openTravelPlans,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Travel Plans',
+                  value: '$_travelPlans',
+                  icon: Icons.map_outlined,
+                  iconColor: AppTheme.primary,
+                  iconBgColor: AppTheme.primarySurface,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Visited',
-            value: '$_visited',
-            icon: Icons.check_box_rounded,
-            iconColor: AppTheme.success,
-            iconBgColor: const Color(0xFFE8F5E9),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openVisitedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Visited',
+                  value: '$_visited',
+                  icon: Icons.check_circle_rounded,
+                  iconColor: AppTheme.success,
+                  iconBgColor: AppTheme.success.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection(SavedPlacesProvider savedProvider) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.edit_rounded,
+                  label: 'Edit Profile',
+                  highlighted: true,
+                  onTap: _editProfile,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.share_rounded,
+                  label: 'Share Profile',
+                  onTap: _shareProfile,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: Icons.download_rounded,
+                  label: 'Download Data',
+                  onTap: _downloadData,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool highlighted = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: highlighted ? AppTheme.primaryGradient : null,
+            color: highlighted ? null : AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+            boxShadow: highlighted
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : AppTheme.softShadow,
+            border: !highlighted
+                ? Border.all(color: AppTheme.divider, width: 1)
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: highlighted
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : AppTheme.primarySurface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: highlighted ? Colors.white : AppTheme.primary,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppTheme.caption.copyWith(
+                  color: highlighted ? Colors.white : AppTheme.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _editProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Edit Profile feature coming soon'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _openSavedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Saved Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openTravelPlans() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Travel Plans...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openVisitedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Visited Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _shareProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Share Profile feature coming soon'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _downloadData() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Download Data feature coming soon'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -100,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, savedProvider, _) {
         final savedPlaces = savedProvider.savedPlaces;
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
           child: Column(
             children: [
               SectionHeader(

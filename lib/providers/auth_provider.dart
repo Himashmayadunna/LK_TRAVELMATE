@@ -9,7 +9,6 @@ class AuthProvider extends ChangeNotifier {
   String _displayName = 'Traveler';
   String _email = 'traveler@example.com';
   String? _photoUrl;
-  bool _isUploadingPhoto = false;
   bool _isLoggedIn = false;
   bool _isAuthReady = true; // Always ready since no Firebase init needed
   DateTime _memberSince = DateTime.now();
@@ -46,7 +45,6 @@ class AuthProvider extends ChangeNotifier {
   String get displayName => _displayName;
   String get email => _email;
   String? get photoUrl => _photoUrl;
-  bool get isUploadingPhoto => _isUploadingPhoto;
   bool get isLoggedIn => _isLoggedIn;
   bool get isAuthReady => _isAuthReady;
   DateTime get memberSince => _memberSince;
@@ -62,21 +60,22 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> uploadProfilePhoto(File imageFile) async {
-    // Since this is a mock provider (no Firebase), simulate an upload by
-    // using the local file path as the photo URL. The UI supports local
-    // file paths (prefixed with file://) or direct paths.
+    if (currentUser == null) return;
+    
     try {
       _isUploadingPhoto = true;
       notifyListeners();
 
-      // Simulate delay for upload
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      // Use a file:// URI so the UI can detect local files
-      _photoUrl = 'file://${imageFile.path}';
-
+      final ref = _storage.ref().child('profile_photos').child('${currentUser!.uid}.jpg');
+      await ref.putFile(imageFile);
+      
+      final downloadUrl = await ref.getDownloadURL();
+      
+      await currentUser!.updatePhotoURL(downloadUrl);
+      _photoUrl = downloadUrl;
+      
     } catch (e) {
-      debugPrint('Profile photo mock upload failed: $e');
+      debugPrint('Profile photo upload failed: $e');
       rethrow;
     } finally {
       _isUploadingPhoto = false;

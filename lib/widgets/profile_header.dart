@@ -51,90 +51,89 @@ class ProfileHeader extends StatelessWidget {
               bottomRight: Radius.circular(AppTheme.radiusXLarge),
             ),
           ),
-          child: Column(
+          const SizedBox(height: 24),
+          // Avatar
+          Stack(
             children: [
-              // Title row with quick actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Profile',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      )),
-                  Row(children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.settings, color: Colors.white, size: 20),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                      ),
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                      ),
-                    ),
-                  ])
-                ],
+                  ],
+                ),
+                child: Center(
+                  child: isUploadingPhoto
+                      ? const CircularProgressIndicator(color: AppTheme.primary)
+                      : photoUrl != null && photoUrl!.isNotEmpty
+                          ? ClipOval(
+                              child: Image.network(
+                                photoUrl!,
+                                width: 90,
+                                height: 90,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildInitials();
+                                },
+                              ),
+                            )
+                          : _buildInitials(),
+                ),
               ),
-              const SizedBox(height: 18),
-              // subtitle with refined style
-              Text(email.isEmpty ? 'Traveler' : email,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.3,
-                  )),
-              const SizedBox(height: 36),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: isUploadingPhoto ? null : onEditPhoto,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
-
-        // Floating card with avatar and name
-        Positioned(
-          left: 24,
-          right: 24,
-          top: 120,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          const SizedBox(height: 16),
+          // Name
+          Text(
+            name.isEmpty ? 'Traveler' : name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Email
+          Text(
+            email.isEmpty ? 'traveler@example.com' : email,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 32,
-                  offset: const Offset(0, 12),
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-              border: Border(
-                top: BorderSide(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
-                  width: 2,
-                ),
-              ),
+              color: AppTheme.gold,
+              borderRadius: BorderRadius.circular(AppTheme.radiusRound),
             ),
             child: Row(
               children: [

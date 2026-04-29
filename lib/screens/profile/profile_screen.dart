@@ -56,20 +56,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Color _getAvatarColor(int index) {
-    final colors = [
-      const Color(0xFF6366F1), // Indigo
-      const Color(0xFFEC4899), // Pink
-      const Color(0xFF14B8A6), // Teal
-      const Color(0xFFF59E0B), // Amber
-      const Color(0xFF8B5CF6), // Violet
-      const Color(0xFF06B6D4), // Cyan
-      const Color(0xFFEF4444), // Red
-      const Color(0xFF10B981), // Emerald
-    ];
-    return colors[index % colors.length];
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -81,130 +67,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 260,
-              child: ProfileHeader(
-                name: authProvider.displayName,
-                email: authProvider.email,
-                initials: authProvider.initials,
-                photoUrl: authProvider.photoUrl,
-                isUploadingPhoto: authProvider.isUploadingPhoto,
-                onEditPhoto: () => _pickAndUploadImage(authProvider),
-                badge: 'Explorer',
-                tripCount: _visited,
-                memberSince: authProvider.memberSince,
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: _buildQuickActionsSection(savedProvider),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Community Members', style: AppTheme.headingSmall),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${authProvider.registeredUsers.length}',
-                          style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 110,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(right: 24),
-                      itemCount: authProvider.registeredUsers.length,
-                      itemBuilder: (context, index) {
-                        final user = authProvider.registeredUsers[index];
-                        final DateTime mSince = user['memberSince'] as DateTime? ?? DateTime.now();
-                        final color = _getAvatarColor(index);
-                        final initials = (user['name'] as String? ?? 'U').split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join();
-
-                        return GestureDetector(
-                          onTap: () {},
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 14),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        color,
-                                        color.withValues(alpha: 0.6),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: color.withValues(alpha: 0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      initials,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                SizedBox(
-                                  width: 72,
-                                  child: Text(
-                                    (user['name'] as String?) ?? 'User',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                SizedBox(
-                                  width: 72,
-                                  child: Text(
-                                    'Joined ${mSince.year}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 10, color: AppTheme.textHint),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            child: ProfileHeader(
+              name: authProvider.displayName,
+              email: authProvider.email,
+              initials: authProvider.initials,
+              photoUrl: authProvider.photoUrl,
+              isUploadingPhoto: authProvider.isUploadingPhoto,
+              onEditPhoto: () => _pickAndUploadImage(authProvider),
+              badge: 'Explorer',
+              tripCount: _visited,
             ),
           ),
           SliverToBoxAdapter(

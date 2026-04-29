@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
+import '../../widgets/trending_places_section.dart';
+import '../../providers/destinations_provider.dart';
 import '../ai/ai_chat_screen.dart';
 import '../ai/ai_plan_form_screen.dart';
 import '../ai/place_details_form_screen.dart';
@@ -91,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(child: _buildFeaturedHero()),
             SliverToBoxAdapter(child: _buildQuickActionsModern()),
             SliverToBoxAdapter(child: _buildQuickAccessModern()),
+            SliverToBoxAdapter(child: _buildTrendingPlaces()),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
         ),
@@ -373,6 +377,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ─── TRENDING PLACES SECTION ──────────────────────────────────────
+  Widget _buildTrendingPlaces() {
+    return Consumer<DestinationsProvider>(
+      builder: (context, destProvider, _) {
+        final trendingPlaces = destProvider.trendingDestinations;
+        return TrendingPlacesSection(
+          trendingPlaces: trendingPlaces,
+          onViewAll: () {
+            // Navigate to explore page with trending filter
+            // This can be enhanced later to show only trending places
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${trendingPlaces.length} trending places'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

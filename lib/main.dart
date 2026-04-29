@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';  // Disabled - requires google-services.json
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
-import 'screens/auth/welcome_screen.dart';
+import 'screens/auth/start_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/map/map_screen.dart';
 import 'screens/ai/ai_assistant_shell.dart';
 import 'screens/profile/profile_screen.dart';
 import 'utils/app_theme.dart';
+import 'providers/destinations_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // await Firebase.initializeApp();  // Disabled - requires google-services.json
   runApp(const MyApp());
 }
 
@@ -30,13 +28,33 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
-        ChangeNotifierProvider(create: (_) => SavedPlacesProvider()),
+        ChangeNotifierProvider(create: (_) => DestinationsProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, SavedPlacesProvider>(
+          create: (_) => SavedPlacesProvider(),
+          update: (_, auth, savedPlaces) {
+            final provider = savedPlaces ?? SavedPlacesProvider();
+            provider.configureForUser(auth.currentUser);
+            return provider;
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'LK TravelMate',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const WelcomeScreen(),
+        home: Consumer<AuthProvider>(
+          builder: (context, auth, _) {
+            if (!auth.isAuthReady) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(color: AppTheme.primary),
+                ),
+              );
+            }
+
+            return const StartScreen();
+          },
+        ),
       ),
     );
   }
@@ -52,7 +70,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-
   late final List<Widget> _screens = [
     const HomeScreen(),
     const ExploreScreen(),
@@ -63,32 +80,53 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppTheme.surface,
           boxShadow: [
             BoxShadow(
               color: AppTheme.cardShadow,
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(Icons.home_outlined, Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.search_outlined, Icons.search_rounded, 'Explore', 1),
+                _buildModernNavItem(
+                  Icons.home_outlined,
+                  Icons.home_rounded,
+                  'Home',
+                  0,
+                  AppTheme.primary,
+                ),
+                _buildModernNavItem(
+                  Icons.search_outlined,
+                  Icons.search_rounded,
+                  'Explore',
+                  1,
+                  AppTheme.accent,
+                ),
                 _buildCenterMapButton(),
-                _buildNavItem(Icons.chat_bubble_outline, Icons.chat_bubble_rounded, 'Chat', 3),
-                _buildNavItem(Icons.person_outline, Icons.person, 'Profile', 4),
+                _buildModernNavItem(
+                  Icons.chat_bubble_outline,
+                  Icons.chat_bubble_rounded,
+                  'Chat',
+                  3,
+                  AppTheme.purple,
+                ),
+                _buildModernNavItem(
+                  Icons.person_outline,
+                  Icons.person_rounded,
+                  'Profile',
+                  4,
+                  AppTheme.primaryLight,
+                ),
               ],
             ),
           ),
@@ -97,26 +135,44 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, IconData activeIcon, String label, int index) {
+  Widget _buildModernNavItem(
+    IconData icon,
+    IconData activeIcon,
+    String label,
+    int index,
+    Color activeColor,
+  ) {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 60,
+        width: 56,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? activeIcon : icon,
-              color: isSelected ? AppTheme.primary : AppTheme.textHint,
-              size: 24,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? activeColor.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              ),
+              child: Center(
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: isSelected ? activeColor : AppTheme.textHint,
+                  size: 22,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primary : AppTheme.textHint,
+                color: isSelected ? activeColor : AppTheme.textHint,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -135,26 +191,30 @@ class _MainScreenState extends State<MainScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Transform.translate(
-            offset: const Offset(0, -12),
+            offset: const Offset(0, -14),
             child: Container(
-              width: 52,
-              height: 52,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradient,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primary.withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: const Icon(Icons.map_rounded, color: Colors.white, size: 26),
+              child: const Icon(
+                Icons.map_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
           ),
           Transform.translate(
-            offset: const Offset(0, -8),
+            offset: const Offset(0, -10),
             child: Text(
               'Map',
               style: TextStyle(

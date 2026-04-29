@@ -1,41 +1,32 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
+/// Mock Auth Provider - replaces Firebase Auth
+/// To enable Firebase Auth later, add google-services.json and restore the original file
 class AuthProvider extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  User? currentUser;
-
+  // Mock user state - no Firebase required
+  String? _currentUserId;
   String _displayName = 'Traveler';
   String _email = 'traveler@example.com';
   String? _photoUrl;
   bool _isLoggedIn = false;
-  bool _isUploadingPhoto = false;
+  bool _isAuthReady = true; // Always ready since no Firebase init needed
 
   AuthProvider() {
-    _auth.authStateChanges().listen((User? user) {
-      currentUser = user;
-      _isLoggedIn = user != null;
-      if (user != null) {
-        _displayName = user.displayName ?? 'Traveler';
-        _email = user.email ?? 'traveler@example.com';
-        _photoUrl = user.photoURL;
-      } else {
-        _displayName = '';
-        _email = '';
-        _photoUrl = null;
-      }
-      notifyListeners();
-    });
+    // Auto-login for demo purposes
+    _currentUserId = 'demo_user_123';
+    _displayName = 'Traveler';
+    _email = 'traveler@example.com';
+    _isLoggedIn = true;
+    notifyListeners();
   }
 
+  String? get currentUser => _currentUserId;
   String get displayName => _displayName;
   String get email => _email;
   String? get photoUrl => _photoUrl;
   bool get isLoggedIn => _isLoggedIn;
-  bool get isUploadingPhoto => _isUploadingPhoto;
+  bool get isAuthReady => _isAuthReady;
 
   String get initials {
     if (_displayName.isEmpty) return 'T';
@@ -70,39 +61,33 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> signUp({required String name, required String email, required String password}) async {
-    try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      // Update display name immediately
-      await userCredential.user?.updateDisplayName(name);
-      
-      _displayName = name;
-      _email = email;
-      _isLoggedIn = true;
-      notifyListeners();
-    } on FirebaseAuthException catch (e) {
-      debugPrint('SignUp Failed: ${e.message}');
-      throw Exception(e.message ?? 'Unknown error occurred.');
-    }
+  Future<void> signUp({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    // Mock signup - just store locally
+    _currentUserId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+    _displayName = name;
+    _email = email;
+    _isLoggedIn = true;
+    notifyListeners();
   }
 
   Future<void> signIn({required String email, required String password}) async {
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      debugPrint('SignIn Failed: ${e.message}');
-      throw Exception(e.message ?? 'Unknown error occurred.');
-    }
+    // Mock signin - accept any credentials for demo
+    _currentUserId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+    _displayName = email.split('@').first;
+    _email = email;
+    _isLoggedIn = true;
+    notifyListeners();
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
+    _currentUserId = null;
+    _displayName = '';
+    _email = '';
+    _isLoggedIn = false;
+    notifyListeners();
   }
 }

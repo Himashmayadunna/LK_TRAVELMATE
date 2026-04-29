@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';  // Disabled - requires google-services.json
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
-import 'screens/auth/start_screen.dart';
+import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home.dart';
 import 'screens/explore/explore_screen.dart';
 import 'screens/map/map_screen.dart';
@@ -15,7 +15,7 @@ import 'providers/destinations_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();  // Disabled - requires google-services.json
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           create: (_) => SavedPlacesProvider(),
           update: (_, auth, savedPlaces) {
             final provider = savedPlaces ?? SavedPlacesProvider();
-            provider.configureForUser(auth.currentUser);
+            provider.configureForUser(auth.currentUser?.uid);
             return provider;
           },
         ),
@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
               );
             }
 
-            return const StartScreen();
+            return auth.isLoggedIn ? const MainScreen() : const WelcomeScreen();
           },
         ),
       ),

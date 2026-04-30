@@ -81,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SliverToBoxAdapter(
             child: _buildStatsSection(savedProvider.savedCount),
           ),
+          SliverToBoxAdapter(child: _buildAchievementBadges()),
           SliverToBoxAdapter(child: _buildSavedDestinations()),
           SliverToBoxAdapter(child: _buildLogoutButton()),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -169,6 +170,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
       const SnackBar(
         content: Text('Opening Visited Places...'),
         duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  Widget _buildAchievementBadges() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Achievements',
+            style: AppTheme.headingSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildAchievementChip(
+                icon: Icons.explore_rounded,
+                label: 'Explorer',
+                color: AppTheme.primary,
+              ),
+              _buildAchievementChip(
+                icon: Icons.favorite_rounded,
+                label: '$_visited Visited',
+                color: AppTheme.accent,
+              ),
+              _buildAchievementChip(
+                icon: Icons.bookmark_rounded,
+                label: 'Bookmarker',
+                color: AppTheme.success,
+              ),
+              _buildAchievementChip(
+                icon: Icons.trending_up_rounded,
+                label: 'Trending',
+                color: AppTheme.purple,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.1),
+            color.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

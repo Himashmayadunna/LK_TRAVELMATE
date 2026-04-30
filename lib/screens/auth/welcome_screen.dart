@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'dart:math' as math;
 
 import '../../utils/app_theme.dart';
 import 'signin.dart';

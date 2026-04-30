@@ -258,8 +258,8 @@ class _SignInScreenState extends State<SignInScreen>
             const SizedBox(height: 24),
 
             // Switch to sign up
-            Row(
-              children: const [
+            const Row(
+              children: [
                 _HeroStat(label: '24+', value: 'Destinations'),
                 SizedBox(width: 10),
                 _HeroStat(label: '4.8', value: 'Top rated'),
@@ -664,6 +664,47 @@ class _FloatingAccent extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.82),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

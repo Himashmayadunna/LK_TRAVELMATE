@@ -19,32 +19,42 @@ class SearchBarWidget extends StatelessWidget {
       children: [
         Expanded(
           child: Container(
-            height: 50,
+            height: 52,
             decoration: BoxDecoration(
               color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: const [
-                BoxShadow(
-                  color: AppTheme.cardShadow,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              boxShadow: AppTheme.softShadow,
+              border: Border.all(color: AppTheme.divider, width: 1),
             ),
             child: TextField(
               controller: controller,
               onChanged: onChanged,
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textPrimary,
+                fontSize: 15,
+              ),
               decoration: InputDecoration(
-                hintText: 'Search destinations...',
-                hintStyle: const TextStyle(
+                hintText: 'Search destinations, hotels...',
+                hintStyle: AppTheme.bodyMedium.copyWith(
                   color: AppTheme.textHint,
-                  fontSize: 14,
+                  fontSize: 15,
                 ),
-                prefixIcon: const Icon(Icons.search, color: AppTheme.textHint),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 14, right: 10),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: AppTheme.primary,
+                    size: 22,
+                  ),
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 14,
-                  horizontal: 16,
+                  horizontal: 14,
                 ),
               ),
             ),
@@ -54,13 +64,24 @@ class SearchBarWidget extends StatelessWidget {
         GestureDetector(
           onTap: onFilterTap,
           child: Container(
-            width: 50,
-            height: 50,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: AppTheme.primary,
-              borderRadius: BorderRadius.circular(14),
+              gradient: AppTheme.primaryGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primary.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Icon(Icons.tune, color: AppTheme.surface, size: 22),
+            child: const Icon(
+              Icons.tune_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ),
       ],

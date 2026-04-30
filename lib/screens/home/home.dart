@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/search_bar_widget.dart';
-import '../../widgets/ai_recommendation_card.dart';
-import '../../widgets/travel_plan_card.dart';
-import '../../widgets/category_chip.dart';
-import '../../widgets/place_card.dart';
-import '../../widgets/section_header.dart';
-import '../../widgets/quick_action_button.dart';
+import '../../widgets/trending_places_section.dart';
+import '../../providers/destinations_provider.dart';
 import '../ai/ai_chat_screen.dart';
 import '../ai/ai_plan_form_screen.dart';
-import '../ai/ai_suggestions_screen.dart';
-import '../explore/explore_screen.dart';
-import '../map/map_screen.dart';
+import '../ai/place_details_form_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,13 +16,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedCategoryIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   // ─── User input controllers for AI suggestions ──────────────────
   final TextEditingController _placesController = TextEditingController();
   final TextEditingController _foodController = TextEditingController();
-  String _selectedDuration = '7 Days';
-  String _selectedBudget = '\$800';
 
   @override
   void initState() {
@@ -57,80 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Icons.nightlight_round;
   }
 
-  // Sample Data
-  final List<Map<String, dynamic>> _categories = [
-    {'name': 'Beaches', 'iconAsset': 'assets/Icons/Beach.jpg', 'count': 2},
-    {'name': 'Hiking', 'iconAsset': 'assets/Icons/hiking.jpg', 'count': 2},
-    {'name': 'Temples', 'iconAsset': 'assets/Icons/temples.jpg', 'count': 2},
-    {'name': 'Wildlife', 'iconAsset': 'assets/Icons/wildlife.jpg', 'count': 1},
-    {
-      'name': 'Waterfalls',
-      'iconAsset': 'assets/Icons/waterfalls.jpg',
-      'count': 2,
-    },
-    {'name': 'Heritage', 'iconAsset': 'assets/Icons/Heritage.jpg', 'count': 2},
-  ];
-
-  final List<Map<String, dynamic>> _popularPlaces = [
-    {
-      'name': 'Sigiriya Rock',
-      'location': 'Matale District',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
-      'rating': 4.8,
-      'distance': '165 km',
-      'favorite': false,
-    },
-    {
-      'name': 'Mirissa Beach',
-      'location': 'Southern Province',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
-      'rating': 4.6,
-      'distance': '150 km',
-      'favorite': true,
-    },
-    {
-      'name': 'Temple of Tooth',
-      'location': 'Kandy',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
-      'rating': 4.7,
-      'distance': '115 km',
-      'favorite': false,
-    },
-    {
-      'name': 'Ella Rock',
-      'location': 'Badulla District',
-      'image':
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Ella_Rock_from_Little_Adam%27s_Peak.jpg/1280px-Ella_Rock_from_Little_Adam%27s_Peak.jpg',
-      'rating': 4.5,
-      'distance': '195 km',
-      'favorite': false,
-    },
-  ];
-
-  final List<Map<String, dynamic>> _trendingExperiences = [
-    {
-      'title': 'Train Ride to Ella',
-      'desc': 'Scenic railway journey through tea plantations',
-      'emoji': '🚂',
-      'duration': '7 hrs',
-    },
-    {
-      'title': 'Whale Watching',
-      'desc': 'Blue whale sighting in Mirissa',
-      'emoji': '🐋',
-      'duration': '4 hrs',
-    },
-    {
-      'title': 'Safari Adventure',
-      'desc': 'Yala National Park jeep safari',
-      'emoji': '🦁',
-      'duration': '5 hrs',
-    },
-  ];
-
   // Screen bodies for each nav tab
   void _openAIChat({String? initialPrompt}) {
     Navigator.of(context).push(
@@ -147,60 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openPlaceDetailsQuickAction() {
-    final placeTopic = _placesController.text.trim().isEmpty
-        ? 'Sigiriya, Ella, Galle, Kandy'
-        : _placesController.text.trim();
-
-    _openAIChat(
-      initialPrompt:
-          'Give me practical details about these Sri Lanka places: $placeTopic. Include best time, entry cost, how to reach, and one insider tip for each place.',
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PlaceDetailsFormScreen()));
   }
 
   void _openRelatedHotelsQuickAction() {
-    final placeTopic = _placesController.text.trim().isEmpty
-        ? 'Sri Lanka'
-        : _placesController.text.trim();
-
-    _openAIChat(
-      initialPrompt:
-          'Find hotels in Sri Lanka related to these places/interests: $placeTopic. Give 5 options in this format: Hotel/Area - who it is best for - approx budget.',
-    );
-  }
-
-  void _openMap({String? initialQuery}) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => MapScreen(initialQuery: initialQuery)),
+      MaterialPageRoute(builder: (_) => const PlaceDetailsFormScreen()),
     );
-  }
-
-  void _openExploreCategory(String categoryName) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ExploreScreen(
-          initialCategory: _mapHomeCategoryToExploreCategory(categoryName),
-        ),
-      ),
-    );
-  }
-
-  String _mapHomeCategoryToExploreCategory(String categoryName) {
-    switch (categoryName.toLowerCase()) {
-      case 'beaches':
-        return 'Beach';
-      case 'hiking':
-        return 'Hiking';
-      case 'temples':
-        return 'Temples';
-      case 'waterfalls':
-        return 'Waterfalls';
-      case 'wildlife':
-        return 'Safari';
-      case 'heritage':
-        return 'Heritage';
-      default:
-        return 'All';
-    }
   }
 
   @override
@@ -213,24 +86,24 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             SliverToBoxAdapter(child: _buildHeader()),
             SliverToBoxAdapter(child: _buildSearchBar()),
-            SliverToBoxAdapter(child: _buildAIRecommendation()),
-            SliverToBoxAdapter(child: _buildPrimaryActionButtons()),
-            SliverToBoxAdapter(child: _buildQuickActions()),
+            SliverToBoxAdapter(child: _buildFeaturedHero()),
+            SliverToBoxAdapter(child: _buildQuickActionsModern()),
+            SliverToBoxAdapter(child: _buildQuickAccessModern()),
+            SliverToBoxAdapter(child: _buildTrendingPlaces()),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
         ),
       ),
-      floatingActionButton: _buildFAB(),
     );
   }
 
-  // ─── HEADER ───────────────────────────────────────────────────────
+  // ─── MODERN HEADER ────────────────────────────────────────────────
   Widget _buildHeader() {
     const userName = 'Traveler';
     const userInitials = 'T';
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -246,6 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         '$_greeting, $userName',
                         style: AppTheme.bodyMedium.copyWith(
                           color: AppTheme.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -254,12 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(
                       _greetingIcon,
                       size: 16,
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.accent,
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                const Text('Explore Sri Lanka', style: AppTheme.headingLarge),
+                const SizedBox(height: 4),
+                const Text(
+                  'Explore Sri Lanka',
+                  style: AppTheme.headingLarge,
+                ),
               ],
             ),
           ),
@@ -271,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 44,
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: Stack(
@@ -284,13 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Positioned(
-                      right: 10,
-                      top: 10,
+                      right: 8,
+                      top: 8,
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                         decoration: const BoxDecoration(
-                          color: AppTheme.error,
+                          color: AppTheme.accent,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -298,19 +176,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               // Avatar
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
                   gradient: AppTheme.primaryGradient,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: AppTheme.primary.withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -320,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -332,68 +210,233 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ─── SEARCH BAR ───────────────────────────────────────────────────
+  // ─── MODERN SEARCH BAR ────────────────────────────────────────────
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: SearchBarWidget(
         controller: _searchController,
-        onChanged: (value) {
-          // handle search if needed, or leave empty
-        },
+        onChanged: (value) {},
       ),
     );
   }
 
-  // ─── AI RECOMMENDATION HERO ───────────────────────────────────────
-  Widget _buildAIRecommendation() {
+  // ─── MODERN FEATURED HERO ─────────────────────────────────────────
+  Widget _buildFeaturedHero() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: AIRecommendationCard(
-        title: 'Discover the Pearl of\nthe Indian Ocean',
-        subtitle: 'Personalized just for you',
-        imageUrl: 'assets/Hero/hero.png',
-        isAsset: true,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      child: GestureDetector(
         onTap: _openAISuggestionsQuickAction,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
+          child: Container(
+            height: 240,
+            decoration: BoxDecoration(
+              boxShadow: AppTheme.mediumShadow,
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background image
+                Image.asset(
+                  'assets/Hero/hero.png',
+                  fit: BoxFit.cover,
+                ),
+                // Overlay gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.black.withValues(alpha: 0.7),
+                      ],
+                    ),
+                  ),
+                ),
+                // Badge and content
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusRound),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accent.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'AI RECOMMENDED',
+                              style: AppTheme.caption.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 10,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      // Content
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Discover the Pearl of\nthe Indian Ocean',
+                                  style: AppTheme.headingMedium.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: AppTheme.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSmall),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              'Personalized just for you',
+                              style: AppTheme.bodySmall.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildPrimaryActionButtons() {
+  // ─── TRENDING PLACES SECTION ──────────────────────────────────────
+  Widget _buildTrendingPlaces() {
+    return Consumer<DestinationsProvider>(
+      builder: (context, destProvider, _) {
+        final trendingPlaces = destProvider.trendingDestinations;
+        return TrendingPlacesSection(
+          trendingPlaces: trendingPlaces,
+          onViewAll: () {
+            // Navigate to explore page with trending filter
+            // This can be enhanced later to show only trending places
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${trendingPlaces.length} trending places'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ─── MODERN QUICK ACTIONS ─────────────────────────────────────────
+  Widget _buildQuickActionsModern() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+      child: Column(
         children: [
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.auto_awesome_rounded,
-              label: 'AI Suggestions',
-              highlighted: true,
-              onTap: _openAISuggestionsQuickAction,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.info_outline_rounded,
-              label: 'Place Details',
-              onTap: _openPlaceDetailsQuickAction,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildPrimaryActionCard(
-              icon: Icons.hotel_rounded,
-              label: 'Related Hotels',
-              onTap: _openRelatedHotelsQuickAction,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildModernActionCard(
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'AI Suggestions',
+                  highlighted: true,
+                  onTap: _openAISuggestionsQuickAction,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildModernActionCard(
+                  icon: Icons.info_outline_rounded,
+                  label: 'Place Details',
+                  onTap: _openPlaceDetailsQuickAction,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildModernActionCard(
+                  icon: Icons.hotel_rounded,
+                  label: 'Hotels',
+                  onTap: _openRelatedHotelsQuickAction,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPrimaryActionCard({
+  Widget _buildModernActionCard({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -402,39 +445,52 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
         decoration: BoxDecoration(
           gradient: highlighted ? AppTheme.primaryGradient : null,
           color: highlighted ? null : AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: highlighted
-              ? Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.45))
-              : Border.all(color: AppTheme.divider),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
           boxShadow: highlighted
               ? [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.32),
-                    blurRadius: 18,
+                    color: AppTheme.primary.withValues(alpha: 0.25),
+                    blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
                 ]
               : AppTheme.softShadow,
+          border: !highlighted
+              ? Border.all(color: AppTheme.divider, width: 1)
+              : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: highlighted ? Colors.white : AppTheme.primary,
-              size: 22,
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: highlighted
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : AppTheme.primarySurface,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              ),
+              child: Center(
+                child: Icon(
+                  icon,
+                  color: highlighted ? Colors.white : AppTheme.primary,
+                  size: 22,
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               label,
               textAlign: TextAlign.center,
               style: AppTheme.caption.copyWith(
                 color: highlighted ? Colors.white : AppTheme.textPrimary,
                 fontWeight: FontWeight.w700,
+                fontSize: 12,
               ),
             ),
           ],
@@ -443,414 +499,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ─── TRAVEL PLAN (Interactive AI Input) ────────────────────────────
-  Widget _buildTravelPlan() {
+  // ─── MODERN QUICK ACCESS ──────────────────────────────────────────
+  Widget _buildQuickAccessModern() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(
-            title: 'Plan Your Trip',
-            icon: Icons.auto_awesome,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Tell us what you want and AI will suggest the perfect places!',
-            style: AppTheme.bodyMedium.copyWith(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // ─── Places Input ──────────────────────────────────────
-          _buildInputField(
-            controller: _placesController,
-            label: 'Places you want to visit',
-            hint: 'e.g. Beaches, Mountains, Historical sites...',
-            icon: Icons.place_rounded,
-          ),
-          const SizedBox(height: 12),
-
-          // ─── Food Input ────────────────────────────────────────
-          _buildInputField(
-            controller: _foodController,
-            label: 'Food you like to eat',
-            hint: 'e.g. Seafood, Spicy curry, Street food...',
-            icon: Icons.restaurant_rounded,
-          ),
-          const SizedBox(height: 14),
-
-          // ─── Duration & Budget Row ─────────────────────────────
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _showDurationPicker,
-                  child: TravelPlanCard(
-                    label: 'Duration',
-                    value: _selectedDuration,
-                    icon: Icons.calendar_month_rounded,
-                    onTap: _showDurationPicker,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: GestureDetector(
-                  onTap: _showBudgetPicker,
-                  child: TravelPlanCard(
-                    label: 'Budget',
-                    value: _selectedBudget,
-                    icon: Icons.payments_rounded,
-                    onTap: _showBudgetPicker,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // ─── Get AI Suggestions Button ─────────────────────────
-          GestureDetector(
-            onTap: _navigateToSuggestions,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.auto_awesome_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Get AI Suggestions',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── REUSABLE INPUT FIELD ─────────────────────────────────────────
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: AppTheme.softShadow,
-        border: Border.all(color: AppTheme.divider, width: 1),
-      ),
-      child: TextField(
-        controller: controller,
-        style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
-        decoration: InputDecoration(
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 12, right: 8),
-            child: Icon(icon, color: AppTheme.primary, size: 22),
-          ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 0,
-            minHeight: 0,
-          ),
-          labelText: label,
-          labelStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textHint),
-          hintText: hint,
-          hintStyle: AppTheme.bodyMedium.copyWith(
-            color: AppTheme.textHint,
-            fontSize: 12,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─── DURATION PICKER ──────────────────────────────────────────────
-  void _showDurationPicker() {
-    final durations = [
-      '3 Days',
-      '5 Days',
-      '7 Days',
-      '10 Days',
-      '14 Days',
-      '21 Days',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('📅 Select Duration', style: AppTheme.headingSmall),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: durations.map((d) {
-                final isSelected = _selectedDuration == d;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => _selectedDuration = d);
-                    Navigator.pop(ctx);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: isSelected ? AppTheme.primaryGradient : null,
-                      color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
-                      border: isSelected
-                          ? null
-                          : Border.all(color: AppTheme.divider),
-                    ),
-                    child: Text(
-                      d,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── BUDGET PICKER ────────────────────────────────────────────────
-  void _showBudgetPicker() {
-    final budgets = ['\$300', '\$500', '\$800', '\$1200', '\$2000', '\$3000+'];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('💰 Select Budget', style: AppTheme.headingSmall),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: budgets.map((b) {
-                final isSelected = _selectedBudget == b;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => _selectedBudget = b);
-                    Navigator.pop(ctx);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: isSelected ? AppTheme.primaryGradient : null,
-                      color: isSelected ? null : AppTheme.primarySurface,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusRound),
-                      border: isSelected
-                          ? null
-                          : Border.all(color: AppTheme.divider),
-                    ),
-                    child: Text(
-                      b,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── NAVIGATE TO AI SUGGESTIONS ───────────────────────────────────
-  void _navigateToSuggestions() {
-    final places = _placesController.text.trim();
-    final food = _foodController.text.trim();
-
-    if (places.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter places you want to visit'),
-          backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          ),
-        ),
-      );
-      return;
-    }
-
-    final foodPref = food.isEmpty ? 'Any local food' : food;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AISuggestionsScreen(
-          places: places,
-          duration: _selectedDuration,
-          food: foodPref,
-          budget: _selectedBudget,
-        ),
-      ),
-    );
-  }
-
-  // ─── QUICK ACTIONS ────────────────────────────────────────────────
-  Widget _buildQuickActions() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.14)),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.10),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
+          boxShadow: AppTheme.softShadow,
+          border: Border.all(color: AppTheme.divider, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeader(
-              title: 'Quick Access',
-              icon: Icons.bolt_rounded,
-            ),
-            const SizedBox(height: 4),
             Text(
-              'Tap any shortcut to launch tools instantly',
-              style: AppTheme.bodySmall.copyWith(
-                color: AppTheme.textSecondary,
-                fontWeight: FontWeight.w500,
+              'Quick Access',
+              style: AppTheme.headingSmall.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 14),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final columns = constraints.maxWidth > 420 ? 4 : 2;
-                final spacing = 10.0;
-                final itemWidth =
-                    (constraints.maxWidth - ((columns - 1) * spacing)) /
-                    columns;
-
-                return Wrap(
-                  spacing: spacing,
-                  runSpacing: 12,
-                  children: [
-                    SizedBox(
-                      width: itemWidth,
-                      child: QuickActionButton(
-                        icon: Icons.auto_awesome,
-                        label: 'AI Plan',
-                        highlighted: true,
-                        onTap: _openAISuggestionsQuickAction,
-                      ),
-                    ),
-                    SizedBox(
-                      width: itemWidth,
-                      child: QuickActionButton(
-                        icon: Icons.map_rounded,
-                        label: 'Map',
-                        onTap: () => _openMap(),
-                      ),
-                    ),
-                    SizedBox(
-                      width: itemWidth,
-                      child: QuickActionButton(
-                        icon: Icons.hotel_rounded,
-                        label: 'Hotels',
-                        onTap: () => _openAIChat(
-                          initialPrompt:
-                              'Best hotels in Sri Lanka by budget and location. Give 5 options in this format: Hotel/Area - who it is best for.',
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: itemWidth,
-                      child: QuickActionButton(
-                        icon: Icons.restaurant_rounded,
-                        label: 'Food',
-                        onTap: () => _openAIChat(
-                          initialPrompt:
-                              'What are must-try Sri Lankan foods and the best places to try them?',
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+            const SizedBox(height: 6),
+            Text(
+              'Explore everywhere with just one tap',
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildQuickAccessItem(
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  color: AppTheme.primary,
+                ),
+                _buildQuickAccessItem(
+                  icon: Icons.explore_rounded,
+                  label: 'Explore',
+                  color: AppTheme.accent,
+                ),
+                _buildQuickAccessItem(
+                  icon: Icons.chat_rounded,
+                  label: 'Chat',
+                  color: AppTheme.purple,
+                ),
+                _buildQuickAccessItem(
+                  icon: Icons.map_rounded,
+                  label: 'Map',
+                  color: AppTheme.gold,
+                ),
+                _buildQuickAccessItem(
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
+                  color: AppTheme.primary,
+                ),
+              ],
             ),
           ],
         ),
@@ -858,281 +566,39 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ─── CATEGORIES ───────────────────────────────────────────────────
-  Widget _buildCategories() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SectionHeader(
-              title: 'Categories',
-              actionText: 'See All',
-              onAction: () {},
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 105,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
-                final cat = _categories[index];
-                return CategoryChip(
-                  name: cat['name'],
-                  iconAsset: cat['iconAsset'],
-                  emoji: cat['emoji'],
-                  placeCount: cat['count'],
-                  isSelected: _selectedCategoryIndex == index,
-                  onTap: () {
-                    setState(() => _selectedCategoryIndex = index);
-                    _openExploreCategory(cat['name']);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── POPULAR PLACES ───────────────────────────────────────────────
-  Widget _buildPopularPlaces() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SectionHeader(
-              title: 'Popular Places',
-              actionText: 'See All',
-              onAction: () {},
-              icon: Icons.local_fire_department_rounded,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 210,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _popularPlaces.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 14),
-              itemBuilder: (context, index) {
-                final place = _popularPlaces[index];
-                return PlaceCard(
-                  name: place['name'],
-                  location: place['location'],
-                  imageUrl: place['image'],
-                  rating: place['rating'],
-                  distance: place['distance'],
-                  isFavorite: place['favorite'],
-                  onFavorite: () {
-                    setState(() {
-                      _popularPlaces[index]['favorite'] =
-                          !_popularPlaces[index]['favorite'];
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── TRENDING EXPERIENCES ─────────────────────────────────────────
-  Widget _buildTrendingExperiences() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-      child: Column(
-        children: [
-          const SectionHeader(
-            title: 'Trending Experiences',
-            icon: Icons.trending_up_rounded,
-          ),
-          const SizedBox(height: 14),
-          ..._trendingExperiences.map((exp) => _buildExperienceTile(exp)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExperienceTile(Map<String, dynamic> exp) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppTheme.primarySurface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-            ),
-            child: Center(
-              child: Text(exp['emoji'], style: const TextStyle(fontSize: 24)),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(exp['title'], style: AppTheme.labelBold),
-                const SizedBox(height: 2),
-                Text(
-                  exp['desc'],
-                  style: AppTheme.caption,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.primarySurface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusRound),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.schedule_rounded,
-                  size: 13,
-                  color: AppTheme.primary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  exp['duration'],
-                  style: AppTheme.caption.copyWith(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── AI CHAT CTA ──────────────────────────────────────────────────
-  Widget _buildAIChatCTA() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: GestureDetector(
-        onTap: () => _openAIChat(),
-        child: Container(
-          padding: const EdgeInsets.all(20),
+  Widget _buildQuickAccessItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(AppTheme.radiusXLarge),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                ),
-                child: const Center(
-                  child: Text('🤖', style: TextStyle(fontSize: 28)),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Ask AI Travel Assistant',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Get personalized recommendations instantly',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: AppTheme.primary,
-                  size: 20,
-                ),
-              ),
-            ],
+          child: Center(
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  // ─── FAB ──────────────────────────────────────────────────────────
-  Widget _buildFAB() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: AppTheme.caption.copyWith(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
           ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: () => _openAIChat(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
-      ),
+        ),
+      ],
     );
   }
 }

@@ -12,6 +12,10 @@ class DestinationsProvider extends ChangeNotifier {
   List<Destination> get destinations => _destinations;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  
+  /// Get only trending destinations
+  List<Destination> get trendingDestinations => 
+      _destinations.where((d) => d.isTrending).toList();
 
   DestinationsProvider() {
     _loadDestinations();
@@ -26,7 +30,7 @@ class DestinationsProvider extends ChangeNotifier {
       Destination(
         id: 'sigiriya',
         name: 'Sigiriya Rock',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg/1280px-Sigiriya_%28Lion_Rock%29%2C_Sri_Lanka.jpg',
+        imageUrl: 'assets/trending places/sigiriya.jpg',
         category: 'Heritage',
         rating: 4.8,
         budget: '\$50',
@@ -38,11 +42,12 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'Morning',
         reviewCount: 2500,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'mirissa',
         name: 'Mirissa Beach',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg/1280px-Coconut_Tree_Hill%2C_Mirissa.jpg',
+        imageUrl: 'assets/trending places/mirissa.webp',
         category: 'Beach',
         rating: 4.6,
         budget: '\$30',
@@ -54,11 +59,12 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'November - April',
         reviewCount: 1800,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'temple_tooth',
         name: 'Temple of Tooth',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Sri_Dalada_Maligawa.jpg/1280px-Sri_Dalada_Maligawa.jpg',
+        imageUrl: 'assets/trending places/templeoftooth.webp',
         category: 'Temple',
         rating: 4.7,
         budget: '\$20',
@@ -70,6 +76,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'Year round',
         reviewCount: 3200,
         isFeatured: true,
+        isTrending: true,
       ),
       Destination(
         id: 'ella',
@@ -86,6 +93,7 @@ class DestinationsProvider extends ChangeNotifier {
         bestTime: 'January - April',
         reviewCount: 1500,
         isFeatured: false,
+        isTrending: false,
       ),
     ];
 

@@ -1,37 +1,69 @@
-import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
-/// Mock Auth Provider - replaces Firebase Auth
-/// To enable Firebase Auth later, add google-services.json and restore the original file
 class AuthProvider extends ChangeNotifier {
-  // Mock user state - no Firebase required
-  String? _currentUserId;
-  String _displayName = 'Traveler';
-  String _email = 'traveler@example.com';
-  bool _isLoggedIn = false;
-  bool _isAuthReady = true; // Always ready since no Firebase init needed
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  User? _user;
+  bool _isUploadingPhoto = false;
+  bool _isAuthReady = false;
 
   AuthProvider() {
-    // Auto-login for demo purposes
-    _currentUserId = 'demo_user_123';
-    _displayName = 'Traveler';
-    _email = 'traveler@example.com';
-    _isLoggedIn = true;
-    notifyListeners();
+    _initAuth();
   }
 
-  String? get currentUser => _currentUserId;
-  String get displayName => _displayName;
-  String get email => _email;
-  bool get isLoggedIn => _isLoggedIn;
+  void _initAuth() {
+    _auth.authStateChanges().listen((User? user) {
+      _user = user;
+      _isAuthReady = true;
+      notifyListeners();
+    });
+  }
+
+  User? get user => _user;
+  String? get currentUser => _user?.uid;
+  String get displayName => _user?.displayName ?? 'User';
+  String get email => _user?.email ?? '';
+  String? get photoUrl => _user?.photoURL;
+  bool get isUploadingPhoto => _isUploadingPhoto;
+  bool get isLoggedIn => _user != null;
   bool get isAuthReady => _isAuthReady;
 
+  DateTime get memberSince => _user?.metadata.creationTime ?? DateTime.now();
+
   String get initials {
-    if (_displayName.isEmpty) return 'T';
-    final names = _displayName.split(' ');
-    if (names.length >= 2) {
+    if (displayName.isEmpty) return 'T';
+    final names = displayName.split(' ');
+    if (names.length >= 2 && names[0].isNotEmpty && names[1].isNotEmpty) {
       return '${names[0][0]}${names[1][0]}'.toUpperCase();
     }
-    return _displayName[0].toUpperCase();
+    return displayName.isNotEmpty ? displayName[0].toUpperCase() : 'T';
+  }
+
+  Future<void> uploadProfilePhoto(File imageFile) async {
+    if (_user == null) return;
+    try {
+      _isUploadingPhoto = true;
+      notifyListeners();
+      final ref = _storage
+          .ref()
+          .child('user_profiles')
+          .child('${_user!.uid}.jpg');
+      await ref.putFile(imageFile);
+      final url = await ref.getDownloadURL();
+      await _user!.updatePhotoURL(url);
+      await _user!.reload();
+      _user = _auth.currentUser;
+    } catch (e) {
+      debugPrint('Profile photo upload failed: $e');
+      rethrow;
+    } finally {
+      _isUploadingPhoto = false;
+      notifyListeners();
+    }
   }
 
   Future<void> signUp({
@@ -39,28 +71,35 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    // Mock signup - just store locally
-    _currentUserId = 'user_${DateTime.now().millisecondsSinceEpoch}';
-    _displayName = name;
-    _email = email;
-    _isLoggedIn = true;
-    notifyListeners();
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      if (credential.user != null) {
+        await credential.user!.updateDisplayName(name);
+        await credential.user!.reload();
+        _user = _auth.currentUser;
+        notifyListeners();
+      }
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Sign up failed');
+    } catch (e) {
+      throw Exception('An unexpected error occurred. Please try again.');
+    }
   }
 
   Future<void> signIn({required String email, required String password}) async {
-    // Mock signin - accept any credentials for demo
-    _currentUserId = 'user_${DateTime.now().millisecondsSinceEpoch}';
-    _displayName = email.split('@').first;
-    _email = email;
-    _isLoggedIn = true;
-    notifyListeners();
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Sign in failed');
+    } catch (e) {
+      throw Exception('An unexpected error occurred. Please try again.');
+    }
   }
 
   Future<void> signOut() async {
-    _currentUserId = null;
-    _displayName = '';
-    _email = '';
-    _isLoggedIn = false;
-    notifyListeners();
+    await _auth.signOut();
   }
 }

@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/saved_places_provider.dart';
 import '../../utils/app_theme.dart';
@@ -32,6 +34,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  Future<void> _pickAndUploadImage(AuthProvider authProvider) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    
+    if (image != null && context.mounted) {
+      try {
+        await authProvider.uploadProfilePhoto(File(image.path));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo updated successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update profile photo')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -47,6 +71,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               name: authProvider.displayName,
               email: authProvider.email,
               initials: authProvider.initials,
+              photoUrl: authProvider.photoUrl,
+              isUploadingPhoto: authProvider.isUploadingPhoto,
+              onEditPhoto: () => _pickAndUploadImage(authProvider),
               badge: 'Explorer',
               tripCount: _visited,
             ),
@@ -54,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SliverToBoxAdapter(
             child: _buildStatsSection(savedProvider.savedCount),
           ),
+          SliverToBoxAdapter(child: _buildAchievementBadges()),
           SliverToBoxAdapter(child: _buildSavedDestinations()),
           SliverToBoxAdapter(child: _buildLogoutButton()),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -64,31 +92,167 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildStatsSection(int savedCount) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Row(
         children: [
-          ProfileStatCard(
-            label: 'Saved Places',
-            value: '$savedCount',
-            icon: Icons.favorite_rounded,
-            iconColor: const Color(0xFFE65100),
-            iconBgColor: const Color(0xFFFBE9E7),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openSavedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Saved Places',
+                  value: '$savedCount',
+                  icon: Icons.favorite_rounded,
+                  iconColor: AppTheme.accent,
+                  iconBgColor: AppTheme.accent.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Travel Plans',
-            value: '$_travelPlans',
-            icon: Icons.map_outlined,
-            iconColor: AppTheme.primary,
-            iconBgColor: AppTheme.primarySurface,
+          Expanded(
+            child: GestureDetector(
+              onTap: _openTravelPlans,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Travel Plans',
+                  value: '$_travelPlans',
+                  icon: Icons.map_outlined,
+                  iconColor: AppTheme.primary,
+                  iconBgColor: AppTheme.primarySurface,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          ProfileStatCard(
-            label: 'Visited',
-            value: '$_visited',
-            icon: Icons.check_box_rounded,
-            iconColor: AppTheme.success,
-            iconBgColor: const Color(0xFFE8F5E9),
+          Expanded(
+            child: GestureDetector(
+              onTap: _openVisitedPlaces,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ProfileStatCard(
+                  label: 'Visited',
+                  value: '$_visited',
+                  icon: Icons.check_circle_rounded,
+                  iconColor: AppTheme.success,
+                  iconBgColor: AppTheme.success.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openSavedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Saved Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openTravelPlans() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Travel Plans...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openVisitedPlaces() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening Visited Places...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  Widget _buildAchievementBadges() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Achievements',
+            style: AppTheme.headingSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildAchievementChip(
+                icon: Icons.explore_rounded,
+                label: 'Explorer',
+                color: AppTheme.primary,
+              ),
+              _buildAchievementChip(
+                icon: Icons.favorite_rounded,
+                label: '$_visited Visited',
+                color: AppTheme.accent,
+              ),
+              _buildAchievementChip(
+                icon: Icons.bookmark_rounded,
+                label: 'Bookmarker',
+                color: AppTheme.success,
+              ),
+              _buildAchievementChip(
+                icon: Icons.trending_up_rounded,
+                label: 'Trending',
+                color: AppTheme.purple,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.1),
+            color.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -100,7 +264,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, savedProvider, _) {
         final savedPlaces = savedProvider.savedPlaces;
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
           child: Column(
             children: [
               SectionHeader(

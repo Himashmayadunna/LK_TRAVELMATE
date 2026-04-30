@@ -34,12 +34,10 @@ class _SignInScreenState extends State<SignInScreen>
       duration: const Duration(milliseconds: 850),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
   }
 
@@ -52,6 +50,8 @@ class _SignInScreenState extends State<SignInScreen>
   }
 
   Future<void> _handleSignIn() async {
+    FocusScope.of(context).unfocus();
+
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -75,7 +75,7 @@ class _SignInScreenState extends State<SignInScreen>
       );
 
       if (!mounted) return;
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -192,16 +192,24 @@ class _SignInScreenState extends State<SignInScreen>
                       color: Colors.white.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                    ),
                   ),
                   child: Text(
                     'Travel ready',
@@ -323,7 +331,9 @@ class _SignInScreenState extends State<SignInScreen>
                   if (val == null || val.isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(val)) {
+                  if (!RegExp(
+                    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                  ).hasMatch(val)) {
                     return 'Enter a valid email';
                   }
                   return null;
@@ -345,7 +355,8 @@ class _SignInScreenState extends State<SignInScreen>
                     color: AppTheme.textHint,
                     size: 20,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
@@ -382,7 +393,11 @@ class _SignInScreenState extends State<SignInScreen>
                             ),
                           ),
                           child: _rememberMe
-                              ? const Icon(Icons.check, color: Colors.white, size: 14)
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 14,
+                                )
                               : null,
                         ),
                         const SizedBox(width: 8),
@@ -507,7 +522,10 @@ class _SignInScreenState extends State<SignInScreen>
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           borderSide: BorderSide(color: AppTheme.divider),
@@ -539,7 +557,9 @@ class _SignInScreenState extends State<SignInScreen>
     return GestureDetector(
       onTap: _isLoading ? () {} : onTap,
       child: MouseRegion(
-        cursor: _isLoading ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+        cursor: _isLoading
+            ? SystemMouseCursors.forbidden
+            : SystemMouseCursors.click,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           height: 56,
@@ -631,12 +651,7 @@ class _SignInScreenState extends State<SignInScreen>
 }
 
 class _FloatingAccent extends StatelessWidget {
-  const _FloatingAccent({
-    this.top,
-    this.left,
-    this.right,
-    required this.size,
-  });
+  const _FloatingAccent({this.top, this.left, this.right, required this.size});
 
   final double? top;
   final double? left;

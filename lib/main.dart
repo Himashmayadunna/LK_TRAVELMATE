@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
@@ -16,17 +15,50 @@ import 'providers/destinations_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+
+  bool firebaseReady = false;
+  String? firebaseInitError;
+
+  try {
+    await Firebase.initializeApp();
+    firebaseReady = true;
+  } catch (e) {
+    final rawError = e.toString();
+    if (rawError.contains('Failed to load FirebaseOptions from resource')) {
+      firebaseInitError =
+          'Firebase config was not found. Add android/app/google-services.json '
+          'and run flutterfire configure to generate lib/firebase_options.dart.';
+    } else {
+      firebaseInitError =
+          'Firebase initialization failed. Please verify Firebase setup.';
+    }
+    debugPrint('Firebase init error: $rawError');
+  }
+
+  runApp(MyApp(firebaseReady: firebaseReady, firebaseInitError: firebaseInitError));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    super.key,
+    required this.firebaseReady,
+    this.firebaseInitError,
+  });
+
+  final bool firebaseReady;
+  final String? firebaseInitError;
 
   @override
   Widget build(BuildContext context) {
+    if (!firebaseReady) {
+      return MaterialApp(
+        title: 'LK TravelMate',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: _FirebaseSetupScreen(error: firebaseInitError),
+      );
+    }
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
@@ -57,6 +89,58 @@ class MyApp extends StatelessWidget {
 
             return const StartScreen();
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _FirebaseSetupScreen extends StatelessWidget {
+  const _FirebaseSetupScreen({this.error});
+
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off_rounded, size: 72, color: AppTheme.primary),
+              const SizedBox(height: 16),
+              const Text(
+                'Firebase setup is missing',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Add Firebase configuration files for Android/iOS and restart the app.',
+                textAlign: TextAlign.center,
+              ),
+              if (error != null && error!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    error!,
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 6,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

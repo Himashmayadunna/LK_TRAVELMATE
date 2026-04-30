@@ -37,12 +37,10 @@ class _SignUpScreenState extends State<SignUpScreen>
       duration: const Duration(milliseconds: 850),
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
     _animController.forward();
   }
 
@@ -57,7 +55,22 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   Future<void> _handleSignUp() async {
-    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please check the form for errors.'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -76,10 +89,10 @@ class _SignUpScreenState extends State<SignUpScreen>
 
     try {
       await context.read<AuthProvider>().signUp(
-            name: _nameController.text.trim(),
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -181,16 +194,24 @@ class _SignUpScreenState extends State<SignUpScreen>
                       color: Colors.white.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                    ),
                   ),
                   child: Text(
                     'Join the journey',
@@ -327,7 +348,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!RegExp(r'^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$').hasMatch(val.trim())) {
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(val.trim())) {
                     return 'Enter a valid email';
                   }
                   return null;
@@ -349,7 +372,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                     color: AppTheme.textHint,
                     size: 20,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty) {
@@ -402,15 +426,23 @@ class _SignUpScreenState extends State<SignUpScreen>
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: _acceptedTerms ? AppTheme.primary : Colors.transparent,
+                        color: _acceptedTerms
+                            ? AppTheme.primary
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: _acceptedTerms ? AppTheme.primary : AppTheme.textHint,
+                          color: _acceptedTerms
+                              ? AppTheme.primary
+                              : AppTheme.textHint,
                           width: 1.5,
                         ),
                       ),
                       child: _acceptedTerms
-                          ? const Icon(Icons.check, color: Colors.white, size: 14)
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 14,
+                            )
                           : null,
                     ),
                     const SizedBox(width: 10),
@@ -428,7 +460,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ),
               ),
               const SizedBox(height: 22),
-              _buildPrimaryButton(label: 'Create Account', onTap: _handleSignUp),
+              _buildPrimaryButton(
+                label: 'Create Account',
+                onTap: _handleSignUp,
+              ),
               const SizedBox(height: 14),
               _buildDivider('or sign up with'),
               const SizedBox(height: 14),
@@ -520,7 +555,10 @@ class _SignUpScreenState extends State<SignUpScreen>
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           borderSide: BorderSide(color: AppTheme.divider),
@@ -684,12 +722,7 @@ class _HeroStat extends StatelessWidget {
 }
 
 class _FloatingAccent extends StatelessWidget {
-  const _FloatingAccent({
-    this.top,
-    this.left,
-    this.right,
-    required this.size,
-  });
+  const _FloatingAccent({this.top, this.left, this.right, required this.size});
 
   final double? top;
   final double? left;

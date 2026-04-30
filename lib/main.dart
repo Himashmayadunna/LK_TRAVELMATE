@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';  // Disabled - requires google-services.json
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/ai_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
@@ -15,7 +16,9 @@ import 'providers/destinations_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();  // Disabled - requires google-services.json
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

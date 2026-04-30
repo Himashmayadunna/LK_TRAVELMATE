@@ -4,8 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../utils/app_theme.dart';
-import 'signin.dart';
-import 'signup.dart';
+import 'auth_choice_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -65,7 +64,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     _swapTimer = Timer.periodic(_swapDuration, (_) {
       if (!mounted) return;
 
-      if (_currentStep >= 2) {
+      if (_currentStep >= 1) {
         _swapTimer?.cancel();
         return;
       }
@@ -74,17 +73,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     });
   }
 
-  void _openSignIn() {
-    Navigator.push(
+  void _openAuthChoice() {
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const SignInScreen()),
-    );
-  }
-
-  void _openSignUp() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const SignUpScreen()),
+      MaterialPageRoute(builder: (_) => const AuthChoiceScreen()),
     );
   }
 
@@ -131,7 +123,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
-                    3,
+                    2,
                     (index) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: _DotIndicator(isActive: index == _currentStep),
@@ -165,13 +157,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           title: 'A smarter way to begin every island journey',
           description:
               'Wait a moment while LK TravelMate opens your travel space with beautiful stays, historic wonders, and coastal escapes.',
+          actionLabel: 'Get Started',
+          onActionTap: _openAuthChoice,
         );
       default:
-        return _AuthChoiceStep(
-          key: const ValueKey('intro-step-3'),
-          onSignIn: _openSignIn,
-          onSignUp: _openSignUp,
-        );
+        return const SizedBox.shrink();
     }
   }
 }
@@ -352,6 +342,8 @@ class _IntroSplashStep extends StatelessWidget {
     required this.badge,
     required this.title,
     required this.description,
+    required this.actionLabel,
+    required this.onActionTap,
   });
 
   final String imagePath;
@@ -359,6 +351,8 @@ class _IntroSplashStep extends StatelessWidget {
   final String badge;
   final String title;
   final String description;
+  final String actionLabel;
+  final VoidCallback onActionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -454,8 +448,15 @@ class _IntroSplashStep extends StatelessWidget {
                             SizedBox(width: 10),
                             _PulseBar(isLong: false),
                             SizedBox(width: 10),
-                            _PulseBar(isLong: false),
                           ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: _PrimaryActionButton(
+                            label: actionLabel,
+                            onTap: onActionTap,
+                          ),
                         ),
                       ],
                     ),
@@ -475,69 +476,6 @@ class _IntroImageOption {
 
   final String imagePath;
   final Alignment alignment;
-}
-
-class _AuthChoiceStep extends StatelessWidget {
-  const _AuthChoiceStep({
-    super.key,
-    required this.onSignIn,
-    required this.onSignUp,
-  });
-
-  final VoidCallback onSignIn;
-  final VoidCallback onSignUp;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      key: key,
-      children: [
-        const SizedBox(height: 12),
-        Container(
-          width: 88,
-          height: 88,
-          decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.28),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Image.asset('assets/logo/Travelmate.png'),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Welcome to LK TravelMate',
-          textAlign: TextAlign.center,
-          style: AppTheme.headingLarge.copyWith(
-            fontSize: 30,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Choose how you want to continue and start planning your Sri Lanka adventure.',
-          textAlign: TextAlign.center,
-          style: AppTheme.bodyLarge.copyWith(
-            color: AppTheme.textSecondary,
-            height: 1.6,
-          ),
-        ),
-        const Spacer(),
-        _PrimaryActionButton(label: 'Sign In', onTap: onSignIn),
-        const SizedBox(height: 14),
-        _SecondaryActionButton(label: 'Sign Up', onTap: onSignUp),
-        const SizedBox(height: 18),
-      ],
-    );
-  }
 }
 
 class _MosaicImageCard extends StatelessWidget {

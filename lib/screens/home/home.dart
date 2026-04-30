@@ -71,13 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openRelatedHotelsQuickAction() {
-    final placeTopic = _placesController.text.trim().isEmpty
-        ? 'Sri Lanka'
-        : _placesController.text.trim();
-
-    _openAIChat(
-      initialPrompt:
-          'Find hotels in Sri Lanka related to these places/interests: $placeTopic. Give 5 options in this format: Hotel/Area - who it is best for - approx budget.',
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PlaceDetailsFormScreen()),
     );
   }
 

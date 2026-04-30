@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/ai_suggestion_provider.dart';
+import 'providers/hotel_suggestion_provider.dart';
 import 'providers/saved_places_provider.dart';
 import 'screens/auth/start_screen.dart';
 import 'screens/home/home.dart';
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AISuggestionProvider()),
+        ChangeNotifierProvider(create: (_) => HotelSuggestionProvider()),
         ChangeNotifierProvider(create: (_) => DestinationsProvider()),
         ChangeNotifierProxyProvider<AuthProvider, SavedPlacesProvider>(
           create: (_) => SavedPlacesProvider(),

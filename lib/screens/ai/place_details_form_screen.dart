@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/app_theme.dart';
 import 'ai_chat_screen.dart';
+import 'hotel_suggestions_screen.dart';
 
 class PlaceDetailsFormScreen extends StatefulWidget {
   const PlaceDetailsFormScreen({super.key});
@@ -63,6 +64,38 @@ class _PlaceDetailsFormScreenState extends State<PlaceDetailsFormScreen> {
         builder: (_) => AIChatScreen(
           initialPrompt:
               'Give me detailed travel information for $place. Include: $details. Extra notes from the user: $notesText. Keep the answer practical, short, and easy to scan.',
+        ),
+      ),
+    );
+  }
+
+  void _findHotels() {
+    final place = _placeController.text.trim();
+    final notes = _notesController.text.trim();
+
+    if (place.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter a place name'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final details = _selectedDetails.join(', ');
+    final notesText = notes.isEmpty ? 'No extra notes' : notes;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HotelSuggestionsScreen(
+          place: place,
+          details: details,
+          notes: notesText,
         ),
       ),
     );
@@ -287,6 +320,46 @@ class _PlaceDetailsFormScreenState extends State<PlaceDetailsFormScreen> {
                     Icon(
                       Icons.arrow_forward_rounded,
                       color: Colors.white,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _findHotels,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                decoration: BoxDecoration(
+                  color: AppTheme.primarySurface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  border: Border.all(
+                    color: AppTheme.primary.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.hotel_rounded,
+                      color: AppTheme.primary,
+                      size: 20,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Find hotels',
+                      style: TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppTheme.primary,
                       size: 20,
                     ),
                   ],

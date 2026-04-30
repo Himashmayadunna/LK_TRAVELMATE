@@ -462,6 +462,310 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
     return fallbackSuggestions;
   }
 
+  // ─── HOTEL SUGGESTIONS (Structured JSON) ───────────────────────────
+  static Future<List<Map<String, dynamic>>> getHotelSuggestions({
+    required String place,
+    required String details,
+    required String notes,
+  }) async {
+    const systemPrompt = '''
+You are a Sri Lanka hotel advisor. You MUST respond ONLY with a valid JSON array - no markdown, no explanation, no extra text, no code fences, no thinking tags.
+Return a JSON array of exactly 5 hotel objects. Output ONLY the JSON array, nothing else.''';
+
+    final userMessage = '''
+Recommend 5 hotels or hotel areas in Sri Lanka for this traveller.
+- Place they want to stay near: $place
+- Important place details or preferences: $details
+- Extra notes: $notes
+
+MATCHING REQUIREMENTS (MUST FOLLOW):
+1. Prioritize hotels near the chosen place or in the best nearby area
+2. Match the notes closely, including family, budget, romantic, business, beach, or nature stays
+3. Keep the price realistic for Sri Lanka and set estimatedCostPerDay as an approximate nightly rate in USD
+4. Include a matchReasons field listing 2-3 specific reasons why this stay matches the input
+5. Use Sri Lankan hotels or hotel areas only
+
+Return ONLY a JSON array with these fields per object:
+[{"name":"Hotel Name","location":"Area or district","description":"2 sentence description","category":"Hotel","estimatedCostPerDay":120,"bestTimeToVisit":"All year","highlights":["pool","breakfast","sea view"],"matchReasons":["reason1","reason2"],"insiderTip":"booking tip","foodRecommendations":["nearby option 1","nearby option 2"],"howToGetThere":"transport info","imageUrl":"https://..."}]
+
+Give 5 hotel suggestions. Return JSON only.
+''';
+
+    final models = [
+      'google/gemma-3-27b-it:free',
+      'qwen/qwen3-coder:free',
+      'openai/gpt-oss-20b:free',
+      _model,
+    ];
+
+    for (final model in models) {
+      try {
+        final raw = await _callAI(
+          systemPrompt,
+          userMessage,
+          maxTokens: 1200,
+          model: model,
+          useSuggestionsKey: true,
+        );
+
+        if (raw.startsWith('API Error') ||
+            raw.startsWith('Error') ||
+            raw.startsWith('Connection error')) {
+          continue;
+        }
+
+        final parsed = _parseSuggestions(raw);
+        if (parsed.isNotEmpty) {
+          return parsed;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+
+    return _localHotelFallbackSuggestions(
+      place: place,
+      details: details,
+      notes: notes,
+    );
+  }
+
+  static List<Map<String, dynamic>> _localHotelFallbackSuggestions({
+    required String place,
+    required String details,
+    required String notes,
+  }) {
+    final query =
+        '${place.toLowerCase()} ${details.toLowerCase()} ${notes.toLowerCase()}';
+
+    if (query.contains('ella')) {
+      return [
+        {
+          'name': '98 Acres Resort & Spa',
+          'location': 'Ella',
+          'description':
+              'A signature hill-country stay with dramatic views, relaxed luxury, and easy access to Ella highlights.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 180,
+          'bestTimeToVisit': 'Jan - Mar',
+          'highlights': ['Tea views', 'Spa', 'Scenic pool'],
+          'matchReasons': [
+            'Perfect for an Ella stay',
+            'Great for scenic and romantic trips',
+            'Close to hiking spots',
+          ],
+          'insiderTip': 'Book sunrise-facing rooms early for the best views.',
+          'foodRecommendations': [
+            'Local hill-country rice and curry',
+            'Tea-infused desserts',
+          ],
+          'howToGetThere':
+              'Taxi or tuk-tuk from Ella town; roughly 10 to 15 minutes.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/d/d2/SL_Ella_asv2020-01_img22_View_from_Little_Adams_Peak.jpg',
+        },
+        {
+          'name': 'EKHO Ella',
+          'location': 'Ella',
+          'description':
+              'A calm boutique stay that works well for travelers who want comfort, views, and a central base.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 140,
+          'bestTimeToVisit': 'Jan - Mar',
+          'highlights': ['Boutique vibe', 'Hill views', 'Central location'],
+          'matchReasons': [
+            'Balanced comfort and value',
+            'Easy access to Ella town',
+            'Good for flexible itineraries',
+          ],
+          'insiderTip':
+              'Choose higher-floor rooms for quieter nights and broader views.',
+          'foodRecommendations': ['Hoppers', 'Kottu with local vegetables'],
+          'howToGetThere':
+              'Short transfer from Ella Railway Station or town center.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/d/d2/SL_Ella_asv2020-01_img22_View_from_Little_Adams_Peak.jpg',
+        },
+      ];
+    }
+
+    if (query.contains('galle') ||
+        query.contains('beach') ||
+        query.contains('mirissa')) {
+      return [
+        {
+          'name': 'Jetwing Lighthouse',
+          'location': 'Galle',
+          'description':
+              'A polished seaside hotel with easy access to Galle Fort and coastal experiences.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 170,
+          'bestTimeToVisit': 'Nov - Apr',
+          'highlights': ['Sea view', 'Pool', 'Great location'],
+          'matchReasons': [
+            'Ideal for a coast-focused stay',
+            'Great base for Galle and nearby beaches',
+            'Comfortable for couples and families',
+          ],
+          'insiderTip':
+              'Reserve sunset hours for a relaxed drink by the coast.',
+          'foodRecommendations': ['Seafood platters', 'Coconut-based curries'],
+          'howToGetThere': 'About 15 minutes by taxi from Galle Fort.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/5/5a/Unawatuna_beach.jpg',
+        },
+        {
+          'name': 'Cinnamon Bey Beruwala',
+          'location': 'Beruwala',
+          'description':
+              'A large beach resort that suits travelers who want a relaxed seaside stay with plenty of amenities.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 155,
+          'bestTimeToVisit': 'Nov - Apr',
+          'highlights': ['Beachfront', 'Large pool', 'Family friendly'],
+          'matchReasons': [
+            'Strong value for a beach holiday',
+            'Easy access to water activities',
+            'Good for longer stays',
+          ],
+          'insiderTip':
+              'Ask for a room facing the quieter side of the property.',
+          'foodRecommendations': [
+            'Fresh grilled fish',
+            'Sri Lankan breakfast hoppers',
+          ],
+          'howToGetThere':
+              'Drive south from Colombo along the coastal highway.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/f/f1/Coconut_Tree_Hill%2C_Mirissa.jpg',
+        },
+      ];
+    }
+
+    if (query.contains('sigiriya') ||
+        query.contains('dambulla') ||
+        query.contains('heritage') ||
+        query.contains('history')) {
+      return [
+        {
+          'name': 'Heritance Kandalama',
+          'location': 'Kandalama',
+          'description':
+              'An iconic eco-luxury stay close to Sigiriya and Dambulla, with a strong nature-first feel.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 190,
+          'bestTimeToVisit': 'Jan - Apr',
+          'highlights': ['Eco design', 'Lake views', 'Luxury stay'],
+          'matchReasons': [
+            'Great for cultural sightseeing',
+            'Close to Sigiriya and Dambulla',
+            'Strong fit for premium travelers',
+          ],
+          'insiderTip':
+              'Plan early-morning departures for the fortress and caves.',
+          'foodRecommendations': ['Village rice and curry', 'Local fruit juices'],
+          'howToGetThere':
+              'Taxi from Dambulla or Sigiriya; around 30 minutes depending on traffic.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/1/1f/Sigiriya_Luftbild_%2829781064900%29.jpg',
+        },
+        {
+          'name': 'Aliya Resort & Spa',
+          'location': 'Sigiriya',
+          'description':
+              'A relaxed resort near the rock fortress, popular with travelers who want space and convenience.',
+          'category': 'Hotel',
+          'estimatedCostPerDay': 145,
+          'bestTimeToVisit': 'Jan - Apr',
+          'highlights': ['Pool', 'Family friendly', 'Near Sigiriya'],
+          'matchReasons': [
+            'Ideal for sightseeing logistics',
+            'Comfortable for families',
+            'Good value near heritage sites',
+          ],
+          'insiderTip':
+              'Start excursions before the midday heat builds up.',
+          'foodRecommendations': ['Buffet rice and curry', 'Fresh lime juice'],
+          'howToGetThere': 'Short transfer from Sigiriya or Dambulla.',
+          'imageUrl':
+              'https://upload.wikimedia.org/wikipedia/commons/1/1f/Sigiriya_Luftbild_%2829781064900%29.jpg',
+        },
+      ];
+    }
+
+    return [
+      {
+        'name': 'Marino Beach Colombo',
+        'location': 'Colombo',
+        'description':
+            'A modern city hotel that works well for business trips, short stopovers, and easy access to Colombo attractions.',
+        'category': 'Hotel',
+        'estimatedCostPerDay': 160,
+        'bestTimeToVisit': 'All year',
+        'highlights': ['Rooftop pool', 'Central location', 'City views'],
+        'matchReasons': [
+          'Strong all-round city option',
+          'Good for short stays and transfers',
+          'Fits both business and leisure trips',
+        ],
+        'insiderTip':
+            'Book early for weekend stays if you want a sea-facing room.',
+        'foodRecommendations': ['Seafood rice', 'Short-eats and bakery items'],
+        'howToGetThere':
+            'Easy taxi ride from Colombo Fort or Bandaranaike Airport transfer routes.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/1/14/Colombo_skyline.jpg',
+      },
+      {
+        'name': 'The Grand Hotel',
+        'location': 'Nuwara Eliya',
+        'description':
+            'A classic hill-country stay that suits travelers who want cooler weather and an old-world atmosphere.',
+        'category': 'Hotel',
+        'estimatedCostPerDay': 150,
+        'bestTimeToVisit': 'Feb - Apr',
+        'highlights': ['Cool climate', 'Historic charm', 'Tea country base'],
+        'matchReasons': [
+          'Good fit for a scenic hill stay',
+          'Matches relaxed or romantic trips',
+          'Convenient for tea country sightseeing',
+        ],
+        'insiderTip': 'Carry a light jacket even during the day.',
+        'foodRecommendations': [
+          'Fresh scones and tea',
+          'Hill-country vegetable curries',
+        ],
+        'howToGetThere': 'Drive or taxi from Nanu Oya station into town.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/7/7a/Tea_plantations_in_Nuwara_Eliya.jpg',
+      },
+      {
+        'name': '98 Acres Resort & Spa',
+        'location': 'Ella',
+        'description':
+            'A signature hill-country stay with dramatic views, relaxed luxury, and easy access to Ella highlights.',
+        'category': 'Hotel',
+        'estimatedCostPerDay': 180,
+        'bestTimeToVisit': 'Jan - Mar',
+        'highlights': ['Tea views', 'Spa', 'Scenic pool'],
+        'matchReasons': [
+          'Perfect for scenic and romantic trips',
+          'Close to hiking spots',
+          'Popular with nature-focused travelers',
+        ],
+        'insiderTip': 'Book sunrise-facing rooms early for the best views.',
+        'foodRecommendations': [
+          'Local hill-country rice and curry',
+          'Tea-infused desserts',
+        ],
+        'howToGetThere':
+            'Taxi or tuk-tuk from Ella town; roughly 10 to 15 minutes.',
+        'imageUrl':
+            'https://upload.wikimedia.org/wikipedia/commons/d/d2/SL_Ella_asv2020-01_img22_View_from_Little_Adams_Peak.jpg',
+      },
+    ];
+  }
+
   static String _extractMessageContent(dynamic responseData) {
     try {
       final choices = responseData['choices'];
@@ -764,10 +1068,10 @@ For imageUrl, prefer reliable Wikimedia Commons or Unsplash direct image links f
         'name': 'Unawatuna Beach',
         'location': 'Galle',
         'description':
-            'A relaxed southern beach town with golden sand, swimmable water, and lively cafes.',
+            'Iconic beach with calm waters, perfect for snorkeling and sunset watching.',
         'category': 'Beach',
-        'budgetLevel': 'mid',
-        'estimatedCostPerDay': 60,
+        'budgetLevel': 'budget',
+        'estimatedCostPerDay': 55,
         'bestTimeToVisit': 'Nov - Apr',
         'highlights': ['Calm beach', 'Snorkeling', 'Sunset cafes'],
         'insiderTip': 'Visit Jungle Beach in the morning to avoid crowds.',

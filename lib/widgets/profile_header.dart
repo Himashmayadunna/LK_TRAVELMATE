@@ -123,41 +123,49 @@ class ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppTheme.gold,
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(AppTheme.radiusRound),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, color: Colors.white, size: 15),
-                      const SizedBox(width: 6),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.verified_rounded, color: Colors.white, size: 14),
+                      ),
+                      const SizedBox(width: 10),
                       Text(
                         badge,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      Text(
-                        '$tripCount trips',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 1,
+                        height: 18,
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 16),
                       Text(
-                        memberSince != null
-                            ? 'Member since ${memberSince!.year}'
-                            : 'Member since ${DateTime.now().year}',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        '$tripCount journeys',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w500,
                           fontSize: 12,
                         ),
                       ),
